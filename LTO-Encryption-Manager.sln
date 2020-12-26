@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LTO-Encryption-Manager", "LTO-Encryption-Manager\LTO-Encryption-Manager.csproj", "{CBA8778B-42FA-4B1E-A2FE-7319B749D000}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CBA8778B-42FA-4B1E-A2FE-7319B749D000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBA8778B-42FA-4B1E-A2FE-7319B749D000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBA8778B-42FA-4B1E-A2FE-7319B749D000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBA8778B-42FA-4B1E-A2FE-7319B749D000}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {55695DA0-317C-4E42-84F4-D29E0B44E32E}
+	EndGlobalSection
+EndGlobal
