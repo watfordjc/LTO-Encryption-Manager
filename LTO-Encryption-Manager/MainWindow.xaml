@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LTO_Encryption_Manager"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="600">
+        Title="MainWindow" Height="500" Width="600">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto" />
@@ -17,12 +17,37 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4" Content="Mnemonic Seed:" />
-        <TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="2" Padding="2" x:Name="MnemonicText" TextWrapping="Wrap" MinLines="4" />
-        <Label Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4" Content="Hexadecimal Entropy:" />
-        <TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="2" Padding="2" x:Name="MnemonicHexText" />
-        <Button Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" x:Name="TestButton2" Click="TestButton2_Click" Content="Test Mnemonic Seed to Hexadecmial Entropy" />
-        <Button Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" x:Name="TestButton" Click="TestButton_Click" Content="Test Hexadecimal Entropy to Mnemonic Seed" />
+        <Label Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4 0" Content="Hexadecimal Entropy:" />
+        <TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="2" Padding="2" x:Name="MnemonicHexText" TextWrapping="Wrap" MinLines="2" />
+        <Button Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" x:Name="TestHexEntropy" Click="TestHexEntropyButton_Click" Content="Test Hexadecimal Entropy" />
+        
+        <Label Grid.Row="2" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4 0" Content="Mnemonic Seed:" />
+        <TextBox Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="2" Padding="2" x:Name="MnemonicText" TextWrapping="Wrap" MinLines="4" />
+        <Button Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" x:Name="TestMnemonic" Click="TestMnemonic_Click" Content="Test Mnemonic Seed" />
+        
+        <Label Grid.Row="4" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4 0" Content="Seed Hexadecimal:" />
+        <TextBox Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="2" Padding="2" x:Name="SeedHex" TextWrapping="Wrap" MinLines="2" IsReadOnly="True" IsEnabled="False" />
+
+        <Label Grid.Row="5" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4 0" Content="Master Node Derivation Key:" />
+        <TextBox Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="2" Padding="2" x:Name="MasterDerivationHex" TextWrapping="Wrap" MinLines="2" IsReadOnly="True" IsEnabled="False" />
+
+        <Label Grid.Row="6" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4 0" Content="Master Node (m) Symmetric Key:" />
+        <TextBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="2" Padding="2" x:Name="MasterKeyHex" TextWrapping="Wrap" MinLines="2" IsReadOnly="True" IsEnabled="False" />
+
+        <Label Grid.Row="7" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4 0" Content="Key(m/&quot;SLIP-0021&quot;):" />
+        <TextBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="2" Padding="2" x:Name="Slip21KeyHex" TextWrapping="Wrap" MinLines="2" IsReadOnly="True" IsEnabled="False" />
+
+        <Label Grid.Row="8" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4 0" Content="Key(m/&quot;SLIP-0021&quot;/&quot;Master encryption key&quot;):" />
+        <TextBox Grid.Row="8" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="2" Padding="2" x:Name="Slip21MasterEncryptionKeyHex" TextWrapping="Wrap" MinLines="2" IsReadOnly="True" IsEnabled="False" />
+
+        <Label Grid.Row="9" Grid.Column="0" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="4 0" Content="Key(m/&quot;SLIP-0021&quot;/&quot;Authentication key&quot;):" />
+        <TextBox Grid.Row="9" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="2" Padding="2" x:Name="Slip21AuthenticationKeyHex" TextWrapping="Wrap" MinLines="2" IsReadOnly="True" IsEnabled="False" />
+
     </Grid>
 </Window>
