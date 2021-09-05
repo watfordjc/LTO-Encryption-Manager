@@ -69,12 +69,18 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
         private static byte[] SeedWordsToEntropyBytes(string[] seedWords)
         {
+            if (seedWords.Length == 0)
+            {
+                throw new ArgumentException($"No mnemonic seed entered.");
+            }
             // An int array to store the seed word values
             int?[] wordlistValues = new int?[seedWords.Length];
             // Convert the seed words to integers
             for (int currentWord = 0; currentWord < wordlistValues.Length; currentWord++)
             {
-                wordlistValues[currentWord] = Bip0039.Dictionaries.AmericanEnglish.IntFromWord(seedWords[currentWord]);
+                wordlistValues[currentWord] = Bip0039.Dictionaries.AmericanEnglish.TryGetIntFromWord(seedWords[currentWord], out int? value)
+                    ? value
+                    : throw new ArgumentException($"The word '{seedWords[currentWord]}' is not in the BIP-0039 en_US dictionary.");
             }
 
             // Each seed word represents 11 bits
@@ -191,9 +197,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             // Entropy length in bytes
             int entropyLengthBytes = entropyLength / 8;
             // BIP-0039 says entropy must be divisible by 32 bits (8 nibbles)
-            if (entropyLength % 32 > 0)
+            if (entropyLength == 0 || entropyLength % 32 > 0)
             {
-                throw new ArgumentException("Length of hexadecimal representation of mnemonic must be a multiple of 32 bits.", entropyHex);
+                throw new ArgumentException("Length of hexadecimal representation of mnemonic seed must be a multiple of 32 bits.");
             }
             // The number of checksum bits needed (makes length divisible by 11)
             int checksumLength = entropyLength / 32;
@@ -280,10 +286,17 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             string separator = "";
             foreach (int i in entropywithChecksum)
             {
-                _ = sb
+                if (Bip0039.Dictionaries.AmericanEnglish.TryGetWordFromInt(i, out string? word))
+                {
+                    _ = sb
                     .Append(separator)
-                    .Append(Bip0039.Dictionaries.AmericanEnglish.WordFromInt(i));
-                separator = " ";
+                    .Append(word);
+                    separator = " ";
+                }
+                else
+                {
+                    throw new NotImplementedException($"The BIP-0039 en_US dictionary does not contain a word at index {i}.");
+                }
             }
             MnemonicText.Text = sb.ToString();
             ProcessSeedWords();
@@ -294,7 +307,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
         /// </summary>
         private void ProcessSeedWords()
         {
-            byte[] entropyBytes = SeedWordsToEntropyBytes(MnemonicText.Text.Trim().Split(' '));
+            byte[] entropyBytes = SeedWordsToEntropyBytes(MnemonicText.Text.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries));
+            if (entropyBytes.Length == 0)
+            {
+                throw new ArgumentException("Not a valid mnemonic seed.");
+            }
             MnemonicHexText.Text = BitConverter.ToString(entropyBytes).Replace("-", "").ToLower(CultureInfo.InvariantCulture);
             byte[] seedBytes = SeedWordsToSeedBytes(MnemonicText.Text.Trim().Split(' '), "");
             SeedHex.Text = BitConverter.ToString(seedBytes).Replace("-", "").ToLower(CultureInfo.InvariantCulture);
@@ -315,12 +332,26 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
         private void TestHexEntropyButton_Click(object sender, RoutedEventArgs e)
         {
-            ProcessEntropyHex();
+            try
+            {
+                ProcessEntropyHex();
+            }
+            catch (ArgumentException ex)
+            {
+                _ = MessageBox.Show(ex.Message, "Invalid Entropy", MessageBoxButton.OK, MessageBoxImage.Asterisk, MessageBoxResult.OK);
+            }
         }
 
         private void TestMnemonic_Click(object sender, RoutedEventArgs e)
         {
-            ProcessSeedWords();
+            try
+            {
+                ProcessSeedWords();
+            }
+            catch (ArgumentException ex)
+            {
+                _ = MessageBox.Show(ex.Message, "Invalid Mnemonic Seed", MessageBoxButton.OK, MessageBoxImage.Asterisk, MessageBoxResult.OK);
+            }
         }
 
     }

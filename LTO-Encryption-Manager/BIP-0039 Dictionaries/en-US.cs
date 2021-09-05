@@ -1,10 +1,12 @@
-﻿namespace uk.JohnCook.dotnet.LTOEncryptionManager.Bip0039.Dictionaries
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Bip0039.Dictionaries
 {
     public static class AmericanEnglish
     {
-        public static int? IntFromWord(string word)
+        public static bool TryGetIntFromWord(string word, [NotNullWhen(true)] out int? value)
         {
-            return word switch
+            value = word switch
             {
                 "abandon" => 0,
                 "ability" => 1,
@@ -2054,13 +2056,14 @@
                 "zero" => 2045,
                 "zone" => 2046,
                 "zoo" => 2047,
-                _ => -1
+                _ => null
             };
+            return value is not null;
         }
 
-        public static string? WordFromInt(int index)
+        public static bool TryGetWordFromInt(int index, [NotNullWhen(true)] out string? word)
         {
-            return index switch
+            word = index switch
             {
                 0 => "abandon",
                 1 => "ability",
@@ -4112,6 +4115,7 @@
                 2047 => "zoo",
                 _ => null
             };
+            return word is not null;
         }
     }
 }
