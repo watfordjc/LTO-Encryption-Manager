@@ -1,23 +1,10 @@
-﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
-namespace LTO_Encryption_Manager
+namespace uk.JohnCook.dotnet.LTOEncryptionManager
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -29,23 +16,21 @@ namespace LTO_Encryption_Manager
             InitializeComponent();
         }
 
-        private byte[] SeedWordsToSeedBytes(string[] seedWords, string passphrase)
+        private static byte[] SeedWordsToSeedBytes(string[] seedWords, string passphrase)
         {
             // Password for PBKDF2
-            string password = String.Join(' ', seedWords).Normalize(NormalizationForm.FormKD);
+            string password = string.Join(' ', seedWords).Normalize(NormalizationForm.FormKD);
             // Salt for PBKDF2
-            byte[] salt = UTF8Encoding.UTF8.GetBytes(new String("mnemonic" + passphrase).Normalize(NormalizationForm.FormKD));
-            // Psuedorandom Function for PBKDF2
-            KeyDerivationPrf prf = KeyDerivationPrf.HMACSHA512;
+            byte[] salt = Encoding.UTF8.GetBytes(new string("mnemonic" + passphrase).Normalize(NormalizationForm.FormKD));
             // Iteration count for PBKDF2
             int iterationCount = 2048;
             // Desired length of PBKDF2-derived key
             int numBytesRequested = 64;
 
             // Derive the binary seed
-            byte[] derivedBinarySeed = KeyDerivation.Pbkdf2(password, salt, prf, iterationCount, numBytesRequested);
+            using Rfc2898DeriveBytes derivedBinarySeed = new(password, salt, iterationCount, HashAlgorithmName.SHA512);
 
-            return derivedBinarySeed;
+            return derivedBinarySeed.GetBytes(numBytesRequested);
         }
 
         public struct Node
@@ -71,25 +56,25 @@ namespace LTO_Encryption_Manager
         private static Node SeedBytesToMasterNode(byte[] seedBytes)
         {
             // SLIP-0021 defines the key for the master node and HMAC-SHA512 as algorithm
-            byte[] key = UTF8Encoding.UTF8.GetBytes("Symmetric key seed");
-            HMACSHA512 hmac = new HMACSHA512(key);
+            byte[] key = Encoding.UTF8.GetBytes("Symmetric key seed");
+            HMACSHA512 hmac = new(key);
             return new Node(hmac.ComputeHash(seedBytes));
         }
 
         private static Node GetChildNode(byte[] derivationKey, string label)
         {
-            HMACSHA512 hmac = new HMACSHA512(derivationKey);
-            return new Node(hmac.ComputeHash(ASCIIEncoding.ASCII.GetBytes('\0' + label)));
+            HMACSHA512 hmac = new(derivationKey);
+            return new Node(hmac.ComputeHash(Encoding.ASCII.GetBytes('\0' + label)));
         }
 
-        private byte[] SeedWordsToEntropyBytes(string[] seedWords)
+        private static byte[] SeedWordsToEntropyBytes(string[] seedWords)
         {
             // An int array to store the seed word values
-            int[] wordlistValues = new int[seedWords.Length];
+            int?[] wordlistValues = new int?[seedWords.Length];
             // Convert the seed words to integers
             for (int currentWord = 0; currentWord < wordlistValues.Length; currentWord++)
             {
-                wordlistValues[currentWord] = BIP_0039_Dictionaries.en_US.IntFromWord(seedWords[currentWord]);
+                wordlistValues[currentWord] = Bip0039.Dictionaries.AmericanEnglish.IntFromWord(seedWords[currentWord]);
             }
 
             // Each seed word represents 11 bits
@@ -199,7 +184,7 @@ namespace LTO_Encryption_Manager
             return entropyBytes;
         }
 
-        private int[] EntropyHexToWordValues(String entropyHex)
+        private static int[] EntropyHexToWordValues(string entropyHex)
         {
             // Convert entropy length from nibbles to bits
             int entropyLength = entropyHex.Length * 4;
@@ -291,12 +276,13 @@ namespace LTO_Encryption_Manager
         private void ProcessEntropyHex()
         {
             int[] entropywithChecksum = EntropyHexToWordValues(MnemonicHexText.Text);
-            StringBuilder sb = new StringBuilder();
-            String separator = "";
+            StringBuilder sb = new();
+            string separator = "";
             foreach (int i in entropywithChecksum)
             {
-                sb.Append(separator);
-                sb.Append(BIP_0039_Dictionaries.en_US.WordFromInt(i));
+                _ = sb
+                    .Append(separator)
+                    .Append(Bip0039.Dictionaries.AmericanEnglish.WordFromInt(i));
                 separator = " ";
             }
             MnemonicText.Text = sb.ToString();
@@ -309,22 +295,22 @@ namespace LTO_Encryption_Manager
         private void ProcessSeedWords()
         {
             byte[] entropyBytes = SeedWordsToEntropyBytes(MnemonicText.Text.Trim().Split(' '));
-            MnemonicHexText.Text = BitConverter.ToString(entropyBytes).Replace("-", "").ToLower();
+            MnemonicHexText.Text = BitConverter.ToString(entropyBytes).Replace("-", "").ToLower(CultureInfo.InvariantCulture);
             byte[] seedBytes = SeedWordsToSeedBytes(MnemonicText.Text.Trim().Split(' '), "");
-            SeedHex.Text = BitConverter.ToString(seedBytes).Replace("-", "").ToLower();
+            SeedHex.Text = BitConverter.ToString(seedBytes).Replace("-", "").ToLower(CultureInfo.InvariantCulture);
             // SLIP-0021 master node
             Node masterNode = SeedBytesToMasterNode(seedBytes);
-            MasterDerivationHex.Text = BitConverter.ToString(masterNode.Left).Replace("-", "").ToLower();
-            MasterKeyHex.Text = BitConverter.ToString(masterNode.Right).Replace("-", "").ToLower();
+            MasterDerivationHex.Text = BitConverter.ToString(masterNode.Left).Replace("-", "").ToLower(CultureInfo.InvariantCulture);
+            MasterKeyHex.Text = BitConverter.ToString(masterNode.Right).Replace("-", "").ToLower(CultureInfo.InvariantCulture);
             // First SLIP-0021 documentation test node: m/"SLIP-0021"
             Node slip21Node = GetChildNode(masterNode.Left, "SLIP-0021");
-            Slip21KeyHex.Text = BitConverter.ToString(slip21Node.Right).Replace("-", "").ToLower();
+            Slip21KeyHex.Text = BitConverter.ToString(slip21Node.Right).Replace("-", "").ToLower(CultureInfo.InvariantCulture);
             // Second test node: m/"SLIP-0021"/"Master encryption key"
             Node masterEncryptionNode = GetChildNode(slip21Node.Left, "Master encryption key");
-            Slip21MasterEncryptionKeyHex.Text = BitConverter.ToString(masterEncryptionNode.Right).Replace("-", "").ToLower();
+            Slip21MasterEncryptionKeyHex.Text = BitConverter.ToString(masterEncryptionNode.Right).Replace("-", "").ToLower(CultureInfo.InvariantCulture);
             // Third test node: m/"SLIP-0021"/"Authentication key"
             Node masterAuthNode = GetChildNode(slip21Node.Left, "Authentication key");
-            Slip21AuthenticationKeyHex.Text = BitConverter.ToString(masterAuthNode.Right).Replace("-", "").ToLower();
+            Slip21AuthenticationKeyHex.Text = BitConverter.ToString(masterAuthNode.Right).Replace("-", "").ToLower(CultureInfo.InvariantCulture);
         }
 
         private void TestHexEntropyButton_Click(object sender, RoutedEventArgs e)

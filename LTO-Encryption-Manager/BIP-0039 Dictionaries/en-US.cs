@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LTO_Encryption_Manager.BIP_0039_Dictionaries
+﻿namespace uk.JohnCook.dotnet.LTOEncryptionManager.Bip0039.Dictionaries
 {
-    public static class en_US
+    public static class AmericanEnglish
     {
-        public static int IntFromWord(String word)
+        public static int? IntFromWord(string word)
         {
             return word switch
             {
@@ -2062,7 +2058,7 @@ namespace LTO_Encryption_Manager.BIP_0039_Dictionaries
             };
         }
 
-        public static string WordFromInt(int index)
+        public static string? WordFromInt(int index)
         {
             return index switch
             {
