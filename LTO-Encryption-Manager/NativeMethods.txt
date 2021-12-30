@@ -1,0 +1,6 @@
+﻿GetCurrentThreadId
+GetThreadDesktop
+CreateDesktop
+SetThreadDesktop
+CloseDesktop
+SwitchDesktop
