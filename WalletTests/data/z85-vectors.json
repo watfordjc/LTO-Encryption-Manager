@@ -1,0 +1,12 @@
+﻿{
+  "testVectors": [
+    [
+      "864fd26fb559f75b",
+      "HelloWorld"
+    ],
+    [
+      "8e0bdd697628b91d8f245587ee95c5b04d48963f79259877b49cd9063aead3b7",
+      "JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6"
+    ]
+  ]
+}
