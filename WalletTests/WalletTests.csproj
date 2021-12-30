@@ -9,6 +9,7 @@
     <Version>0.1.0</Version>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <Copyright>© John Cook 2021.</Copyright>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

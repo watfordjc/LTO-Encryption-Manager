@@ -12,6 +12,11 @@
     <NeutralLanguage>en-GB</NeutralLanguage>
     <StartupObject></StartupObject>
     <Nullable>enable</Nullable>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CryptHash.Net" Version="3.6.1" />
+  </ItemGroup>
 
 </Project>

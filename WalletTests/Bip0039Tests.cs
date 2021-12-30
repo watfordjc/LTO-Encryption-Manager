@@ -26,7 +26,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 string mnemonicString = Bip0039.GetMnemonicFromEntropy(testVector.Entropy);
-                Assert.AreEqual(mnemonicString, testVector.MnemonicSeed);
+                Assert.AreEqual(testVector.MnemonicSeed, mnemonicString);
             });
         }
 
@@ -39,7 +39,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests
                   string[] mnemonic = testVector.MnemonicSeed.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                   byte[] entropyBytes = Bip0039.GetEntropyBytesFromSeedWords(ref mnemonic);
                   string entropyHex = Convert.ToHexString(entropyBytes).ToLowerInvariant();
-                  Assert.AreEqual(entropyHex, testVector.Entropy);
+                  Assert.AreEqual(testVector.Entropy, entropyHex);
               });
         }
 
@@ -52,7 +52,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests
                 string[] mnemonic = testVector.MnemonicSeed.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 byte[] binarySeed = Bip0039.GetBinarySeedFromSeedWords(ref mnemonic, "TREZOR");
                 string binarySeedHex = Convert.ToHexString(binarySeed).ToLowerInvariant();
-                Assert.AreEqual(binarySeedHex, testVector.MnemonicBinarySeed);
+                Assert.AreEqual(testVector.MnemonicBinarySeed, binarySeedHex);
             });
         }
     }
