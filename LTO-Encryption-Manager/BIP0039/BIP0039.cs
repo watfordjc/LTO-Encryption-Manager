@@ -1,11 +1,34 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Wallet
 {
     public static class Bip0039
     {
+        public static IEnumerable<string> GetWordValue(int index)
+        {
+            if (Bip0039Dictionaries.AmericanEnglish.TryGetWordFromInt(index, out string? word))
+            {
+                yield return word;
+            }
+        }
+
+        public static Task<List<string>> GetWordValues()
+        {
+            List<string> words = new();
+            for (int i = 0; i < 2048; i++)
+            {
+                if (Bip0039Dictionaries.AmericanEnglish.TryGetWordFromInt(i, out string? word))
+                {
+                    words.Add(word);
+                }
+            }
+            return Task.FromResult(words);
+        }
+
         /// <summary>
         /// Convert some entropy to a BIP-0039 mnemonic seed.
         /// </summary>

@@ -1,0 +1,567 @@
+﻿<Window x:Class="uk.JohnCook.dotnet.LTOEncryptionManager.AddSeedPhraseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager"
+        xmlns:props="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager.Properties"
+        xmlns:validation="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager.ValidationRules"
+        mc:Ignorable="d"
+        x:Name="Window"
+        Title="Recreate Master Seed from BIP-0039 Seed Phrase" Height="450" Width="950" SizeToContent="WidthAndHeight">
+    <Window.Resources>
+        <x:Array Type="sys:Int32" x:Key="SeedWordLengths">
+            <sys:Int32>12</sys:Int32>
+            <sys:Int32>18</sys:Int32>
+            <sys:Int32>24</sys:Int32>
+        </x:Array>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="auto" MinWidth="16" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" MinHeight="16" />
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Seed Phrase Word Length:" />
+        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+            <ComboBox VerticalAlignment="Top" HorizontalAlignment="Left" Margin="4" Padding="16 4" x:Name="SeedLength" ItemsSource="{StaticResource SeedWordLengths}" SelectedItem="{Binding Path=NewSeedPhrase.Length, ElementName=Window, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+            <CheckBox VerticalContentAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="4" Padding="4" Content="With Empty Passphrase" IsChecked="True" x:Name="HasEmptyPassword" />
+        </StackPanel>
+        <Label Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Seed Phrase:" />
+        <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word01" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word01" ElementName="Window"  Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word02" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word02" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word03" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word03" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word04" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word04" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word05" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word05" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word06" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word06" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word07" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word07" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word08" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word08" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word09" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word09" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word10" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word10" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word11" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word11" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word12" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word12" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+        </StackPanel>
+        <StackPanel Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <StackPanel.Style>
+                <Style>
+                    <Setter Property="StackPanel.Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=SeedLength, Path=SelectedItem}" Value="18">
+                            <Setter Property="StackPanel.Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ElementName=SeedLength, Path=SelectedItem}" Value="24">
+                            <Setter Property="StackPanel.Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word13" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word13" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word14" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word14" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word15" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word15" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word16" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word16" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word17" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word17" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word18" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word18" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+        </StackPanel>
+        <StackPanel Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <StackPanel.Style>
+                <Style>
+                    <Setter Property="StackPanel.Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=SeedLength, Path=SelectedValue}" Value="24">
+                            <Setter Property="StackPanel.Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word19" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word19" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word20" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word20" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word21" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word21" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word22" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word22" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word23" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word23" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word24" IsEditable="True" ItemsSource="{Binding}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedItem>
+                    <Binding Path="NewSeedPhrase.Word24" ElementName="Window" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <validation:ComboBoxOneItemSelected ValidatesOnTargetUpdated="True" />
+                            <validation:ComboBoxBip0039WordSelected ValidatesOnTargetUpdated="True" />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </ComboBox.SelectedItem>
+            </ComboBox>
+        </StackPanel>
+        <Label Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Passphrase:">
+            <Label.Style>
+                <Style>
+                    <Setter Property="StackPanel.Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=HasEmptyPassword, Path=IsChecked}" Value="False">
+                            <Setter Property="StackPanel.Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+        </Label>
+        <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal">
+            <StackPanel.Style>
+                <Style>
+                    <Setter Property="StackPanel.Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=HasEmptyPassword, Path=IsChecked}" Value="False">
+                            <Setter Property="StackPanel.Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <PasswordBox VerticalAlignment="Top" HorizontalAlignment="Left" VerticalContentAlignment="Center" Margin="4" Padding="16 4" MinWidth="200" x:Name="Passphrase" />
+        </StackPanel>
+        <Label Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Validation:" />
+        <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <Button Margin="4" Padding="16 4" BorderThickness="3" x:Name="validateSeedPhrase" Content="Validate Seed Phrase" BorderBrush="{Binding ElementName=Window, Path=ValidateButtonBorderBrush, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                <Button.Style>
+                        <Style TargetType="{x:Type Button}">
+                        <Setter Property="IsEnabled" Value="False" />
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=SeedLength, Path=SelectedItem}" Value="12" />
+                                    <Condition Binding="{Binding ElementName=Window, Path=ValidationInProgress}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word01, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word02, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word03, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word04, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word05, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word06, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word07, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word08, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word09, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word10, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word11, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word12, Path=(Validation.HasError)}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="IsEnabled" Value="True" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=SeedLength, Path=SelectedItem}" Value="18" />
+                                    <Condition Binding="{Binding ElementName=Window, Path=ValidationInProgress}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word01, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word02, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word03, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word04, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word05, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word06, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word07, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word08, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word09, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word10, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word11, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word12, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word13, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word14, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word15, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word16, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word17, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word18, Path=(Validation.HasError)}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="IsEnabled" Value="True" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=SeedLength, Path=SelectedItem}" Value="24" />
+                                    <Condition Binding="{Binding ElementName=Window, Path=ValidationInProgress}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word01, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word02, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word03, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word04, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word05, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word06, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word07, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word08, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word09, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word10, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word11, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word12, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word13, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word14, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word15, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word16, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word17, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word18, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word19, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word20, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word21, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word22, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word23, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word24, Path=(Validation.HasError)}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="IsEnabled" Value="True" />
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Border Margin="4" BorderThickness="1 1 2 2" BorderBrush="{Binding ElementName=Window, Path=ValidateButtonBorderBrush, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                <TextBlock Margin="4" Padding="16 4" x:Name="validationMessage" />
+            </Border>
+        </StackPanel>
+        <Label Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="First Level Label:" />
+        <ComboBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="4" Padding="16 4" x:Name="FirstLevelLabel">
+            <ComboBoxItem Tag="uk.johncook.slip-0021.lto-aes256-gcm" Content="uk.johncook.slip-0021.lto-aes256-gcm" IsSelected="True" />
+            <ComboBoxItem Tag="uk.johncook.slip-0021.snowflake-hmac-sha256" Content="uk.johncook.slip-0021.snowflake-hmac-sha256" />
+        </ComboBox>
+        <Label Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Key Rollover Count:" />
+        <TextBox Grid.Row="8" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="75" HorizontalContentAlignment="Center" x:Name="GlobalKeyRollovers" Text="0" />
+        <Label Grid.Row="9" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Seed Validation Node:" />
+        <TextBox Grid.Row="9" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="200" HorizontalContentAlignment="Center" x:Name="DerivationPath" IsReadOnly="True" IsEnabled="True" />
+        <Label Grid.Row="10" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Validation Fingerprint:" />
+        <TextBox Grid.Row="10" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="200" HorizontalContentAlignment="Center" x:Name="ValidationFingerprint" IsReadOnly="True" IsEnabled="True" />
+    </Grid>
+</Window>
