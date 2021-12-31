@@ -464,7 +464,7 @@
         </StackPanel>
         <Label Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Validation:" />
         <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
-            <Button Margin="4" Padding="16 4" BorderThickness="3" x:Name="validateSeedPhrase" Content="Validate Seed Phrase" BorderBrush="{Binding ElementName=Window, Path=ValidateButtonBorderBrush, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+            <Button Margin="4" Padding="16 4" BorderThickness="3" x:Name="validateSeedPhrase" Content="Validate Seed Phrase" BorderBrush="{x:Static Brushes.Transparent}">
                 <Button.Style>
                         <Style TargetType="{x:Type Button}">
                         <Setter Property="IsEnabled" Value="False" />
@@ -548,14 +548,96 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Border Margin="4" BorderThickness="1 1 2 2" BorderBrush="{Binding ElementName=Window, Path=ValidateButtonBorderBrush, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
-                <TextBlock Margin="4" Padding="16 4" x:Name="validationMessage" />
+            <Border Margin="4" BorderThickness="1 1 2 2" BorderBrush="{Binding ElementName=Window, Path=ValidationStatusBrush, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                <Border.Style>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="Visibility" Value="Hidden" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=Window, Path=ValidationStatusMessage}" Value="{x:Static sys:String.Empty}">
+                                <Setter Property="Visibility" Value="Hidden" />
+                            </DataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=SeedLength, Path=SelectedItem}" Value="12" />
+                                    <Condition Binding="{Binding ElementName=Word01, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word02, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word03, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word04, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word05, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word06, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word07, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word08, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word09, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word10, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word11, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word12, Path=(Validation.HasError)}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=SeedLength, Path=SelectedItem}" Value="18" />
+                                    <Condition Binding="{Binding ElementName=Word01, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word02, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word03, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word04, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word05, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word06, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word07, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word08, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word09, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word10, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word11, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word12, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word13, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word14, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word15, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word16, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word17, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word18, Path=(Validation.HasError)}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=SeedLength, Path=SelectedItem}" Value="24" />
+                                    <Condition Binding="{Binding ElementName=Word01, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word02, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word03, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word04, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word05, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word06, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word07, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word08, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word09, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word10, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word11, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word12, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word13, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word14, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word15, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word16, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word17, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word18, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word19, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word20, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word21, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word22, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word23, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=Word24, Path=(Validation.HasError)}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible" />
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Margin="4" Padding="16 4" x:Name="validationMessage" Text="{Binding ElementName=Window, Path=ValidationStatusMessage, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
             </Border>
         </StackPanel>
         <Label Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="First Level Label:" />
         <ComboBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="4" Padding="16 4" x:Name="FirstLevelLabel">
             <ComboBoxItem Tag="uk.johncook.slip-0021.lto-aes256-gcm" Content="uk.johncook.slip-0021.lto-aes256-gcm" IsSelected="True" />
-            <ComboBoxItem Tag="uk.johncook.slip-0021.snowflake-hmac-sha256" Content="uk.johncook.slip-0021.snowflake-hmac-sha256" />
+            <ComboBoxItem Tag="uk.johncook.slip-0021.snowflake-hmac-sha256" Content="uk.johncook.slip-0021.snowflake-hmac-sha256" IsEnabled="False" />
         </ComboBox>
         <Label Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Key Rollover Count:" />
         <TextBox Grid.Row="8" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="75" HorizontalContentAlignment="Center" x:Name="GlobalKeyRollovers" Text="0" />

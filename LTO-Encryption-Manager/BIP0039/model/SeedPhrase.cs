@@ -12,156 +12,157 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.BIP0039
     public class SeedPhrase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
-        private int? length;
-        private string? word01;
-        private string? word02;
-        private string? word03;
-        private string? word04;
-        private string? word05;
-        private string? word06;
-        private string? word07;
-        private string? word08;
-        private string? word09;
-        private string? word10;
-        private string? word11;
-        private string? word12;
-        private string? word13;
-        private string? word14;
-        private string? word15;
-        private string? word16;
-        private string? word17;
-        private string? word18;
-        private string? word19;
-        private string? word20;
-        private string? word21;
-        private string? word22;
-        private string? word23;
-        private string? word24;
+        private string? _word01;
+        private string? _word02;
+        private string? _word03;
+        private string? _word04;
+        private string? _word05;
+        private string? _word06;
+        private string? _word07;
+        private string? _word08;
+        private string? _word09;
+        private string? _word10;
+        private string? _word11;
+        private string? _word12;
+        private string? _word13;
+        private string? _word14;
+        private string? _word15;
+        private string? _word16;
+        private string? _word17;
+        private string? _word18;
+        private string? _word19;
+        private string? _word20;
+        private string? _word21;
+        private string? _word22;
+        private string? _word23;
+        private string? _word24;
+        private int? _length;
+        private bool _dataChanged;
 
         public string? Word01
         {
-            get => word01;
-            set { word01 = value; OnPropertyChanged(); }
+            get => _word01;
+            set { _word01 = value; OnPropertyChanged(); }
         }
         public string? Word02
         {
-            get => word02;
-            set { word02 = value; OnPropertyChanged(); }
+            get => _word02;
+            set { _word02 = value; OnPropertyChanged(); }
         }
         public string? Word03
         {
-            get => word03;
-            set { word03 = value; OnPropertyChanged(); }
+            get => _word03;
+            set { _word03 = value; OnPropertyChanged(); }
         }
         public string? Word04
         {
-            get => word04;
-            set { word04 = value; OnPropertyChanged(); }
+            get => _word04;
+            set { _word04 = value; OnPropertyChanged(); }
         }
         public string? Word05
         {
-            get => word05;
-            set { word05 = value; OnPropertyChanged(); }
+            get => _word05;
+            set { _word05 = value; OnPropertyChanged(); }
         }
         public string? Word06
         {
-            get => word06;
-            set { word06 = value; OnPropertyChanged(); }
+            get => _word06;
+            set { _word06 = value; OnPropertyChanged(); }
         }
         public string? Word07
         {
-            get => word07;
-            set { word07 = value; OnPropertyChanged(); }
+            get => _word07;
+            set { _word07 = value; OnPropertyChanged(); }
         }
         public string? Word08
         {
-            get => word08;
-            set { word08 = value; OnPropertyChanged(); }
+            get => _word08;
+            set { _word08 = value; OnPropertyChanged(); }
         }
         public string? Word09
         {
-            get => word09;
-            set { word09 = value; OnPropertyChanged(); }
+            get => _word09;
+            set { _word09 = value; OnPropertyChanged(); }
         }
         public string? Word10
         {
-            get => word10;
-            set { word10 = value; OnPropertyChanged(); }
+            get => _word10;
+            set { _word10 = value; OnPropertyChanged(); }
         }
         public string? Word11
         {
-            get => word11;
-            set { word11 = value; OnPropertyChanged(); }
+            get => _word11;
+            set { _word11 = value; OnPropertyChanged(); }
         }
         public string? Word12
         {
-            get => word12;
-            set { word12 = value; OnPropertyChanged(); }
+            get => _word12;
+            set { _word12 = value; OnPropertyChanged(); }
         }
         public string? Word13
         {
-            get => word13;
-            set { word13 = value; OnPropertyChanged(); }
+            get => _word13;
+            set { _word13 = value; OnPropertyChanged(); }
         }
         public string? Word14
         {
-            get => word14;
-            set { word14 = value; OnPropertyChanged(); }
+            get => _word14;
+            set { _word14 = value; OnPropertyChanged(); }
         }
         public string? Word15
         {
-            get => word15;
-            set { word15 = value; OnPropertyChanged(); }
+            get => _word15;
+            set { _word15 = value; OnPropertyChanged(); }
         }
         public string? Word16
         {
-            get => word16;
-            set { word16 = value; OnPropertyChanged(); }
+            get => _word16;
+            set { _word16 = value; OnPropertyChanged(); }
         }
         public string? Word17
         {
-            get => word17;
-            set { word17 = value; OnPropertyChanged(); }
+            get => _word17;
+            set { _word17 = value; OnPropertyChanged(); }
         }
         public string? Word18
         {
-            get => word18;
-            set { word18 = value; OnPropertyChanged(); }
+            get => _word18;
+            set { _word18 = value; OnPropertyChanged(); }
         }
         public string? Word19
         {
-            get => word19;
-            set { word19 = value; OnPropertyChanged(); }
+            get => _word19;
+            set { _word19 = value; OnPropertyChanged(); }
         }
         public string? Word20
         {
-            get => word20;
-            set { word20 = value; OnPropertyChanged(); }
+            get => _word20;
+            set { _word20 = value; OnPropertyChanged(); }
         }
         public string? Word21
         {
-            get => word21;
-            set { word21 = value; OnPropertyChanged(); }
+            get => _word21;
+            set { _word21 = value; OnPropertyChanged(); }
         }
         public string? Word22
         {
-            get => word22;
-            set { word22 = value; OnPropertyChanged(); }
+            get => _word22;
+            set { _word22 = value; OnPropertyChanged(); }
         }
         public string? Word23
         {
-            get => word23;
-            set { word23 = value; OnPropertyChanged(); }
+            get => _word23;
+            set { _word23 = value; OnPropertyChanged(); }
         }
         public string? Word24
         {
-            get => word24;
-            set { word24 = value; OnPropertyChanged(); }
+            get => _word24;
+            set { _word24 = value; OnPropertyChanged(); }
         }
         public int? Length
         {
-            get { return length; }
-            set { length = value; OnPropertyChanged(); }
+            get => _length;
+            set { _length = value; OnPropertyChanged(); }
         }
         public string[]? Words
         {
@@ -187,6 +188,16 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.BIP0039
                     }
                     return seedWords;
                 }
+            }
+        }
+
+        public bool DataHasChanged
+        {
+            get => _dataChanged;
+            set
+            {
+                _dataChanged = value;
+                OnPropertyChanged();
             }
         }
 
@@ -236,6 +247,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.BIP0039
         protected void OnPropertyChanged([CallerMemberName] string? name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            if (name is not null and not (nameof(DataHasChanged)))
+            {
+                DataHasChanged = true;
+            }
             if (name?.StartsWith("Word", StringComparison.InvariantCulture) == true)
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Words)));

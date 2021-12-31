@@ -20,8 +20,37 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
     {
         private IEnumerable<string>? bip0039Dictionary;
         public BIP0039.SeedPhrase? NewSeedPhrase { get; set; } = new();
-        public bool ValidationInProgress { get; set; }
-        public Brush? ValidateButtonBorderBrush { get; set; } = Brushes.Transparent;
+        private bool UiResetNotNeeded { get; set; }
+        private bool _validationInProgress;
+        public bool ValidationInProgress
+        {
+            get => _validationInProgress;
+            set
+            {
+                _validationInProgress = value;
+                OnPropertyChanged();
+            }
+        }
+        private Brush? _validationStatusBrush = Brushes.Transparent;
+        public Brush? ValidationStatusBrush
+        {
+            get => _validationStatusBrush;
+            set
+            {
+                _validationStatusBrush = value;
+                OnPropertyChanged();
+            }
+        }
+        private string? _validationStatusMessage = string.Empty;
+        public string? ValidationStatusMessage
+        {
+            get => _validationStatusMessage;
+            set
+            {
+                _validationStatusMessage = value;
+                OnPropertyChanged();
+            }
+        }
         private readonly Argon2id argon2id = new();
         private Argon2idHashResult? argon2IdHashResult;
 
@@ -42,36 +71,54 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             {
                 NewSeedPhrase.PropertyChanged += NewSeedPhrase_PropertyChanged;
             }
+            Passphrase.PasswordChanged += SeedRelatedControl_Changed;
+            HasEmptyPassword.Checked += SeedRelatedControl_Changed;
+            HasEmptyPassword.Unchecked += SeedRelatedControl_Changed;
         }
 
         private void NewSeedPhrase_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            ValidateButtonBorderBrush = Brushes.Transparent;
-            OnPropertyChanged("ValidateButtonBorderBrush");
-            validationMessage.Text = string.Empty;
+            if (e.PropertyName == nameof(BIP0039.SeedPhrase.DataHasChanged))
+            {
+                ResetValidationUI();
+            }
+        }
+
+        private void SeedRelatedControl_Changed(object sender, RoutedEventArgs e)
+        {
+            ResetValidationUI();
+        }
+
+        private void ResetValidationUI()
+        {
+            if (!UiResetNotNeeded)
+            {
+                ValidationStatusBrush = Brushes.Transparent;
+                ValidationStatusMessage = string.Empty;
+                UiResetNotNeeded = true;
+            }
         }
 
         private async void ValidateSeedPhrase_Click(object sender, RoutedEventArgs e)
         {
-            if (ValidationInProgress)
+            if (ValidationInProgress || NewSeedPhrase is null)
             {
                 return;
             }
 
+            NewSeedPhrase.DataHasChanged = false;
+            UiResetNotNeeded = false;
             DerivationPath.Text = string.Empty;
             ValidationFingerprint.Text = string.Empty;
             ValidationInProgress = true;
-            OnPropertyChanged("ValidationInProgress");
             bool validationFailed = false;
             string? validationErrorMessage = null;
             string[]? seedPhraseWords = NewSeedPhrase?.Words;
             if (seedPhraseWords is null)
             {
-                ValidateButtonBorderBrush = validationFailed ? Brushes.Red : Brushes.Green;
-                OnPropertyChanged("ValidateButtonBorderBrush");
-                validationMessage.Text = $"Seed Phrase is not {NewSeedPhrase?.Length} words long or contains words not in the BIP-0039 American English dictionary.";
+                ValidationStatusBrush = validationFailed ? Brushes.Red : Brushes.Green;
+                ValidationStatusMessage = $"Seed Phrase is not {NewSeedPhrase?.Length} words long or contains words not in the BIP-0039 American English dictionary.";
                 ValidationInProgress = false;
-                OnPropertyChanged("ValidationInProgress");
                 return;
             }
             try
@@ -82,25 +129,22 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             {
                 validationErrorMessage = ae.Message;
                 validationFailed = true;
-                ValidateButtonBorderBrush = Brushes.Red;
-                OnPropertyChanged("ValidateButtonBorderBrush");
-                validationMessage.Text = string.Concat(validationErrorMessage);
+                ValidationStatusBrush = Brushes.Red;
+                ValidationStatusMessage = string.Concat(validationErrorMessage);
                 ValidationInProgress = false;
-                OnPropertyChanged("ValidationInProgress");
                 return;
             }
             if (!validationFailed)
             {
-                ValidateButtonBorderBrush = Brushes.Green;
-                OnPropertyChanged("ValidateButtonBorderBrush");
-                validationMessage.Text = "Seed Phrase is Valid";
+                ValidationStatusBrush = Brushes.Green;
+                ValidationStatusMessage = "Seed Phrase is Valid";
             }
             byte[] binarySeed = Wallet.Bip0039.GetBinarySeedFromSeedWords(ref seedPhraseWords, HasEmptyPassword.IsChecked == true ? string.Empty : Passphrase.Password);
             
             string? firstLevelLabel = (FirstLevelLabel.SelectedItem as ComboBoxItem)?.Tag.ToString();
             if (firstLevelLabel == null)
             {
-                DerivationPath.Text = "First Level Label value does not have a Tag attribute.";
+                ValidationStatusMessage = "First Level Label value does not have a Tag attribute.";
             }
             if (string.IsNullOrEmpty(GlobalKeyRollovers.Text))
             {
@@ -152,7 +196,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
                 //bitcoinMasterNode.Clear();
                 ValidationInProgress = false;
-                OnPropertyChanged("ValidationInProgress");
             }
             
         }
