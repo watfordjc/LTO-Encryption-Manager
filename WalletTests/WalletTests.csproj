@@ -12,6 +12,9 @@
     <Platforms>AnyCPU;x64</Platforms>
     <Authors>John Cook</Authors>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/watfordjc/LTO-Encryption-Manager</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/watfordjc/LTO-Encryption-Manager</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
