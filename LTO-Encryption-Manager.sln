@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LTO-Encryption-Manager", "LTO-Encryption-Manager\LTO-Encryption-Manager.csproj", "{CBA8778B-42FA-4B1E-A2FE-7319B749D000}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WalletTests", "WalletTests\WalletTests.csproj", "{86E674E8-B839-479F-8DB5-C1F8287AFE1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{86E674E8-B839-479F-8DB5-C1F8287AFE1F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

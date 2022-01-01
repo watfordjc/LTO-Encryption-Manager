@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net5.0-windows7.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <RootNamespace>uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests</RootNamespace>
-    <PackageId>uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests</PackageId>
+    <RootNamespace>uk.JohnCook.dotnet.LTOEncryptionManager.Tests</RootNamespace>
+    <PackageId>uk.JohnCook.dotnet.LTOEncryptionManager.Tests</PackageId>
     <Product>LTO-Encryption-Manager</Product>
     <Version>0.1.0</Version>
     <NeutralLanguage>en-GB</NeutralLanguage>

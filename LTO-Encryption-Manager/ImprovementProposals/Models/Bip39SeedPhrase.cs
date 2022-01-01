@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.BIP0039
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models
 {
-    public class SeedPhrase : INotifyPropertyChanged
+    public class Bip39SeedPhrase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
         private string? _word01;
@@ -201,7 +197,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.BIP0039
             }
         }
 
-        public SeedPhrase()
+        public Bip39SeedPhrase()
         {
             Length = 24;
         }
@@ -237,7 +233,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.BIP0039
                 24 => Word24,
                 _ => null
             };
-            if (selectedWord != null && Wallet.Bip0039Dictionaries.AmericanEnglish.TryGetIntFromWord((string)selectedWord, out _))
+            if (selectedWord != null && BIP39Dictionaries.AmericanEnglish.TryGetIntFromWord((string)selectedWord, out _))
             {
                 word = (string)selectedWord;
             }

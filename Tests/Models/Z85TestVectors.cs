@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests.model
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.Models
 {
     public class Z85TestVectorsRoot
     {

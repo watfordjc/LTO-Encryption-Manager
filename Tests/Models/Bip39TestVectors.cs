@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests.model
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.Models
 {
-    public class Bip0039TestVectorsRoot
+    public class Bip39TestVectorsRoot
     {
         [JsonPropertyName("english")]
-        public List<Bip0039TestVector> English { get; set; }
+        public List<Bip39TestVector> English { get; set; }
     }
 
-    public class Bip0039TestVector : List<string>
+    public class Bip39TestVector : List<string>
     {
         [JsonIgnore]
         public string Entropy => this[0];

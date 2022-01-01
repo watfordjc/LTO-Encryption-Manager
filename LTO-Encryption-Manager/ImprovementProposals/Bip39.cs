@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.BIP39Dictionaries;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Wallet
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals
 {
-    public static class Bip0039
+    public static class Bip39
     {
         public static IEnumerable<string> GetWordValue(int index)
         {
-            if (Bip0039Dictionaries.AmericanEnglish.TryGetWordFromInt(index, out string? word))
+            if (AmericanEnglish.TryGetWordFromInt(index, out string? word))
             {
                 yield return word;
             }
@@ -21,7 +22,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Wallet
             List<string> words = new();
             for (int i = 0; i < 2048; i++)
             {
-                if (Bip0039Dictionaries.AmericanEnglish.TryGetWordFromInt(i, out string? word))
+                if (AmericanEnglish.TryGetWordFromInt(i, out string? word))
                 {
                     words.Add(word);
                 }
@@ -41,7 +42,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Wallet
             string separator = "";
             foreach (int i in entropywithChecksum)
             {
-                if (Bip0039Dictionaries.AmericanEnglish.TryGetWordFromInt(i, out string? word))
+                if (AmericanEnglish.TryGetWordFromInt(i, out string? word))
                 {
                     _ = sb
                     .Append(separator)
@@ -162,7 +163,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Wallet
             // Convert the seed words to integers
             for (int currentWord = 0; currentWord < wordlistValues.Length; currentWord++)
             {
-                if (Bip0039Dictionaries.AmericanEnglish.TryGetIntFromWord(seedWords[currentWord], out int? value))
+                if (AmericanEnglish.TryGetIntFromWord(seedWords[currentWord], out int? value))
                 {
                     wordlistValues[currentWord] = value;
                 }

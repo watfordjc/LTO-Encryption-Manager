@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 using System.Windows.Controls;
+using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.BIP39Dictionaries;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.ValidationRules
 {
@@ -18,7 +14,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ValidationRules
             }
             else if (value is string @string)
             {
-                return Wallet.Bip0039Dictionaries.AmericanEnglish.TryGetIntFromWord(@string, out _) ? ValidationResult.ValidResult : new ValidationResult(false, Properties.Resources.validation_error_ComboBoxNotBip0039Word);
+                return AmericanEnglish.TryGetIntFromWord(@string, out _) ? ValidationResult.ValidResult : new ValidationResult(false, Properties.Resources.validation_error_ComboBoxNotBip0039Word);
             }
             else
             {

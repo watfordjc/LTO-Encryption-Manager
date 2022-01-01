@@ -2,9 +2,9 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Wallet
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models
 {
-    public readonly ref struct Slip0021Node
+    public readonly ref struct Slip21Node
     {
         /// <summary>
         /// The left 32 bytes of the node (the derivation key)
@@ -20,7 +20,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Wallet
         /// Instantiate a new SLIP-0021 Node.
         /// </summary>
         /// <param name="nodeBytes">The full 64 bytes of the node (i.e. the first 64 bytes of output from HMAC-SHA512)</param>
-        public Slip0021Node(in byte[] nodeBytes)
+        public Slip21Node(in byte[] nodeBytes)
         {
             this.nodeBytes = nodeBytes;
             Left = nodeBytes.AsSpan().Slice(0, 32);
@@ -28,21 +28,21 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Wallet
         }
 
         /// <summary>
-        /// Get this <see cref="Slip0021Node"/>'s child node with label <paramref name="label"/> using derivation key <see cref="Left"/>.
+        /// Get this <see cref="Slip21Node"/>'s child node with label <paramref name="label"/> using derivation key <see cref="Left"/>.
         /// </summary>
         /// <param name="label">The ASCII label for the child node.</param>
-        /// <returns>The child <see cref="Slip0021Node"/>.</returns>
-        public Slip0021Node GetChildNode(string label)
+        /// <returns>The child <see cref="Slip21Node"/>.</returns>
+        public Slip21Node GetChildNode(string label)
         {
             byte[] key = Left.ToArray();
             using HMACSHA512 hmac = new(key);
             // Clear array
             Array.Clear(key, 0, key.Length);
-            return new Slip0021Node(hmac.ComputeHash(Encoding.ASCII.GetBytes('\0' + label)));
+            return new Slip21Node(hmac.ComputeHash(Encoding.ASCII.GetBytes('\0' + label)));
         }
 
         /// <summary>
-        /// Clear/Zero the internal 64-byte <see cref="byte"/>[] array for this <see cref="Slip0021Node"/>.
+        /// Clear/Zero the internal 64-byte <see cref="byte"/>[] array for this <see cref="Slip21Node"/>.
         /// </summary>
         /// <remarks>
         /// <para>Also clears/zeros <see cref="Left"/> and <see cref="Right"/> as they are <see cref="ReadOnlySpan{T}"/>'s of the internal <see cref="byte"/>[] array.</para>

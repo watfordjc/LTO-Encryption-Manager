@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals;
+using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager
 {
@@ -18,8 +20,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
     /// </summary>
     public partial class AddSeedPhraseWindow : Window, INotifyPropertyChanged
     {
-        private IEnumerable<string>? bip0039Dictionary;
-        public BIP0039.SeedPhrase? NewSeedPhrase { get; set; } = new();
+        private IEnumerable<string>? bip39Dictionary;
+        public Bip39SeedPhrase? NewSeedPhrase { get; set; } = new();
         private bool UiResetNotNeeded { get; set; }
         private bool _validationInProgress;
         public bool ValidationInProgress
@@ -64,8 +66,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
         private async void AddSeedPhrase_Loaded(object sender, RoutedEventArgs e)
         {
-            bip0039Dictionary = await Wallet.Bip0039.GetWordValues();
-            DataContext = bip0039Dictionary;
+            bip39Dictionary = await Bip39.GetWordValues();
+            DataContext = bip39Dictionary;
             validateSeedPhrase.Click += ValidateSeedPhrase_Click;
             if (NewSeedPhrase is not null)
             {
@@ -78,7 +80,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
         private void NewSeedPhrase_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(BIP0039.SeedPhrase.DataHasChanged))
+            if (e.PropertyName == nameof(Bip39SeedPhrase.DataHasChanged))
             {
                 ResetValidationUI();
             }
@@ -123,7 +125,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             }
             try
             {
-                _ = Wallet.Bip0039.GetEntropyBytesFromSeedWords(ref seedPhraseWords);
+                _ = Bip39.GetEntropyBytesFromSeedWords(ref seedPhraseWords);
             }
             catch (ArgumentException ae)
             {
@@ -139,7 +141,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
                 ValidationStatusBrush = Brushes.Green;
                 ValidationStatusMessage = "Seed Phrase is Valid";
             }
-            byte[] binarySeed = Wallet.Bip0039.GetBinarySeedFromSeedWords(ref seedPhraseWords, HasEmptyPassword.IsChecked == true ? string.Empty : Passphrase.Password);
+            byte[] binarySeed = Bip39.GetBinarySeedFromSeedWords(ref seedPhraseWords, HasEmptyPassword.IsChecked == true ? string.Empty : Passphrase.Password);
             
             string? firstLevelLabel = (FirstLevelLabel.SelectedItem as ComboBoxItem)?.Tag.ToString();
             if (firstLevelLabel == null)
@@ -161,10 +163,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
                 void GetNodes()
                 {
-                    Wallet.Slip0021Node masterNode = Wallet.Slip0021.GetMasterNodeFromBinarySeed(binarySeed);
+                    Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(binarySeed);
                     masterNodeDerivationKey = masterNode.Left.ToArray();
                     Trace.WriteLine($"m: {BitConverter.ToString(masterNode.Right.ToArray())}");
-                    Wallet.Slip0021Node validationNode = masterNode.GetChildNode(firstLevelLabel).GetChildNode(GlobalKeyRollovers.Text).GetChildNode("uk.johncook.slip-0021.key-validation").GetChildNode(GlobalKeyRollovers.Text);
+                    Slip21Node validationNode = masterNode.GetChildNode(firstLevelLabel).GetChildNode(GlobalKeyRollovers.Text).GetChildNode("uk.johncook.slip-0021.key-validation").GetChildNode(GlobalKeyRollovers.Text);
                     // The password/message to hash shall be the right half of the validation node... in Z85 encoding.
                     validationNodeMessage = validationNode.Right.ToArray();
                     // RFC 9160 Recommendation 1 means the length of the salt is already defined as 16 bytes.
@@ -173,12 +175,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
                     masterNode.Clear();
                     validationNode.Clear();
                 }
-                if (Wallet.Z85.TryGetEncodedBytes(validationNodeMessage, out byte[]? password))
+                if (Algorithms.Z85.TryGetEncodedBytes(validationNodeMessage, out byte[]? password))
                 {
                     ValidationFingerprint.Text = "Calculating...";
-                    argon2IdHashResult = await Task.Run(() => Wallet.Argon2id.GetKeyValidationHash(argon2id, password, validationNodeSalt, 32)).ConfigureAwait(true);
+                    argon2IdHashResult = await Task.Run(() => Algorithms.Argon2id.GetKeyValidationHash(argon2id, password, validationNodeSalt, 32)).ConfigureAwait(true);
                     Trace.WriteLine(BitConverter.ToString(argon2IdHashResult.HashBytes));
-                    if (Wallet.Z85.TryGetEncodedBytes(argon2IdHashResult.HashBytes, out byte[]? z85Hash))
+                    if (Algorithms.Z85.TryGetEncodedBytes(argon2IdHashResult.HashBytes, out byte[]? z85Hash))
                     {
                         Trace.WriteLine(Encoding.UTF8.GetString(z85Hash));
                         ValidationFingerprint.Text = Encoding.UTF8.GetString(z85Hash);

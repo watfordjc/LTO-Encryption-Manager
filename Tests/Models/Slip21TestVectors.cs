@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests.model
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.Models
 {
-    public class Slip0021TestVectorsRoot
+    public class Slip21TestVectorsRoot
     {
         [JsonPropertyName("english")]
-        public List<Slip0021TestVector> English { get; set; }
+        public List<Slip21TestVector> English { get; set; }
     }
 
-    public class Slip0021TestVector : List<string>
+    public class Slip21TestVector : List<string>
     {
         [JsonIgnore]
         public string MnemonicSeed => this[0];

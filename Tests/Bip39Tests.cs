@@ -4,17 +4,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using uk.JohnCook.dotnet.LTOEncryptionManager.Wallet;
+using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 {
     [TestClass]
-    public class Bip0039Tests
+    public class Bip39Tests
     {
-        public static async Task<List<model.Bip0039TestVector>> GetTestVectorsAsync()
+        public static async Task<List<Models.Bip39TestVector>> GetTestVectorsAsync()
         {
             using FileStream openStream = File.OpenRead(@"contrib/trezor/python-mnemonic/vectors.json");
-            model.Bip0039TestVectorsRoot jsonRoot = await JsonSerializer.DeserializeAsync<model.Bip0039TestVectorsRoot>(openStream);
+            Models.Bip39TestVectorsRoot jsonRoot = await JsonSerializer.DeserializeAsync<Models.Bip39TestVectorsRoot>(openStream);
             openStream.Close();
             return jsonRoot.English;
         }
@@ -22,10 +22,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests
         [TestMethod]
         public async Task GetMnemonicStringFromEntropyTest()
         {
-            IEnumerable<model.Bip0039TestVector> testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Bip39TestVector> testVectors = await GetTestVectorsAsync();
             _ = Parallel.ForEach(testVectors, testVector =>
             {
-                string mnemonicString = Bip0039.GetMnemonicFromEntropy(testVector.Entropy);
+                string mnemonicString = Bip39.GetMnemonicFromEntropy(testVector.Entropy);
                 Assert.AreEqual(testVector.MnemonicSeed, mnemonicString);
             });
         }
@@ -33,11 +33,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests
         [TestMethod]
         public async Task GetEntropyBytesFromSeedWordsTest()
         {
-            IEnumerable<model.Bip0039TestVector> testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Bip39TestVector> testVectors = await GetTestVectorsAsync();
             _ = Parallel.ForEach(testVectors, testVector =>
               {
                   string[] mnemonic = testVector.MnemonicSeed.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                  byte[] entropyBytes = Bip0039.GetEntropyBytesFromSeedWords(ref mnemonic);
+                  byte[] entropyBytes = Bip39.GetEntropyBytesFromSeedWords(ref mnemonic);
                   string entropyHex = Convert.ToHexString(entropyBytes).ToLowerInvariant();
                   Assert.AreEqual(testVector.Entropy, entropyHex);
               });
@@ -46,11 +46,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests
         [TestMethod]
         public async Task GetBinarySeedFromSeedWordsTest()
         {
-            IEnumerable<model.Bip0039TestVector> testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Bip39TestVector> testVectors = await GetTestVectorsAsync();
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 string[] mnemonic = testVector.MnemonicSeed.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                byte[] binarySeed = Bip0039.GetBinarySeedFromSeedWords(ref mnemonic, "TREZOR");
+                byte[] binarySeed = Bip39.GetBinarySeedFromSeedWords(ref mnemonic, "TREZOR");
                 string binarySeedHex = Convert.ToHexString(binarySeed).ToLowerInvariant();
                 Assert.AreEqual(testVector.MnemonicBinarySeed, binarySeedHex);
             });

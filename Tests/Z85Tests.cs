@@ -2,21 +2,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using uk.JohnCook.dotnet.LTOEncryptionManager.Wallet;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Algorithms;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 {
     [TestClass]
     public class Z85Tests
     {
-        public static async Task<List<model.Z85TestVector>> GetTestVectorsAsync()
+        public static async Task<List<Models.Z85TestVector>> GetTestVectorsAsync()
         {
             using FileStream openStream = File.OpenRead(@"data/z85-vectors.json");
-            model.Z85TestVectorsRoot jsonRoot = await JsonSerializer.DeserializeAsync<model.Z85TestVectorsRoot>(openStream);
+            Models.Z85TestVectorsRoot jsonRoot = await JsonSerializer.DeserializeAsync<Models.Z85TestVectorsRoot>(openStream);
             openStream.Close();
             return jsonRoot.TestVectors;
         }
@@ -24,7 +23,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests
         [TestMethod]
         public async Task TryGetEncodedBytesTest()
         {
-            IEnumerable<model.Z85TestVector> testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Z85TestVector> testVectors = await GetTestVectorsAsync();
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 byte[] unencoded = Convert.FromHexString(testVector.DecodedHex);
@@ -36,7 +35,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.WalletTests
         [TestMethod]
         public async Task TryGetDecodedBytesTest()
         {
-            IEnumerable<model.Z85TestVector> testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Z85TestVector> testVectors = await GetTestVectorsAsync();
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 byte[] encoded = Encoding.UTF8.GetBytes(testVector.EncodedBytes);
