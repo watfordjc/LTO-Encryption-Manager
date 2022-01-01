@@ -8,8 +8,10 @@
     <Product>LTO-Encryption-Manager</Product>
     <Version>0.1.0</Version>
     <NeutralLanguage>en-GB</NeutralLanguage>
-    <Copyright>© John Cook 2021.</Copyright>
+    <Copyright>© John Cook 2021-2022.</Copyright>
     <Platforms>AnyCPU;x64</Platforms>
+    <Authors>John Cook</Authors>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +19,10 @@
     <None Remove="data\slip0021-vectors.json" />
     <None Remove="data\argon2id-vectors.json" />
     <None Remove="data\z85-vectors.json" />
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
