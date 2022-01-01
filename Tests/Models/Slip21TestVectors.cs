@@ -6,7 +6,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.Models
     public class Slip21TestVectorsRoot
     {
         [JsonPropertyName("english")]
-        public List<Slip21TestVector> English { get; set; }
+        public List<Slip21TestVector>? English { get; set; }
     }
 
     public class Slip21TestVector : List<string>

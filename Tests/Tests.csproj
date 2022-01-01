@@ -10,6 +10,7 @@
     <NeutralLanguage>en-GB</NeutralLanguage>
     <Copyright>© John Cook 2021-2022.</Copyright>
     <Platforms>AnyCPU;x64</Platforms>
+    <Nullable>enable</Nullable>
     <Authors>John Cook</Authors>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryType>git</RepositoryType>

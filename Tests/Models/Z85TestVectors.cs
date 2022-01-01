@@ -6,7 +6,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.Models
     public class Z85TestVectorsRoot
     {
         [JsonPropertyName("testVectors")]
-        public List<Z85TestVector> TestVectors { get; set; }
+        public List<Z85TestVector>? TestVectors { get; set; }
     }
 
     public class Z85TestVector : List<string>

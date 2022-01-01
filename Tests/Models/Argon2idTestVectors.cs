@@ -6,7 +6,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.Models
     public class Argon2idTestVectorsRoot
     {
         [JsonPropertyName("testVectors")]
-        public List<Argon2idTestVector> TestVectors { get; set; }
+        public List<Argon2idTestVector>? TestVectors { get; set; }
     }
 
     public class Argon2idTestVector : List<string>

@@ -12,18 +12,19 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
     [TestClass]
     public class Slip21Tests
     {
-        public static async Task<List<Models.Slip21TestVector>> GetTestVectorsAsync()
+        public static async Task<List<Models.Slip21TestVector>?> GetTestVectorsAsync()
         {
             using FileStream openStream = File.OpenRead(@"data/slip0021-vectors.json");
-            Models.Slip21TestVectorsRoot jsonRoot = await JsonSerializer.DeserializeAsync<Models.Slip21TestVectorsRoot>(openStream);
+            Models.Slip21TestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Slip21TestVectorsRoot>(openStream);
             openStream.Close();
-            return jsonRoot.English;
+            return jsonRoot?.English;
         }
 
         [TestMethod]
         public async Task GetBinarySeedFromSeedWordsTest()
         {
-            IEnumerable<Models.Slip21TestVector> testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Slip21TestVector>? testVectors = await GetTestVectorsAsync();
+            Assert.IsNotNull(testVectors);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 string[] mnemonic = testVector.MnemonicSeed.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -36,7 +37,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
         [TestMethod]
         public async Task DeriveMasterNodeTest()
         {
-            IEnumerable<Models.Slip21TestVector> testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Slip21TestVector>? testVectors = await GetTestVectorsAsync();
+            Assert.IsNotNull(testVectors);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed));
@@ -48,7 +50,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
         [TestMethod]
         public async Task GetChildNodeTest()
         {
-            IEnumerable<Models.Slip21TestVector> testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Slip21TestVector>? testVectors = await GetTestVectorsAsync();
+            Assert.IsNotNull(testVectors);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed));
@@ -61,7 +64,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
         [TestMethod]
         public async Task GetGrandchildNode1Test()
         {
-            IEnumerable<Models.Slip21TestVector> testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Slip21TestVector>? testVectors = await GetTestVectorsAsync();
+            Assert.IsNotNull(testVectors);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed));
@@ -74,7 +78,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
         [TestMethod]
         public async Task GetGrandchildNode2Test()
         {
-            IEnumerable<Models.Slip21TestVector> testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Slip21TestVector>? testVectors = await GetTestVectorsAsync();
+            Assert.IsNotNull(testVectors);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed));

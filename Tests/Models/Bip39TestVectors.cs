@@ -6,7 +6,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.Models
     public class Bip39TestVectorsRoot
     {
         [JsonPropertyName("english")]
-        public List<Bip39TestVector> English { get; set; }
+        public List<Bip39TestVector>? English { get; set; }
     }
 
     public class Bip39TestVector : List<string>

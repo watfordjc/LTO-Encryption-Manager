@@ -12,18 +12,19 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
     [TestClass]
     public class Argon2idTests
     {
-        public static async Task<List<Models.Argon2idTestVector>> GetTestVectorsAsync()
+        public static async Task<List<Models.Argon2idTestVector>?> GetTestVectorsAsync()
         {
             using FileStream openStream = File.OpenRead(@"data/argon2id-vectors.json");
-            Models.Argon2idTestVectorsRoot jsonRoot = await JsonSerializer.DeserializeAsync<Models.Argon2idTestVectorsRoot>(openStream);
+            Models.Argon2idTestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Argon2idTestVectorsRoot>(openStream);
             openStream.Close();
-            return jsonRoot.TestVectors;
+            return jsonRoot?.TestVectors;
         }
 
         [TestMethod]
         public async Task GetHashTest()
         {
-            IEnumerable<Models.Argon2idTestVector> testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Argon2idTestVector>? testVectors = await GetTestVectorsAsync();
+            Assert.IsNotNull(testVectors);
             Argon2id argon2id = new();
             _ = Parallel.ForEach(testVectors, testVector =>
             {
