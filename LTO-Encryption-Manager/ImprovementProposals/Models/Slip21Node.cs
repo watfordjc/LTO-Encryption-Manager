@@ -15,16 +15,20 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models
         /// </summary>
         public readonly ReadOnlySpan<byte> Right { get; }
         private readonly byte[]? nodeBytes;
+        public readonly string DerivationPath { get; init; }
+        public readonly string GlobalKeyRolloverCount { get; init; }
 
         /// <summary>
         /// Instantiate a new SLIP-0021 Node.
         /// </summary>
         /// <param name="nodeBytes">The full 64 bytes of the node (i.e. the first 64 bytes of output from HMAC-SHA512)</param>
-        public Slip21Node(in byte[] nodeBytes)
+        public Slip21Node(in byte[] nodeBytes, string globalKeyRolloverCount, string? label = null)
         {
             this.nodeBytes = nodeBytes;
             Left = nodeBytes.AsSpan().Slice(0, 32);
             Right = nodeBytes.AsSpan().Slice(32, 32);
+            DerivationPath = label ?? Properties.Resources.slip21_master_node_ref;
+            GlobalKeyRolloverCount = globalKeyRolloverCount;
         }
 
         /// <summary>
@@ -38,7 +42,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models
             using HMACSHA512 hmac = new(key);
             // Clear array
             Array.Clear(key, 0, key.Length);
-            return new Slip21Node(hmac.ComputeHash(Encoding.ASCII.GetBytes('\0' + label)));
+            string derivationPath = string.Concat(DerivationPath, '/', '"', label, '"');
+            return new Slip21Node(hmac.ComputeHash(Encoding.ASCII.GetBytes('\0' + label)), GlobalKeyRolloverCount, derivationPath);
         }
 
         /// <summary>

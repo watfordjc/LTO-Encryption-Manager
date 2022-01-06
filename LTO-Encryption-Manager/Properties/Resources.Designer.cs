@@ -70,20 +70,47 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The selected word is not in the American English BIP-0039 dictionary..
+        ///   Looks up a localized string similar to m.
         /// </summary>
-        public static string validation_error_ComboBoxNotBip0039Word {
+        public static string slip21_master_node_ref {
             get {
-                return ResourceManager.GetString("validation_error_ComboBoxNotBip0039Word", resourceCulture);
+                return ResourceManager.GetString("slip21_master_node_ref", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please select an item..
+        ///   Looks up a localized string similar to uk.johncook.slip-0021.lto-aes256-gcm.
         /// </summary>
-        public static string validation_error_ComboBoxOneItemSelected {
+        public static string slip21_schema_lto_aes256gcm {
             get {
-                return ResourceManager.GetString("validation_error_ComboBoxOneItemSelected", resourceCulture);
+                return ResourceManager.GetString("slip21_schema_lto_aes256gcm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to uk.johncook.slip-0021.snowflake-hmac-sha256.
+        /// </summary>
+        public static string slip21_schema_snowflake_hmacSha256 {
+            get {
+                return ResourceManager.GetString("slip21_schema_snowflake_hmacSha256", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to uk.johncook.slip-0021.key-validation.
+        /// </summary>
+        public static string slip21_schema_validation {
+            get {
+                return ResourceManager.GetString("slip21_schema_validation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The selected word is not in the American English BIP-0039 dictionary..
+        /// </summary>
+        public static string validation_error_NotBip0039Word {
+            get {
+                return ResourceManager.GetString("validation_error_NotBip0039Word", resourceCulture);
             }
         }
     }

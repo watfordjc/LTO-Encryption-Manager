@@ -1,0 +1,15 @@
+﻿<Window x:Class="uk.JohnCook.dotnet.LTOEncryptionManager.StartupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager"
+        xmlns:views="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager.Views"
+        xmlns:vm="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels"
+        mc:Ignorable="d"
+        x:Name="Window"
+        Title="StartupWindow" Height="450" Width="800" SizeToContent="WidthAndHeight">
+    <StackPanel Orientation="Vertical">
+        <views:AddSeedPhraseView />
+    </StackPanel>
+</Window>

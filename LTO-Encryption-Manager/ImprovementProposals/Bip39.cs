@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Security;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -305,12 +307,58 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals
         /// <param name="seedWords">An array of BIP-0039 mnemonic words.</param>
         /// <param name="passphrase">The BIP-0039 passphrase used in PBKDF2. Use <see cref="string.Empty"/> if no passphrase.</param>
         /// <returns>The binary representation of a BIP-0039 binary seed.</returns>
-        public static byte[] GetBinarySeedFromSeedWords(ref string[] seedWords, string passphrase)
+        public static byte[] GetBinarySeedFromSeedWords(ref string[] seedWords, SecureString? passphrase)
         {
             // Password for PBKDF2
             byte[] passwordBytes = Encoding.UTF8.GetBytes(string.Join(' ', seedWords).Normalize(NormalizationForm.FormKD));
             // Salt for PBKDF2
-            byte[] salt = Encoding.UTF8.GetBytes(new string("mnemonic" + passphrase).Normalize(NormalizationForm.FormKD));
+            char[] mnemonicString = "mnemonic".ToCharArray();
+            char[] saltChars = new char[mnemonicString.Length + (passphrase is not null ? passphrase.Length : 0)];
+            Array.Copy(mnemonicString, 0, saltChars, 0, mnemonicString.Length);
+
+            if (passphrase?.Length > 0)
+            {
+                int maxBytes = Encoding.UTF8.GetMaxByteCount(passphrase.Length);
+                IntPtr bytes = IntPtr.Zero;
+                IntPtr str = IntPtr.Zero;
+
+                try
+                {
+                    bytes = Marshal.AllocHGlobal(maxBytes);
+                    str = Marshal.SecureStringToBSTR(passphrase);
+
+                    unsafe
+                    {
+                        char* chars = (char*)str.ToPointer();
+                        byte* bytesPtr = (byte*)bytes.ToPointer();
+                        int len = Encoding.UTF8.GetBytes(chars, passphrase.Length, bytesPtr, maxBytes);
+
+                        byte[] _bytes = new byte[len];
+                        for (int i = 0; i < len; ++i)
+                        {
+                            _bytes[i] = *bytesPtr;
+                            bytesPtr++;
+                        }
+                        char[] passphraseChars = Encoding.UTF8.GetChars(_bytes);
+                        Array.Copy(passphraseChars, 0, saltChars, mnemonicString.Length, passphraseChars.Length);
+                        Array.Clear(passphraseChars, 0, passphraseChars.Length);
+                        Array.Clear(_bytes, 0, _bytes.Length);
+                    }
+                }
+                finally
+                {
+                    if (bytes != IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(bytes);
+                    }
+                    if (str != IntPtr.Zero)
+                    {
+                        Marshal.ZeroFreeBSTR(str);
+                    }
+                }
+            }
+            byte[] salt = Encoding.UTF8.GetBytes(saltChars);//.Normalize(NormalizationForm.FormKD));
+            Array.Clear(saltChars, 0, saltChars.Length);
             // Initialise a PBKDF2 instance
             using Rfc2898DeriveBytes pbkdf2Instance = new(passwordBytes, salt, 2048, HashAlgorithmName.SHA512);
             // Clear arrays

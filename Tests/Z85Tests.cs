@@ -14,7 +14,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
     {
         public static async Task<List<Models.Z85TestVector>?> GetTestVectorsAsync()
         {
-            using FileStream openStream = File.OpenRead(@"data/z85-vectors.json");
+            using FileStream openStream = File.OpenRead(@"contrib/zeromq/z85-vectors.json");
             Models.Z85TestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Z85TestVectorsRoot>(openStream);
             openStream.Close();
             return jsonRoot?.TestVectors;

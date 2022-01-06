@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Security;
 using System.Windows;
 using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals;
 using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models;
@@ -51,12 +52,20 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             Array.Clear(entropyBytes, 0, entropyBytes.Length);
 
             // Turn BIP-0039 word array into BIP-0039 master seed
-            byte[] seedBytes = Bip39.GetBinarySeedFromSeedWords(ref mnemonicTextWords, "TREZOR");
+            SecureString testPassphrase = new();
+            foreach (char c in "TREZOR")
+            {
+                testPassphrase.AppendChar(c);
+            }
+            testPassphrase.MakeReadOnly();
+            byte[] seedBytes = Bip39.GetBinarySeedFromSeedWords(ref mnemonicTextWords, testPassphrase);
+            testPassphrase.Clear();
+            testPassphrase.Dispose();
             Array.Clear(mnemonicTextWords, 0, mnemonicTextWords.Length);
             SeedHex.Text = Convert.ToHexString(seedBytes.AsSpan()).ToLower(CultureInfo.InvariantCulture);
 
             // SLIP-0021 master node
-            Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(seedBytes);
+            Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(seedBytes, "0");
             Array.Clear(seedBytes, 0, seedBytes.Length);
             MasterDerivationHex.Text = Convert.ToHexString(masterNode.Left).ToLower(CultureInfo.InvariantCulture);
             MasterKeyHex.Text = Convert.ToHexString(masterNode.Right).ToLower(CultureInfo.InvariantCulture);

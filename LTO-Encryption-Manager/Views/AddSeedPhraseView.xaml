@@ -1,0 +1,375 @@
+﻿<UserControl x:Class="uk.JohnCook.dotnet.LTOEncryptionManager.Views.AddSeedPhraseView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:local="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager.Views"
+             xmlns:vm="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="960">
+    <UserControl.DataContext>
+        <vm:AddSeedPhraseViewModel />
+    </UserControl.DataContext>
+    <UserControl.Resources>
+        <x:Array Type="sys:Int32" x:Key="SeedWordLengths">
+            <sys:Int32>12</sys:Int32>
+            <sys:Int32>18</sys:Int32>
+            <sys:Int32>24</sys:Int32>
+        </x:Array>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="auto" MinWidth="16" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" MinHeight="16" />
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Seed Phrase Word Length:" />
+        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+            <ComboBox VerticalAlignment="Top" HorizontalAlignment="Left" Margin="4" Padding="16 4" x:Name="SeedLength" ItemsSource="{StaticResource SeedWordLengths}" SelectedItem="{Binding NewSeedPhrase.Length, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+            <CheckBox VerticalContentAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="4" Padding="4" Content="With Empty Passphrase" x:Name="HasEmptyPassword" IsChecked="{Binding NewSeedPhrase.HasEmptyPassphrase}" />
+        </StackPanel>
+        <Label Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Seed Phrase:" />
+        <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word01" IsEditable="True" ItemsSource="{Binding Path=Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word01" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word02" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word02" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word03" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word03" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word04" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word04" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word05" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word05" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word06" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word06" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word07" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word07" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word08" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word08" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word09" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word09" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word10" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word10" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word11" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word11" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word12" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word12" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+        </StackPanel>
+        <StackPanel Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <StackPanel.Style>
+                <Style>
+                    <Setter Property="StackPanel.Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=SeedLength, Path=SelectedItem}" Value="18">
+                            <Setter Property="StackPanel.Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ElementName=SeedLength, Path=SelectedItem}" Value="24">
+                            <Setter Property="StackPanel.Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word13" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word13" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word14" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word14" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word15" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word15" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word16" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word16" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word17" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word17" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word18" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word18" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+        </StackPanel>
+        <StackPanel Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <StackPanel.Style>
+                <Style>
+                    <Setter Property="StackPanel.Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=SeedLength, Path=SelectedValue}" Value="24">
+                            <Setter Property="StackPanel.Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word19" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word19" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word20" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word20" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word21" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word21" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word22" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word22" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word23" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word23" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+            <ComboBox MinWidth="120" Margin="4" Padding="4" Name="Word24" IsEditable="True" ItemsSource="{Binding Bip39Dictionary}">
+                <ComboBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ComboBox.ItemsPanel>
+                <ComboBox.SelectedIndex>
+                    <Binding Path="NewSeedPhrase.Word24" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay" ValidatesOnNotifyDataErrors="True" />
+                </ComboBox.SelectedIndex>
+            </ComboBox>
+        </StackPanel>
+        <Label Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Passphrase:">
+            <Label.Style>
+                <Style>
+                    <Setter Property="StackPanel.Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=HasEmptyPassword, Path=IsChecked}" Value="False">
+                            <Setter Property="StackPanel.Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+        </Label>
+        <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal">
+            <StackPanel.Style>
+                <Style>
+                    <Setter Property="StackPanel.Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=HasEmptyPassword, Path=IsChecked}" Value="False">
+                            <Setter Property="StackPanel.Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <PasswordBox VerticalAlignment="Top" HorizontalAlignment="Left" VerticalContentAlignment="Center" Margin="4" Padding="16 4" MinWidth="200" PasswordChanged="ChangePassphrase" />
+        </StackPanel>
+        <Label Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Validation:" />
+        <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <Button Margin="4" Padding="16 4" BorderThickness="3" x:Name="validateSeedPhrase" Content="Validate Seed Phrase" BorderBrush="{x:Static Brushes.Transparent}" Command="{Binding ValidateSeedPhrase}" />
+            <Border Margin="4" BorderThickness="1 1 2 2" BorderBrush="{Binding Path=ValidationStatusBrush, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                <Border.Style>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=ValidationStatusMessage}" Value="{x:Static sys:String.Empty}">
+                                <Setter Property="Visibility" Value="Hidden" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=NewSeedPhrase.HasErrors}" Value="False">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Margin="4" Padding="16 4" x:Name="validationMessage" Text="{Binding Path=ValidationStatusMessage, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+            </Border>
+        </StackPanel>
+        <Label Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="First Level Label:" />
+        <ComboBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="4" Padding="16 4" ItemsSource="{Binding FirstLevelLabels}" DisplayMemberPath="FirstLevelLabel" SelectedItem="{Binding FirstLevelLabel, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+        <Label Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Key Rollover Count:" />
+        <TextBox Grid.Row="8" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="75" HorizontalContentAlignment="Center" Text="{Binding GlobalKeyRollovers}" />
+        <Label Grid.Row="9" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Seed Validation Node:" />
+        <TextBox Grid.Row="9" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="200" HorizontalContentAlignment="Center" Text="{Binding DerivationPath, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" IsEnabled="True" />
+        <Label Grid.Row="10" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Validation Fingerprint:" />
+        <TextBox Grid.Row="10" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="200" HorizontalContentAlignment="Center" Text="{Binding ValidationFingerprint, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" IsEnabled="True" />
+    </Grid>
+</UserControl>

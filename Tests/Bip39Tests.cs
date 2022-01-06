@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security;
 using System.Text.Json;
 using System.Threading.Tasks;
 using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals;
@@ -53,7 +54,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 string[] mnemonic = testVector.MnemonicSeed.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                byte[] binarySeed = Bip39.GetBinarySeedFromSeedWords(ref mnemonic, "TREZOR");
+                SecureString testPassphrase = new();
+                foreach (char c in "TREZOR")
+                {
+                    testPassphrase.AppendChar(c);
+                }
+                testPassphrase.MakeReadOnly();
+                byte[] binarySeed = Bip39.GetBinarySeedFromSeedWords(ref mnemonic, testPassphrase);
                 string binarySeedHex = Convert.ToHexString(binarySeed).ToLowerInvariant();
                 Assert.AreEqual(testVector.MnemonicBinarySeed, binarySeedHex);
             });

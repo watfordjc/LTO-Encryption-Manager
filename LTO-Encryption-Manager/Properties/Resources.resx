@@ -121,12 +121,24 @@
     <value>Unimplemented code.</value>
     <comment>Error - unimplimeneted code</comment>
   </data>
-  <data name="validation_error_ComboBoxNotBip0039Word" xml:space="preserve">
+  <data name="slip21_master_node_ref" xml:space="preserve">
+    <value>m</value>
+    <comment>SLIP-0021 Master Node Reference - m</comment>
+  </data>
+  <data name="slip21_schema_lto_aes256gcm" xml:space="preserve">
+    <value>uk.johncook.slip-0021.lto-aes256-gcm</value>
+    <comment>SLIP-0021 First Level Label - uk.johncook.slip-0021.lto-aes256-gcm</comment>
+  </data>
+  <data name="slip21_schema_snowflake_hmacSha256" xml:space="preserve">
+    <value>uk.johncook.slip-0021.snowflake-hmac-sha256</value>
+    <comment>SLIP-0021 First Level Label - uk.johncook.slip-0021.snowflake-hmac-sha256</comment>
+  </data>
+  <data name="slip21_schema_validation" xml:space="preserve">
+    <value>uk.johncook.slip-0021.key-validation</value>
+    <comment>SLIP-0021 First Level Label - uk.johncook.slip-0021.key-validation</comment>
+  </data>
+  <data name="validation_error_NotBip0039Word" xml:space="preserve">
     <value>The selected word is not in the American English BIP-0039 dictionary.</value>
     <comment>Validation error - not a BIP-0039 word</comment>
-  </data>
-  <data name="validation_error_ComboBoxOneItemSelected" xml:space="preserve">
-    <value>Please select an item.</value>
-    <comment>Validation error - no combo box items selected</comment>
   </data>
 </root>

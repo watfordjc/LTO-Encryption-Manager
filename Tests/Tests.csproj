@@ -39,7 +39,7 @@
     <Content Include="data\slip0021-vectors.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="data\z85-vectors.json">
+    <Content Include="contrib\zeromq\z85-vectors.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
