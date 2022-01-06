@@ -43,7 +43,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models
             // Clear array
             Array.Clear(key, 0, key.Length);
             string derivationPath = string.Concat(DerivationPath, '/', '"', label, '"');
-            return new Slip21Node(hmac.ComputeHash(Encoding.ASCII.GetBytes('\0' + label)), GlobalKeyRolloverCount, derivationPath);
+            byte[] hashResult = hmac.ComputeHash(Encoding.ASCII.GetBytes('\0' + label));
+            hmac.Clear();
+            return new Slip21Node(hashResult, GlobalKeyRolloverCount, derivationPath);
         }
 
         /// <summary>
