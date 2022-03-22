@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using uk.JohnCook.dotnet.LTOEncryptionManager.Models;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models;
 using uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Views

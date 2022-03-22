@@ -8,9 +8,9 @@ using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
-using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 {
     public class Bip39BinarySeed : INotifyPropertyChanged
     {

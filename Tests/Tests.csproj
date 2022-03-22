@@ -9,7 +9,7 @@
     <Version>0.1.0</Version>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <Copyright>© John Cook 2021-2022.</Copyright>
-    <Platforms>AnyCPU;x64</Platforms>
+	  <Platforms>AnyCPU;x64</Platforms>
     <Nullable>enable</Nullable>
     <Authors>John Cook</Authors>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <None Remove="contrib\trezor\python-mnemonic\vectors.json" />
+    <None Remove="data\slip0021-lto-aes-vectors.json" />
     <None Remove="data\slip0021-vectors.json" />
     <None Remove="data\argon2id-vectors.json" />
     <None Remove="data\z85-vectors.json" />
@@ -36,6 +37,9 @@
     <Content Include="data\argon2id-vectors.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="data\slip0021-lto-aes-vectors.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="data\slip0021-vectors.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -45,17 +49,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="2.2.7" />
-    <PackageReference Include="MSTest.TestFramework" Version="2.2.7" />
-    <PackageReference Include="coverlet.collector" Version="3.1.0">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.2.8" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.2.8" />
+    <PackageReference Include="coverlet.collector" Version="3.1.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LTO-Encryption-Manager\LTO-Encryption-Manager.csproj" />
+    <!--<ProjectReference Include="..\LTO-Encryption-Manager\LTO-Encryption-Manager.csproj" />-->
+    <ProjectReference Include="..\Utils\Utils.csproj" />
   </ItemGroup>
 
 </Project>

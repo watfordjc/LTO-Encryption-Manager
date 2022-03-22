@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Algorithms
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms
 {
     public static class Z85
     {

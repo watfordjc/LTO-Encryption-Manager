@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "LTO-Encryption-Manager": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

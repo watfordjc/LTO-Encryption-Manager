@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals;
-using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 {

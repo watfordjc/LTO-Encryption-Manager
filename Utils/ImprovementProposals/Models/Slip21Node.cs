@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+using uk.JohnCook.dotnet.LTOEncryptionManager;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Properties;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models
 {
     public readonly ref struct Slip21Node
     {
@@ -31,7 +33,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models
             this.nodeBytes = nodeBytes;
             Left = nodeBytes.AsSpan().Slice(0, 32);
             Right = nodeBytes.AsSpan().Slice(32, 32);
-            DerivationPath = label ?? Properties.Resources.slip21_master_node_ref;
+            DerivationPath = label ?? Resources.slip21_master_node_ref;
             GlobalKeyRolloverCount = globalKeyRolloverCount;
         }
 

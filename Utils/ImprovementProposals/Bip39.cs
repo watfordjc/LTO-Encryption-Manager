@@ -5,9 +5,9 @@ using System.Security;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.BIP39Dictionaries;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.BIP39Dictionaries;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 {
     public static class Bip39
     {

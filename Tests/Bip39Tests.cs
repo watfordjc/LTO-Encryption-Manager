@@ -5,7 +5,7 @@ using System.IO;
 using System.Security;
 using System.Text.Json;
 using System.Threading.Tasks;
-using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 {

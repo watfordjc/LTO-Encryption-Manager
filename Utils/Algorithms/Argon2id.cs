@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Algorithms
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms
 {
     public static class Argon2id
     {

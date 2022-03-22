@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
+		<Platforms>x86;x64</Platforms>
+		<RuntimeIdentifiers>win10-x86;win10-x64</RuntimeIdentifiers>
+		<Nullable>enable</Nullable>
+		<UseWindowsForms>true</UseWindowsForms>
+		<RootNamespace>uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows</RootNamespace>
+		<StartupObject></StartupObject>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Utils\Utils.csproj" />
+	</ItemGroup>
+
+</Project>

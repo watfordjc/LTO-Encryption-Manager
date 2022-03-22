@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
-using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 {
     public static class Slip21
     {

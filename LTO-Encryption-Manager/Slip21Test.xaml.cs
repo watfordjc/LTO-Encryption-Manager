@@ -2,8 +2,8 @@
 using System.Globalization;
 using System.Security;
 using System.Windows;
-using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals;
-using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager
 {

@@ -9,7 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 {
     public class Bip39SeedPhrase : INotifyPropertyChanged, INotifyDataErrorInfo
     {

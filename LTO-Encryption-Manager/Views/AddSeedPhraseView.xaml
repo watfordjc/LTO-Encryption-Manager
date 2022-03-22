@@ -39,6 +39,8 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
             <RowDefinition Height="auto" MinHeight="16" />
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Seed Phrase Word Length:" />
@@ -365,11 +367,19 @@
         </StackPanel>
         <Label Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="First Level Label:" />
         <ComboBox Grid.Row="7" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="4" Padding="16 4" ItemsSource="{Binding FirstLevelLabels}" DisplayMemberPath="FirstLevelLabel" SelectedItem="{Binding FirstLevelLabel, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
-        <Label Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Key Rollover Count:" />
+        <Label Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Global Rollover Count:" />
         <TextBox Grid.Row="8" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="75" HorizontalContentAlignment="Center" Text="{Binding GlobalKeyRollovers}" />
         <Label Grid.Row="9" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Seed Validation Node:" />
-        <TextBox Grid.Row="9" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="200" HorizontalContentAlignment="Center" Text="{Binding DerivationPath, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" IsEnabled="True" />
-        <Label Grid.Row="10" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Validation Fingerprint:" />
-        <TextBox Grid.Row="10" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="200" HorizontalContentAlignment="Center" Text="{Binding ValidationFingerprint, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" IsEnabled="True" />
+        <TextBox Grid.Row="9" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="200" HorizontalContentAlignment="Center" Text="{Binding SeedDerivationPath, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" IsEnabled="True" />
+        <Label Grid.Row="10" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Seed Fingerprint:" />
+        <TextBox Grid.Row="10" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="200" HorizontalContentAlignment="Center" Text="{Binding SeedValidationFingerprint, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" IsEnabled="True" />
+        <Label Grid.Row="11" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Account ID:" />
+        <TextBox Grid.Row="11" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="75" HorizontalContentAlignment="Center" Text="{Binding AccountID}" />
+        <Label Grid.Row="12" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Account Rollover Count:" />
+        <TextBox Grid.Row="12" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="75" HorizontalContentAlignment="Center" Text="{Binding AccountKeyRollovers}" />
+        <Label Grid.Row="13" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Account Validation Node:" />
+        <TextBox Grid.Row="13" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="200" HorizontalContentAlignment="Center" Text="{Binding AccountDerivationPath, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" IsEnabled="True" />
+        <Label Grid.Row="14" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="4 0" Content="Account Fingerprint:" />
+        <TextBox Grid.Row="14" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4" Padding="16 4" MinWidth="200" HorizontalContentAlignment="Center" Text="{Binding AccountValidationFingerprint, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" IsEnabled="True" />
     </Grid>
 </UserControl>

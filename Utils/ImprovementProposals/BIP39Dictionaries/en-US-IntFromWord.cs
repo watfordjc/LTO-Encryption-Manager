@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.BIP39Dictionaries
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.BIP39Dictionaries
 {
     public static partial class AmericanEnglish
     {

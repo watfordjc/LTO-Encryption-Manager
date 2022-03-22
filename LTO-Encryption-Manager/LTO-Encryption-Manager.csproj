@@ -2,7 +2,9 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
+	<Platforms>x86;x64</Platforms>
+	<RuntimeIdentifiers>win10-x86;win10-x64</RuntimeIdentifiers>
     <RootNamespace>uk.JohnCook.dotnet.LTOEncryptionManager</RootNamespace>
     <UseWPF>true</UseWPF>
     <PackageId>uk.JohnCook.dotnet.LTOEncryptionManager</PackageId>
@@ -12,11 +14,13 @@
     <NeutralLanguage>en-GB</NeutralLanguage>
     <StartupObject></StartupObject>
     <Nullable>enable</Nullable>
-    <Platforms>AnyCPU;x64</Platforms>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/watfordjc/LTO-Encryption-Manager</RepositoryUrl>
     <PackageProjectUrl>https://github.com/watfordjc/LTO-Encryption-Manager</PackageProjectUrl>
+    <ApplicationIcon />
+    <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -25,10 +29,17 @@
 
   <ItemGroup>
     <PackageReference Include="CryptHash.Net" Version="3.6.1" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.1.619-beta">
+    <PackageReference Include="DirectShowLib.Standard" Version="2.1.0" />
+    <PackageReference Include="Emgu.CV" Version="4.5.5.4823" />
+    <PackageReference Include="Microsoft.Management.Infrastructure" Version="2.0.0" />
+    <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.1.635-beta">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-experimental1" />
+    <PackageReference Include="System.Management" Version="6.0.0" />
+    <PackageReference Include="ZXing.Net" Version="0.16.8" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,10 +50,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SecureDesktopWindows\SecureDesktopWindows.csproj" />
+    <ProjectReference Include="..\Utils\Utils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
   </ItemGroup>
 
@@ -51,6 +72,17 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>

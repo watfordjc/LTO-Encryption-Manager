@@ -1,6 +1,11 @@
 ﻿GetCurrentThreadId
 GetThreadDesktop
-CreateDesktop
+CreateDesktopW
 SetThreadDesktop
 CloseDesktop
 SwitchDesktop
+CoCreateInstance
+AllocConsole
+GetConsoleWindow
+ShowWindow
+SetupDiGetClassDevs

@@ -5,9 +5,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
-using uk.JohnCook.dotnet.LTOEncryptionManager.ImprovementProposals.Models;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Properties;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 {
     public class Slip21ValidationNode
     {
@@ -29,7 +30,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 
         public Slip21ValidationNode(Slip21Node nodeToValidate)
         {
-            Slip21Node validationNode = nodeToValidate.GetChildNode(Properties.Resources.slip21_schema_validation).GetChildNode(nodeToValidate.GlobalKeyRolloverCount.ToString(CultureInfo.InvariantCulture));
+            Slip21Node validationNode = nodeToValidate.GetChildNode(Resources.slip21_schema_validation).GetChildNode(nodeToValidate.GlobalKeyRolloverCount.ToString(CultureInfo.InvariantCulture));
             DerivationPath = validationNode.DerivationPath;
             // The password/message to hash shall be the right half of the validation node... in Z85 encoding.
             validationNodeMessage = validationNode.Right.ToArray();
@@ -64,6 +65,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
             Trace.WriteLine(BitConverter.ToString(argon2IdHashResult.HashBytes));
             if (Algorithms.Z85.TryGetEncodedBytes(argon2IdHashResult.HashBytes, out byte[]? z85Hash))
             {
+                Trace.WriteLine(DerivationPath);
                 Trace.WriteLine(Encoding.UTF8.GetString(z85Hash));
                 Fingerprint = Encoding.UTF8.GetString(z85Hash);
             }

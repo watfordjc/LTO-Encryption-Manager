@@ -8,8 +8,9 @@
         xmlns:vm="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels"
         mc:Ignorable="d"
         x:Name="Window"
-        Title="StartupWindow" Height="450" Width="800" SizeToContent="WidthAndHeight">
+        Title="StartupWindow" Height="560" Width="960" SizeToContent="WidthAndHeight">
     <StackPanel Orientation="Vertical">
+        <!--<views:ScanBarcodeView />-->
         <views:AddSeedPhraseView />
     </StackPanel>
 </Window>

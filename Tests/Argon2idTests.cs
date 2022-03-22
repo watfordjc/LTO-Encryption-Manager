@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
@@ -25,10 +26,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
         {
             IEnumerable<Models.Argon2idTestVector>? testVectors = await GetTestVectorsAsync();
             Assert.IsNotNull(testVectors);
+            SemaphoreSlim semaphore = new(1);
             Argon2id argon2id = new();
             _ = Parallel.ForEach(testVectors, testVector =>
             {
-                Argon2idHashResult hashResult = Algorithms.Argon2id.GetHash(
+                semaphore.Wait();
+                Argon2idHashResult hashResult = Utils.Algorithms.Argon2id.GetHash(
                     argon2id: argon2id,
                     message: Convert.FromHexString(testVector.Message),
                     salt: Convert.FromHexString(testVector.Salt),
@@ -39,6 +42,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
                     associatedData: Convert.FromHexString(testVector.AssociatedData),
                     knownSecret: Convert.FromHexString(testVector.Secret));
                 Assert.AreEqual(testVector.Output, Convert.ToHexString(hashResult.HashBytes).ToLowerInvariant());
+                semaphore.Release();
             });
         }
     }
