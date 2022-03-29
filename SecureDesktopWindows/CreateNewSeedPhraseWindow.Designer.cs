@@ -241,6 +241,7 @@
             // 
             // statusStrip1
             // 
+            this.statusStrip1.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusLabel});
             this.statusStrip1.Location = new System.Drawing.Point(0, 387);
@@ -251,11 +252,11 @@
             // 
             // statusLabel
             // 
-            this.statusLabel.Font = new System.Drawing.Font("Open Sans", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.statusLabel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.statusLabel.Name = "statusLabel";
             this.statusLabel.Size = new System.Drawing.Size(0, 17);
             // 
-            // Form1
+            // CreateNewSeedPhraseWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -276,9 +277,9 @@
             this.Controls.Add(this.tbGlobalRollovers);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnGenerateSeed);
-            this.Name = "Form1";
+            this.Name = "CreateNewSeedPhraseWindow";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Create New BIP39 Seed - Secure Window";
+            this.Text = "Create Account From New BIP39 Seed - Secure Window";
             this.gbSeedPhrase.ResumeLayout(false);
             this.gbSeedPhrase.PerformLayout();
             this.statusStrip1.ResumeLayout(false);

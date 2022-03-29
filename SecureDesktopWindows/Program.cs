@@ -17,7 +17,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new CreateNewSeedPhraseWindow());
+            Application.Run(new RestoreSeedPhraseWindow());
         }
     }
 }

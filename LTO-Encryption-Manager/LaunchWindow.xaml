@@ -8,11 +8,11 @@
     mc:Ignorable="d" Height="760" Width="960" SizeToContent="WidthAndHeight" Name="Window" Title="LTO Encryption Manager" FontFamily="Open Sans" FontSize="11pt">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="auto" />
             <ColumnDefinition Width="auto" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
@@ -27,17 +27,18 @@
             <StackPanel Orientation="Vertical">
                 <Label Name="lblSecureBootStatus" Margin="4" />
                 <Label Name="lblTpmStatus" Margin="4" />
+                <Button x:Name="btnCreateRsaKey" Margin="8" Padding="8 6" Content="TPM-Backed Certificate" />
             </StackPanel>
         </GroupBox>
         <GroupBox Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Grid.ColumnSpan="2" Header="Account Loading" Margin="8 16 8 8" Padding="8">
             <StackPanel Orientation="Vertical">
                 <StackPanel Orientation="Horizontal" Margin="8 12">
                     <Label Content="Global Fingerprint:" />
-                    <ComboBox Name="cbGlobalFingerprints" MinWidth="300" VerticalContentAlignment="Center" FontFamily="Consolas" />
+                    <ComboBox x:Name="cbGlobalFingerprints" MinWidth="300" VerticalContentAlignment="Center" FontFamily="Consolas" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="8 12">
                     <Label Content="Account Fingerprint:" />
-                    <ComboBox Name="cbAccountFingerprints" MinWidth="300" VerticalContentAlignment="Center" FontFamily="Consolas" />
+                    <ComboBox x:Name="cbAccountFingerprints" MinWidth="300" VerticalContentAlignment="Center" FontFamily="Consolas" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="4 4 4 12">
                     <Button x:Name="btnTestAccount" IsEnabled="False" Margin="8" Padding="8 6" Content="Test Key" />
@@ -46,11 +47,11 @@
         </GroupBox>
         <GroupBox Grid.Row="0" Grid.Column="3" Header="Account Creation" Margin="8 16 16 8" Padding="8" BorderBrush="Orange">
             <StackPanel Orientation="Vertical">
-                <Button x:Name="btnCreateNewBip39Seed" IsEnabled="False" Margin="8 12" Padding="8 6" Content="Use Recovery Seed Phrase" />
+                <Button x:Name="btnCreateAccountExistingRecoverySeed" IsEnabled="False" Margin="8 12" Padding="8 6" Content="Use Recovery Seed Phrase" />
                 <Button x:Name="btnCreateAccountNewRecoverySeed" Margin="8 12" Padding="8 6" Content="Create New Seed Phrase" />
             </StackPanel>
         </GroupBox>
-        <GroupBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Header="LTO Tape Loading" Margin="16 8 16 8" Padding="8" BorderBrush="Blue">
+        <GroupBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Header="LTO Tape Loading" Margin="16 8 16 8" Padding="8" BorderBrush="Blue">
             <StackPanel Orientation="Vertical">
                 <StackPanel Orientation="Horizontal" Margin="8 12">
                     <Label Content="LTO Tape Drive:" />
@@ -61,12 +62,15 @@
                     <Label Content="LTO Tape Barcode:" />
                     <TextBox x:Name="tbTapeLabel" MinWidth="180" VerticalContentAlignment="Center" FontFamily="Consolas" />
                     <Button x:Name="btnScanBarcode" IsEnabled="False" Margin="8 0" Padding="8 6" Content="Scan Barcode" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="8 12">
                     <Label Content="Tape Key Rollover Count:" />
                     <TextBox x:Name="tbTapeKeyRollovers" MinWidth="120" VerticalContentAlignment="Center" FontFamily="Consolas" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="4 4 4 0">
+                    <Label Content="Key Associated Data:" VerticalAlignment="Center" />
+                    <TextBox x:Name="tbKAD" IsReadOnly="True" Margin="8" Padding="8 6" MinLines="2" MaxLines="4" MinWidth="590" FontFamily="Consolas" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="4 4 4 0">
+                    <Button x:Name="btnCalculateKAD" Margin="8" Padding="8 6" Content="Calculate Key Associated Data" />
                     <Button x:Name="btnEnableDriveEncryption" IsEnabled="False" Margin="8" Padding="8 6" Content="Enable Drive Encryption" />
                     <Button x:Name="btnDisableDriveEncryption" IsEnabled="False" Margin="8" Padding="8 6" Content="Disable Drive Encryption" />
                 </StackPanel>
@@ -88,7 +92,7 @@
                     </GroupBox>
             </StackPanel>
         </GroupBox>
-        <StatusBar Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="4">
+        <StatusBar Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="99">
             <StatusBarItem x:Name="statusbarStatus" Height="24" />
         </StatusBar>
     </Grid>

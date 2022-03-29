@@ -1,40 +1,25 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
-using System.Windows;
-using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models;
 using uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Microsoft.Management.Infrastructure;
 using Microsoft.Management.Infrastructure.Options;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager
 {
     /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
+    /// Interaction logic for LaunchWindow.xaml
     /// </summary>
     public sealed partial class LaunchWindow : System.Windows.Window
     {
@@ -45,9 +30,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
         private bool TpmSupported { get { return _tpmSupported; } set { _tpmSupported = value; lblTpmStatus.Content = string.Format("Suitable TPM 2.0 Available: {0}", value ? "Yes" : "No"); } }
         private string _error = string.Empty;
         private string Error { get { return _error; } set { _error = value; statusbarStatus.Content = _error == string.Empty ? "No recent errors" : $"{value}"; } }
-        private readonly Windows.Win32.Foundation.BOOL TRUE = (Windows.Win32.Foundation.BOOL)1;
+        private static readonly Windows.Win32.Foundation.BOOL FALSE = (Windows.Win32.Foundation.BOOL)0;
+        private static readonly Windows.Win32.Foundation.BOOL TRUE = (Windows.Win32.Foundation.BOOL)1;
         private string CurrentAccountDataFile { get; set; } = string.Empty;
         static Guid GUID_DEVINTERFACE_VOLUME = new("{53F5630D-B6BF-11D0-94F2-00A0C91EFB8B}");
+        private Slip21NodeEncrypted? currentAccountSlip21Node;
+        KeyAssociatedData? kad = null;
 
         public LaunchWindow()
         {
@@ -55,15 +43,104 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             Error = string.Empty;
             SecureBootEnabled = SecureBoot.IsEnabled();
             btnCreateAccountNewRecoverySeed.IsEnabled = _secureBootEnabled;
+            btnCreateAccountExistingRecoverySeed.IsEnabled = _secureBootEnabled;
             TpmStatus = new();
             TpmStatus.Completed += TpmStatus_Completed;
             TpmStatus.Begin();
             Window.DataContext = this;
             btnCreateAccountNewRecoverySeed.Click += BtnCreateNewBip39Seed_Click;
+            btnCreateAccountExistingRecoverySeed.Click += BtnCreateAccountExistingRecoverySeed_Click;
             cbGlobalFingerprints.SelectionChanged += CbGlobalFingerprints_SelectionChanged;
             cbAccountFingerprints.SelectionChanged += CbAccountFingerprints_SelectionChanged;
             btnTestAccount.Click += BtnTestAccount_Click;
             cbTapeDrives.SelectionChanged += CbTapeDrives_SelectionChanged;
+            btnCalculateKAD.Click += BtnCalculateKAD_Click;
+            btnCreateRsaKey.Click += BtnCreateRsaKey_Click;
+        }
+
+        private void BtnCreateRsaKey_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (!Utils.PKI.TryGetOrCreateRsaCertificate(out X509Certificate2? tpmCertificate, true, true))
+            {
+                Error = $"Certificate creation error";
+            }
+            else
+            {
+                X509Certificate2UI.DisplayCertificate(tpmCertificate);
+            }
+        }
+
+        private void BtnCalculateKAD_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            tbKAD.Text = string.Empty;
+            btnCalculateKAD.IsEnabled = false;
+            if (currentAccountSlip21Node is null || currentAccountSlip21Node.RSASignature is null || string.IsNullOrEmpty(tbTapeLabel.Text) || string.IsNullOrEmpty(tbTapeKeyRollovers.Text))
+            {
+                btnCalculateKAD.IsEnabled = true;
+                return;
+            }
+            if (uint.TryParse(tbTapeKeyRollovers.Text, out uint tapeRollovercount))
+            {
+                kad = new(currentAccountSlip21Node, tbTapeLabel.Text, tapeRollovercount);
+            }
+            else
+            {
+                btnCalculateKAD.IsEnabled = true;
+                return;
+            }
+
+            if (!Utils.PKI.TryGetOrCreateRsaCertificate(out X509Certificate2? tpmCertificate, false))
+            {
+                tpmCertificate?.Dispose();
+                btnCalculateKAD.IsEnabled = true;
+                return;
+            }
+            using RSACng? rsaKey = (RSACng?)tpmCertificate.GetRSAPrivateKey();
+            using RSACng? rsaPubKey = (RSACng?)tpmCertificate.GetRSAPublicKey();
+            if (!tpmCertificate.HasPrivateKey || rsaKey == null || rsaPubKey == null || rsaKey.Key.ExportPolicy != CngExportPolicies.None)
+            {
+                tpmCertificate?.Dispose();
+                btnCalculateKAD.IsEnabled = true;
+                return;
+            }
+            else
+            {
+                bool signatureValid = rsaPubKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Convert.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                if (signatureValid)
+                {
+                    byte[] nodeBytes = new byte[64];
+                    Array.Clear(nodeBytes, 0, 64);
+                    try
+                    {
+                        statusbarStatus.Content = "Decrypting account key to derive tape key and KAD...";
+                        byte[] nodeLeft = rsaKey.Decrypt(Convert.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
+                        Array.Copy(nodeLeft, 0, nodeBytes, 0, 32);
+                        Slip21Node accountNode = new(nodeBytes, currentAccountSlip21Node.GlobalKeyRolloverCount.ToString(), currentAccountSlip21Node.DerivationPath);
+                        Slip21Node tapeNode = accountNode.GetChildNode(kad.TapeBarcode).GetChildNode(kad.TapeKeyRollovers.ToString());
+                        Slip21ValidationNode tapeValidationNode = new(tapeNode);
+                        tapeValidationNode.FingerprintingCompleted += new EventHandler<bool>((sender, e) =>
+                        {
+                            if (e)
+                            {
+                                string tapeValidationFingerprint = tapeValidationNode.Fingerprint ?? string.Empty;
+                                statusbarStatus.Content = string.Format("Key Authenticated Data generated");
+                                btnTestAccount.IsEnabled = true;
+                                kad.TapeFingerprint = tapeValidationFingerprint;
+                                tbKAD.Text = kad.GetKAD();
+                            }
+                        });
+                        statusbarStatus.Content = "Calculating Key Authenticated Data...";
+                        tapeValidationNode.CalculateFingerprint(24);
+                    }
+                    catch (Exception ex)
+                    {
+                        Error = $"Decryption Error: {ex.Message}";
+                        btnTestAccount.IsEnabled = true;
+                    }
+                }
+            }
+            tpmCertificate?.Dispose();
+            btnCalculateKAD.IsEnabled = true;
         }
 
         private void TapeDriveSelected(TapeDrive? tapeDrive)
@@ -88,6 +165,139 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             public string Caption { get; set; } = string.Empty;
         }
 
+        private void VerifyCurrentAccount(bool verifyDecryptionKey)
+        {
+            using StreamReader streamReader = new(CurrentAccountDataFile, Encoding.UTF8, true, 4096);
+            string nodeData = streamReader.ReadToEnd();
+            streamReader.Close();
+
+            string[] nodeDataSigSplit = nodeData.Split('\x001E');
+            string[] nodeDataSplit = nodeDataSigSplit[0].Split('\x001F');
+
+            currentAccountSlip21Node = new(nodeDataSplit[0], nodeDataSplit[1], nodeDataSplit[2]);
+            currentAccountSlip21Node.GlobalFingerprint = nodeDataSplit[3];
+            currentAccountSlip21Node.AccountFingerprint = nodeDataSplit[4];
+            currentAccountSlip21Node.RSASignature = nodeDataSigSplit[1];
+
+            bool signatureValid = false;
+            List<string> keyNames = new();
+            keyNames.Add("LTO Encryption Manager account protection");
+            RSACng? currentRsaKey = null;
+            foreach (string keyName in keyNames)
+            {
+                if (!Utils.PKI.TryGetRsaKeyByName(keyName, out currentRsaKey))
+                {
+                    continue;
+                }
+                try
+                {
+                    signatureValid = currentRsaKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Convert.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+                if (signatureValid)
+                {
+                    break;
+                }
+                currentRsaKey.Dispose();
+                currentRsaKey = null;
+            }
+            if (!signatureValid)
+            {
+                Error = "Account data validation error: Unable to find keypair.";
+                btnTestAccount.IsEnabled = true;
+                return;
+            }
+            else if (signatureValid && currentRsaKey?.Key.KeyName?.Equals(keyNames[0]) == false)
+            {
+                Error = "Account data validation warning: Account file needs upgrading";
+                btnTestAccount.IsEnabled = true;
+                AsnEncodedData asnEncodedData = new("1.2.840.113549.1.1.1", currentRsaKey.ExportRSAPublicKey());
+                tbKAD.Text = Convert.ToHexString(asnEncodedData.RawData);
+                return;
+            }
+
+            using X509Store my = new(StoreName.My, StoreLocation.CurrentUser);
+            my.Open(OpenFlags.ReadOnly);
+            if (!Utils.PKI.TryGetOrCreateRsaCertificate(out X509Certificate2? tpmCertificate))
+            {
+                Error = $"Certificate retrieval/creation error";
+                return;
+            }
+
+            RSACng? rsaKey = null;
+            RSACng? rsaPubKey = null;
+            void Cleanup()
+            {
+                rsaKey?.Dispose();
+                rsaPubKey?.Dispose();
+                tpmCertificate?.Dispose();
+            }
+            try
+            {
+                rsaKey = (RSACng?)tpmCertificate?.GetRSAPrivateKey();
+                rsaPubKey = (RSACng?)tpmCertificate?.GetRSAPublicKey();
+            }
+            catch (Exception)
+            {
+                Cleanup();
+            }
+            if (tpmCertificate?.HasPrivateKey == false || rsaKey is null || rsaPubKey is null || rsaKey.Key.ExportPolicy != CngExportPolicies.None)
+            {
+                Cleanup();
+                return;
+            }
+
+            try
+            {
+                signatureValid = rsaPubKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Convert.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            }
+            catch (Exception)
+            {
+                Cleanup();
+                return;
+            }
+            if (!signatureValid || !verifyDecryptionKey)
+            {
+                my.Close();
+                Cleanup();
+                return;
+            }
+            else if (signatureValid && verifyDecryptionKey)
+            {
+                byte[] nodeBytes = new byte[64];
+                Array.Clear(nodeBytes, 0, 64);
+                try
+                {
+                    statusbarStatus.Content = "Testing account key decryption...";
+                    byte[] nodeLeft = rsaKey.Decrypt(Convert.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
+                    Array.Copy(nodeLeft, 0, nodeBytes, 0, 32);
+                    Slip21Node accountNode = new(nodeBytes, nodeDataSplit[2], nodeDataSplit[1]);
+                    Slip21ValidationNode accountValidationNode = new(accountNode);
+                    accountValidationNode.FingerprintingCompleted += new EventHandler<bool>((sender, e) =>
+                    {
+                        if (e)
+                        {
+                            string accountValidationFingerprint = accountValidationNode.Fingerprint ?? string.Empty;
+                            bool accountFingerprintMatches = accountValidationFingerprint != string.Empty && accountValidationFingerprint == nodeDataSplit[4];
+                            Trace.WriteLine(string.Format("RSA-signed account node fingerprint: {0}. Fingerprint derived from decrypted account derivation key: {1}. TPM-backed keypair {2} validation check. Global node fingerprint: {3}", nodeDataSplit[4], accountValidationFingerprint, accountFingerprintMatches ? "passes" : "fails", nodeDataSplit[3]));
+                            statusbarStatus.Content = string.Format("Account Test Result: TPM-backed keypair {0} validation check.", accountFingerprintMatches ? "passes" : "fails");
+                            btnTestAccount.IsEnabled = true;
+                        }
+                    });
+                    statusbarStatus.Content = "Calculating account fingerprint...";
+                    accountValidationNode.CalculateFingerprint();
+                }
+                catch (Exception ex)
+                {
+                    Error = $"Decryption Error: {ex.Message}";
+                    btnTestAccount.IsEnabled = true;
+                }
+            }
+        }
+
         private void BtnTestAccount_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             btnTestAccount.IsEnabled = false;
@@ -98,66 +308,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
                 cbGlobalFingerprints.SelectedIndex = -1;
                 return;
             }
-            using StreamReader streamReader = new(CurrentAccountDataFile, Encoding.UTF8, true, 4096);
-            string nodeData = streamReader.ReadToEnd();
-            streamReader.Close();
-
-            string[] nodeDataSigSplit = nodeData.Split('\x001E');
-            byte[] rsaSignature = Convert.FromHexString(nodeDataSigSplit[1]);
-            string nodeDataSigned = nodeDataSigSplit[0];
-            string[] nodeDataSplit = nodeDataSigned.Split('\x001F');
-            byte[] nodeLeftDecrypted = Convert.FromHexString(nodeDataSplit[0]);
-
-            X509Store my = new(StoreName.My, StoreLocation.CurrentUser);
-            my.Open(OpenFlags.ReadOnly);
-            X509Certificate2Collection certificates = my.Certificates.Find(X509FindType.FindBySubjectName, "LTO Encryption Manager", true);
-            bool useableCert = certificates.Count == 1;
-            if (useableCert)
-            {
-                X509Certificate2 tpmCertificate = certificates[0];
-                RSACng? rsaKey = (RSACng?)tpmCertificate.GetRSAPrivateKey();
-                RSACng? rsaPubKey = (RSACng?)tpmCertificate.GetRSAPublicKey();
-                if (!tpmCertificate.HasPrivateKey || rsaKey == null || rsaPubKey == null || rsaKey.Key.ExportPolicy != CngExportPolicies.None)
-                {
-                    useableCert = false;
-                }
-                else
-                {
-                    bool signatureValid = rsaPubKey.VerifyData(Encoding.UTF8.GetBytes(nodeDataSigned), rsaSignature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-                    if (signatureValid)
-                    {
-                        byte[] nodeBytes = new byte[64];
-                        Array.Clear(nodeBytes, 0, 64);
-                        try
-                        {
-                            statusbarStatus.Content = "Testing account key decryption...";
-                            byte[] nodeLeft = rsaKey.Decrypt(nodeLeftDecrypted, RSAEncryptionPadding.Pkcs1);
-                            Array.Copy(nodeLeft, 0, nodeBytes, 0, 32);
-                            Slip21Node accountNode = new(nodeBytes, nodeDataSplit[2], nodeDataSplit[1]);
-                            Slip21ValidationNode accountValidationNode = new(accountNode);
-                            accountValidationNode.FingerprintingCompleted += new EventHandler<bool>((sender, e) =>
-                            {
-                                if (e)
-                                {
-                                    string accountValidationFingerprint = accountValidationNode.Fingerprint ?? string.Empty;
-                                    bool accountFingerprintMatches = accountValidationFingerprint != string.Empty && accountValidationFingerprint == nodeDataSplit[4];
-                                    Trace.WriteLine(string.Format("RSA-signed account node fingerprint: {0}. Fingerprint derived from decrypted account derivation key: {1}. TPM-backed keypair {2} validation check. Global node fingerprint: {3}", nodeDataSplit[4], accountValidationFingerprint, accountFingerprintMatches ? "passes" : "fails", nodeDataSplit[3]));
-                                    statusbarStatus.Content = string.Format("Account Test Result: TPM-backed keypair {0} validation check.", accountFingerprintMatches ? "passes" : "fails");
-                                    btnTestAccount.IsEnabled = true;
-                                }
-                            });
-                            statusbarStatus.Content = "Calculating account fingerprint...";
-                            accountValidationNode.CalculateFingerprint();
-                        }
-                        catch (Exception ex)
-                        {
-                            Error = $"Decryption Error: {ex.Message}";
-                            btnTestAccount.IsEnabled = true;
-                        }
-                    }
-                }
-                my.Close();
-            }
+            VerifyCurrentAccount(true);
         }
 
         private void AccountFingerprintChanged(string accountFingerprint)
@@ -174,6 +325,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
                 btnTestAccount.IsEnabled = File.Exists(thisAppDataFile);
                 CurrentAccountDataFile = thisAppDataFile;
                 Error = string.Empty;
+                VerifyCurrentAccount(false);
             }
             catch (Exception ex)
             {
@@ -229,93 +381,113 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             GlobalFingerprintChanged(globalFingerprint);
         }
 
+        private void BtnCreateAccountExistingRecoverySeed_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            //StartupWindow startupWindow = new();
+            //startupWindow.ShowDialog();
+            if (SecureBootEnabled && TpmSupported)
+            {
+                ShowSecureWindow(SecureWindowTypes.RestoreSeedPhraseWindow);
+            }
+        }
+
         private void BtnCreateNewBip39Seed_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             if (SecureBootEnabled && TpmSupported)
             {
-                ShowSecureWindow();
+                ShowSecureWindow(SecureWindowTypes.CreateNewSeedPhraseWindow);
             }
         }
 
         private void TpmStatus_Completed(object? sender, bool e)
         {
-            bool tpmSupported = true;
             if (sender is TpmStatus tpmStatus)
             {
-                TpmStatus = tpmStatus;
+                TpmSupported =
+                    SecureBootEnabled &&
+                    tpmStatus.HasTpm &&
+                    tpmStatus.HasPcrBankAlgo.Contains(Tpm2Lib.TpmAlgId.Sha256) &&
+                    tpmStatus.SupportedAlgo.Contains(Tpm2Lib.TpmAlgId.Rsa) &&
+                    tpmStatus.SupportedAlgo.Contains(Tpm2Lib.TpmAlgId.Aes);
             }
             else
             {
+                TpmSupported = false;
                 return;
             }
-            if (!SecureBootEnabled)
-            {
-                tpmSupported = false;
-            }
-            if (tpmStatus.HasTpm && tpmStatus.HasPcrBankAlgo.Contains(Tpm2Lib.TpmAlgId.Sha256))
-            {
-                if (!tpmStatus.SupportedAlgo.Contains(Tpm2Lib.TpmAlgId.Rsa))
-                {
-                    tpmSupported = false;
-                }
-                if (!tpmStatus.SupportedAlgo.Contains(Tpm2Lib.TpmAlgId.Aes))
-                {
-                    tpmSupported = false;
-                }
-            }
-            else
-            {
-                tpmSupported = false;
-            }
-            TpmSupported = tpmSupported;
-
-            string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string accountDirectoriesBase = Path.Combine(appDataFolder, "John Cook UK", "LTO-Encryption-Manager", "Accounts");
-            string[] globalFingerprintDirectories = Directory.GetDirectories(accountDirectoriesBase, "*", SearchOption.TopDirectoryOnly);
-            List<string> globalFingerprints = new();
-            foreach (string dir in globalFingerprintDirectories)
-            {
-                if (Directory.Exists(dir))
-                {
-                    DirectoryInfo dirInfo = new(dir);
-                    globalFingerprints.Add(Encoding.UTF8.GetString(Convert.FromHexString(dirInfo.Name)));
-                }
-            }
-            cbGlobalFingerprints.ItemsSource = globalFingerprints;
-            if (globalFingerprints.Count == 1)
-            {
-                cbGlobalFingerprints.SelectedIndex = 0;
-                GlobalFingerprintChanged(globalFingerprints[0]);
-            }
-            string Namespace = @"root\cimv2";
-            string ComputerName = "localhost";
-            DComSessionOptions cimSessionOptions = new()
-            {
-                Timeout = TimeSpan.FromSeconds(30)
-            };
-            CimSession cimSession = CimSession.Create(ComputerName, cimSessionOptions);
-            IEnumerable<CimInstance> cimInstances = cimSession.QueryInstances(Namespace, "WQL", @"SELECT * FROM Win32_TapeDrive");
-            List<TapeDrive> tapeDrives = new();
-            foreach (CimInstance cimInstance in cimInstances)
-            {
-                string? deviceId = cimInstance.CimInstanceProperties["DeviceID"].Value.ToString();
-                string? caption = cimInstance.CimInstanceProperties["Caption"].Value.ToString();
-                if (deviceId == null)
-                {
-                    continue;
-                }
-                TapeDrive currentDrive = new();
-                currentDrive.DeviceId = deviceId;
-                currentDrive.Caption = caption ?? string.Empty;
-                tapeDrives.Add(currentDrive);
-            }
-            cbTapeDrives.ItemsSource = tapeDrives;
-            if (cbTapeDrives.Items.Count == 1)
-            {
-                cbTapeDrives.SelectedIndex = 0;
-                TapeDriveSelected(tapeDrives[0]);
-            }
+            EnumerateTapeDrives();
             EnableHpeLtfsTools();
+        }
+
+        private void EnumerateTapeDrives()
+        {
+            try
+            {
+                string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string accountDirectoriesBase = Path.Combine(appDataFolder, "John Cook UK", "LTO-Encryption-Manager", "Accounts");
+                string[] globalFingerprintDirectories = Directory.GetDirectories(accountDirectoriesBase, "*", SearchOption.TopDirectoryOnly);
+                List<string> globalFingerprints = new();
+                foreach (string dir in globalFingerprintDirectories)
+                {
+                    if (Directory.Exists(dir))
+                    {
+                        DirectoryInfo dirInfo = new(dir);
+                        globalFingerprints.Add(Encoding.UTF8.GetString(Convert.FromHexString(dirInfo.Name)));
+                    }
+                }
+                cbGlobalFingerprints.ItemsSource = globalFingerprints;
+                if (globalFingerprints.Count == 1)
+                {
+                    cbGlobalFingerprints.SelectedIndex = 0;
+                    GlobalFingerprintChanged(globalFingerprints[0]);
+                }
+                string Namespace = @"root\cimv2";
+                string ComputerName = "localhost";
+                using DComSessionOptions cimSessionOptions = new()
+                {
+                    Timeout = TimeSpan.FromSeconds(30)
+                };
+                using CimSession cimSession = CimSession.Create(ComputerName, cimSessionOptions);
+                IEnumerable<CimInstance> cimInstances = cimSession.QueryInstances(Namespace, "WQL", @"SELECT * FROM Win32_TapeDrive");
+                List<TapeDrive> tapeDrives = new();
+                foreach (CimInstance cimInstance in cimInstances)
+                {
+                    string? deviceId = cimInstance.CimInstanceProperties["DeviceID"].Value.ToString();
+                    string? caption = cimInstance.CimInstanceProperties["Caption"].Value.ToString();
+                    if (deviceId == null)
+                    {
+                        continue;
+                    }
+                    TapeDrive currentDrive = new();
+                    currentDrive.DeviceId = deviceId;
+                    currentDrive.Caption = caption ?? string.Empty;
+                    tapeDrives.Add(currentDrive);
+                    cimInstance.Dispose();
+                }
+                cbTapeDrives.ItemsSource = tapeDrives;
+                if (cbTapeDrives.Items.Count == 1)
+                {
+                    cbTapeDrives.SelectedIndex = 0;
+                    TapeDriveSelected(tapeDrives[0]);
+                }
+            }
+            catch (Exception ex)
+            {
+                Error = ex.Message;
+            }
+        }
+
+        private static void OpenLnkFile(string filename)
+        {
+            Process process = new()
+            {
+                StartInfo = new ProcessStartInfo()
+                {
+                    FileName = filename,
+                    UseShellExecute = true
+                }
+            };
+            process.Start();
         }
 
         private void EnableHpeLtfsTools()
@@ -323,119 +495,42 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             string hpeLtfsCartridgeBrowserLink = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\HPE\HPE StoreOpen Software\LTFS Cartridge Browser.lnk";
             if (File.Exists(hpeLtfsCartridgeBrowserLink))
             {
-                void BtnStartLtfsCartridgeBrowser_Click(object sender, System.Windows.RoutedEventArgs e)
-                {
-                    Process process = new()
-                    {
-                        StartInfo = new ProcessStartInfo()
-                        {
-                            FileName = hpeLtfsCartridgeBrowserLink,
-                            UseShellExecute = true
-                        }
-                    };
-                    process.Start();
-                }
-                btnStartLtfsCartridgeBrowser.Click += BtnStartLtfsCartridgeBrowser_Click;
+                btnStartLtfsCartridgeBrowser.Click += (object sender, System.Windows.RoutedEventArgs e) => OpenLnkFile(hpeLtfsCartridgeBrowserLink);
                 btnStartLtfsCartridgeBrowser.IsEnabled = true;
             }
             string hpeLtfsCheckWizardLink = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\HPE\HPE StoreOpen Software\LTFS Check Wizard.lnk";
             if (File.Exists(hpeLtfsCheckWizardLink))
             {
-                void BtnStartLtfsCheckWizard_Click(object sender, System.Windows.RoutedEventArgs e)
-                {
-                    Process process = new()
-                    {
-                        StartInfo = new ProcessStartInfo()
-                        {
-                            FileName = hpeLtfsCheckWizardLink,
-                            UseShellExecute = true
-                        }
-                    };
-                    process.Start();
-                }
-                btnStartLtfsCheckWizard.Click += BtnStartLtfsCheckWizard_Click;
+                btnStartLtfsCheckWizard.Click += (object sender, System.Windows.RoutedEventArgs e) => OpenLnkFile(hpeLtfsCheckWizardLink);
                 btnStartLtfsCheckWizard.IsEnabled = true;
             }
             string hpeLtfsConfiguratorLink = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\HPE\HPE StoreOpen Software\LTFS Configurator.lnk";
             if (File.Exists(hpeLtfsConfiguratorLink))
             {
-                void BtnStartLtfsConfigurator_Click(object sender, System.Windows.RoutedEventArgs e)
-                {
-                    Process process = new()
-                    {
-                        StartInfo = new ProcessStartInfo()
-                        {
-                            FileName = hpeLtfsConfiguratorLink,
-                            UseShellExecute = true
-                        }
-                    };
-                    process.Start();
-                }
-                btnStartLtfsConfigurator.Click += BtnStartLtfsConfigurator_Click;
+                btnStartLtfsConfigurator.Click += (object sender, System.Windows.RoutedEventArgs e) => OpenLnkFile(hpeLtfsConfiguratorLink);
                 btnStartLtfsConfigurator.IsEnabled = true;
             }
             string hpeLtfsConsoleLink = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\HPE\HPE StoreOpen Software\LTFS Console.lnk";
             if (File.Exists(hpeLtfsConsoleLink))
             {
-                void BtnStartLtfsConsole_Click(object sender, System.Windows.RoutedEventArgs e)
-                {
-                    Process process = new()
-                    {
-                        StartInfo = new ProcessStartInfo()
-                        {
-                            FileName = hpeLtfsConsoleLink,
-                            UseShellExecute = true
-                        }
-                    };
-                    process.Start();
-                }
-                btnStartLtfsConsole.Click += BtnStartLtfsConsole_Click;
+                btnStartLtfsConsole.Click += (object sender, System.Windows.RoutedEventArgs e) => OpenLnkFile(hpeLtfsConsoleLink);
                 btnStartLtfsConsole.IsEnabled = true;
             }
             string hpeLtfsFormatWizardLink = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\HPE\HPE StoreOpen Software\LTFS Format Wizard.lnk";
             if (File.Exists(hpeLtfsFormatWizardLink))
             {
-                void BtnStartLtfsFormatWizard_Click(object sender, System.Windows.RoutedEventArgs e)
-                {
-                    Process process = new()
-                    {
-                        StartInfo = new ProcessStartInfo()
-                        {
-                            FileName = hpeLtfsFormatWizardLink,
-                            UseShellExecute = true
-                        }
-                    };
-                    process.Start();
-                }
-                btnStartLtfsFormatWizard.Click += BtnStartLtfsFormatWizard_Click;
+                btnStartLtfsFormatWizard.Click += (object sender, System.Windows.RoutedEventArgs e) => OpenLnkFile(hpeLtfsFormatWizardLink);
                 btnStartLtfsFormatWizard.IsEnabled = true;
             }
             string hpeLtfsUnformatWizardLink = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\HPE\HPE StoreOpen Software\LTFS Unformat Wizard.lnk";
             if (File.Exists(hpeLtfsUnformatWizardLink))
             {
-                void BtnStartLtfsUnformatWizard_Click(object sender, System.Windows.RoutedEventArgs e)
-                {
-                    Process process = new()
-                    {
-                        StartInfo = new ProcessStartInfo()
-                        {
-                            FileName = hpeLtfsUnformatWizardLink,
-                            UseShellExecute = true
-                        }
-                    };
-                    process.Start();
-                }
-                btnStartLtfsUnformatWizard.Click += BtnStartLtfsUnformatWizard_Click;
+                btnStartLtfsUnformatWizard.Click += (object sender, System.Windows.RoutedEventArgs e) => OpenLnkFile(hpeLtfsUnformatWizardLink);
                 btnStartLtfsUnformatWizard.IsEnabled = true;
             }
         }
 
-        private void BtnStartLtfsCheckWizard_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void ShowSecureWindow()
+        private void ShowSecureWindow(SecureWindowTypes secureWindowType)
         {
             const NativeMethods.ACCESS_MASK dwDesiredAccess = NativeMethods.ACCESS_MASK.DESKTOP_READOBJECTS |
                 NativeMethods.ACCESS_MASK.DESKTOP_CREATEWINDOW |
@@ -462,13 +557,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             {
                 Thread? thread = new(() =>
                 {
-                    SecureDesktopThread(hSecureDesktop);
+                    SecureDesktopThread(hSecureDesktop, secureWindowType);
                 });
                 thread.SetApartmentState(ApartmentState.STA);
                 thread.Start();
                 thread.Join();
                 _ = Windows.Win32.PInvoke.SwitchDesktop(hOldDesktop);
                 hSecureDesktop.Close();
+                EnumerateTapeDrives();
             }
         }
 
@@ -483,18 +579,31 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             }
         }
 
-        private void SecureDesktopThread(SafeHandle hSecureDesktop)
+        private enum SecureWindowTypes
+        {
+            CreateNewSeedPhraseWindow = 0,
+            RestoreSeedPhraseWindow = 1
+        }
+
+        private static void SecureDesktopThread(SafeHandle hSecureDesktop, SecureWindowTypes secureWindowType)
         {
             if (Windows.Win32.PInvoke.SetThreadDesktop(hSecureDesktop) == TRUE)
             {
                 SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
                 PlayUacSound();
-                SecureDesktopWindows.CreateNewSeedPhraseWindow secureWindow = new();
-                secureWindow.ShowDialog();
+                switch (secureWindowType)
+                {
+                    case SecureWindowTypes.CreateNewSeedPhraseWindow:
+                        SecureDesktopWindows.CreateNewSeedPhraseWindow secureCreateNewSeedPhraseWindow = new();
+                        secureCreateNewSeedPhraseWindow.ShowDialog();
+                        break;
+                        case SecureWindowTypes.RestoreSeedPhraseWindow:
+                        SecureDesktopWindows.RestoreSeedPhraseWindow secureRestoreSeedPhraseWindow = new();
+                        secureRestoreSeedPhraseWindow.ShowDialog();
+                        break;
+                }
                 Dispatcher.CurrentDispatcher.InvokeShutdown();
             }
         }
     }
-
-
-    }
+}

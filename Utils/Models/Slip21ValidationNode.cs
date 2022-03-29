@@ -40,18 +40,18 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
             validationNode.Clear();
         }
 
-        public void CalculateFingerprint()
+        public void CalculateFingerprint(int argon2idOutputLength = 32)
         {
             if (validationNodeMessage?.Length > 0 && validationNodeSalt?.Length > 0)
             {
                 if (Algorithms.Z85.TryGetEncodedBytes(validationNodeMessage, out byte[]? password))
                 {
-                    CalculateFingerprint(password, validationNodeSalt);
+                    CalculateFingerprint(password, validationNodeSalt, argon2idOutputLength);
                 }
             }
         }
 
-        public async void CalculateFingerprint(byte[] message, byte[] salt)
+        public async void CalculateFingerprint(byte[] message, byte[] salt, int argon2idOutputLength = 32)
         {
             if (Fingerprint is not null)
             {
@@ -59,7 +59,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
             }
             Argon2id argon2id = new();
             FingerprintingStarted?.Invoke(this, true);
-            Argon2idHashResult argon2IdHashResult = await Task.Run(() => Algorithms.Argon2id.GetKeyValidationHash(argon2id, message, salt, 32)).ConfigureAwait(true);
+            Argon2idHashResult argon2IdHashResult = await Task.Run(() => Algorithms.Argon2id.GetKeyValidationHash(argon2id, message, salt, argon2idOutputLength)).ConfigureAwait(true);
             Array.Clear(message, 0, message.Length);
             Array.Clear(salt, 0, salt.Length);
             Trace.WriteLine(BitConverter.ToString(argon2IdHashResult.HashBytes));
