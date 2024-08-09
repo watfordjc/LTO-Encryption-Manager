@@ -69,174 +69,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			tbTapeKAD.TextChanged += TbTapeKAD_TextChanged;
 		}
 
-		private void BtnCreateRsaKey_Click(object sender, System.Windows.RoutedEventArgs e)
-		{
-			if (!Utils.PKI.TryGetOrCreateRsaCertificate(out X509Certificate2? tpmCertificate, true, true))
-			{
-				Error = $"Certificate creation error";
-			}
-			else
-			{
-				X509Certificate2UI.DisplayCertificate(tpmCertificate);
-			}
-		}
-
-		private void BtnCalculateKAD_Click(object sender, System.Windows.RoutedEventArgs e)
-		{
-			CalculateKAD(currentAccountSlip21Node, tbTapeLabel.Text, tbTapeKeyRollovers.Text, out kad, false);
-		}
-
-		private void CalculateKAD(Slip21NodeEncrypted? currentAccountSlip21Node, string tapeBarcode, string tapeKeyRolloverCount, out KeyAssociatedData? kad, bool enableEncryption = false)
-		{
-			kad = null;
-			byte[]? tapeKey = null;
-			tbDriveKAD.Text = string.Empty;
-			btnCalculateKAD.IsEnabled = false;
-			if (currentAccountSlip21Node is null || currentAccountSlip21Node.RSASignature is null || string.IsNullOrEmpty(tapeBarcode) || string.IsNullOrEmpty(tapeKeyRolloverCount))
-			{
-				btnCalculateKAD.IsEnabled = true;
-				btnEnableDriveEncryption.IsEnabled = true;
-				btnDisableDriveEncryption.IsEnabled = true;
-				return;
-			}
-			if (uint.TryParse(tapeKeyRolloverCount, out uint tapeRollovercount))
-			{
-				kad = new(currentAccountSlip21Node, tapeBarcode, tapeRollovercount);
-			}
-			else
-			{
-				btnCalculateKAD.IsEnabled = true;
-				btnEnableDriveEncryption.IsEnabled = true;
-				btnDisableDriveEncryption.IsEnabled = true;
-				return;
-			}
-
-			if (!Utils.PKI.TryGetOrCreateRsaCertificate(out X509Certificate2? tpmCertificate, false))
-			{
-				tpmCertificate?.Dispose();
-				btnCalculateKAD.IsEnabled = true;
-				btnEnableDriveEncryption.IsEnabled = true;
-				btnDisableDriveEncryption.IsEnabled = true;
-				return;
-			}
-			using RSACng? rsaKey = (RSACng?)tpmCertificate.GetRSAPrivateKey();
-			using RSACng? rsaPubKey = (RSACng?)tpmCertificate.GetRSAPublicKey();
-			if (!tpmCertificate.HasPrivateKey || rsaKey == null || rsaPubKey == null || rsaKey.Key.ExportPolicy != CngExportPolicies.None)
-			{
-				tpmCertificate?.Dispose();
-				btnCalculateKAD.IsEnabled = true;
-				btnEnableDriveEncryption.IsEnabled = true;
-				btnDisableDriveEncryption.IsEnabled = true;
-				return;
-			}
-			else
-			{
-				bool signatureValid = rsaPubKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Convert.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-				if (signatureValid)
-				{
-					byte[] nodeBytes = new byte[64];
-					Array.Clear(nodeBytes, 0, 64);
-					try
-					{
-						statusbarStatus.Content = "Decrypting account key to derive tape key and KAD...";
-						byte[] nodeLeft = rsaKey.Decrypt(Convert.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
-						Array.Copy(nodeLeft, 0, nodeBytes, 0, 32);
-						Slip21Node accountNode = new(nodeBytes, currentAccountSlip21Node.GlobalKeyRolloverCount.ToString(), currentAccountSlip21Node.DerivationPath);
-						Slip21Node tapeNode = accountNode.GetChildNode(kad.TapeBarcode).GetChildNode(kad.TapeKeyRollovers.ToString());
-						if (enableEncryption)
-						{
-							tapeKey = tapeNode.Right.ToArray();
-						}
-						Slip21ValidationNode tapeValidationNode = new(tapeNode);
-
-						tapeValidationNode.FingerprintingCompleted += new EventHandler<bool>((sender, e) =>
-						{
-							if (e)
-							{
-								TapeValidationNode_FingerprintingCompleted(tapeValidationNode.Fingerprint);
-								btnCalculateKAD.IsEnabled = true;
-								if (string.IsNullOrWhiteSpace(tbDriveKAD.Text) || !tbDriveKAD.Text.StartsWith(tbTapeLabel.Text[..6]))
-								{
-									if (string.IsNullOrWhiteSpace(tbDriveKAD.Text) || !tbDriveKAD.Text.StartsWith(tbTapeLabel.Text[..6]))
-									{
-										Error = "Error: KAD/Barcode mismatch.";
-										return;
-									}
-								}
-
-								if (enableEncryption)
-								{
-									Dispatcher.Invoke(() => Error = "Enabling encryption...");
-									string kadString = tbDriveKAD.Text;
-									new Thread(() =>
-									{
-										TapeDrive currentDrive = TapeDrives[0];
-										currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, FILE_ACCESS_FLAGS.FILE_GENERIC_WRITE | FILE_ACCESS_FLAGS.FILE_GENERIC_READ, FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
-										if (TryWrapKey(currentDrive, ref tapeKey, out byte[]? wrappedKey))
-										{
-											if (tapeKey is not null)
-											{
-												Array.Clear(tapeKey, 0, tapeKey.Length);
-											}
-											//Trace.WriteLine($"Wrapped Key: {Convert.ToHexString(wrappedKey)}");
-											SPTI.LTO.EnableTapeDriveEncryption(currentDrive, ref wrappedKey, kadString);
-											Dispatcher.Invoke(() =>
-											{
-												Error = currentDrive.State.DisplayLastErrorMessage;
-												btnEnableDriveEncryption.IsEnabled = true;
-												btnDisableDriveEncryption.IsEnabled = true;
-											});
-										}
-										currentDrive.Handle.Close();
-									}).Start();
-								}
-							}
-						});
-						statusbarStatus.Content = "Calculating Key Authenticated Data...";
-						tapeValidationNode.CalculateFingerprint(24);
-					}
-					catch (Exception ex)
-					{
-						Error = $"Decryption Error: {ex.Message}";
-						btnTestAccount.IsEnabled = true;
-						btnCalculateKAD.IsEnabled = true;
-						btnEnableDriveEncryption.IsEnabled = true;
-						btnDisableDriveEncryption.IsEnabled = true;
-					}
-				}
-				tpmCertificate?.Dispose();
-				return;
-			}
-		}
-
-		private void TapeDriveSelected(TapeDrive? tapeDrive)
-		{
-			if (tapeDrive is not null)
-			{
-				tapeDrive.State.ErrorMessageChanged += CurrentDriveErrorMessageChanged;
-				btnDetectTape.IsEnabled = true;
-			}
-		}
-		private void CbTapeDrives_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-		{
-			if (e.RemovedItems is not null && e.RemovedItems.Count > 0)
-			{
-				for (int i = 0; i < e.RemovedItems.Count; i++)
-				{
-					if (e.RemovedItems[i] is TapeDrive previousTapeDrive)
-					{
-						previousTapeDrive.State.ErrorMessageChanged -= CurrentDriveErrorMessageChanged;
-					}
-				}
-			}
-			if (e.AddedItems is null || e.AddedItems.Count == 0 || e.AddedItems[0] is not TapeDrive tapeDrive)
-			{
-				btnDetectTape.IsEnabled = false;
-				return;
-			}
-			TapeDriveSelected(tapeDrive);
-		}
-
 		private void BtnRescanDrives_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			EnumerateTapeDrives();
@@ -293,6 +125,97 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			tbLtfsDataCapacity.Text = (currentDrive.State.CurrentTape?.PartitionsCapacity[1] / 1000).ToString();
 			tbLtfsDataCapacityRemaining.Text = (currentDrive?.State.CurrentTape?.PartitionsCapacityRemaining[1] / 1000).ToString();
 			btnDetectTape.IsEnabled = true;
+		}
+
+		private void TpmStatus_Completed(object? sender, bool e)
+		{
+			if (sender is TpmStatus tpmStatus)
+			{
+				TpmSupported =
+					SecureBootEnabled &&
+					tpmStatus.HasTpm &&
+					tpmStatus.HasPcrBankAlgo.Contains(Tpm2Lib.TpmAlgId.Sha256) &&
+					tpmStatus.SupportedAlgo.Contains(Tpm2Lib.TpmAlgId.Rsa) &&
+					tpmStatus.SupportedAlgo.Contains(Tpm2Lib.TpmAlgId.Aes);
+			}
+			else
+			{
+				TpmSupported = false;
+				return;
+			}
+			if (!TryEnumerateGlobalFingerprints(GlobalFingerprints, AccountFingerprints, out Exception? exception))
+			{
+				Error = $"Account listing error: {exception.Message}";
+			}
+			EnumerateTapeDrives();
+			EnableHpeLtfsTools();
+		}
+
+		private void EnumerateTapeDrives()
+		{
+			btnRescanDrives.IsEnabled = false;
+			TapeDrives.Clear();
+			try
+			{
+				string Namespace = @"root\cimv2";
+				string ComputerName = "localhost";
+				using DComSessionOptions cimSessionOptions = new()
+				{
+					Timeout = TimeSpan.FromSeconds(30)
+				};
+				using CimSession cimSession = CimSession.Create(ComputerName, cimSessionOptions);
+				IEnumerable<CimInstance> cimInstances = cimSession.QueryInstances(Namespace, "WQL", @"SELECT * FROM Win32_TapeDrive");
+				foreach (CimInstance cimInstance in cimInstances)
+				{
+					string? deviceId = cimInstance.CimInstanceProperties["DeviceID"].Value.ToString()?.ToLowerInvariant().TrimEnd();
+					string? caption = cimInstance.CimInstanceProperties["Caption"].Value.ToString()?.TrimEnd();
+					if (deviceId == null)
+					{
+						continue;
+					}
+					TapeDrive currentDrive = new();
+					currentDrive.State.ErrorMessageChanged += CurrentDriveErrorMessageChanged;
+					try
+					{
+						currentDrive.DeviceId = deviceId;
+						currentDrive.Caption = caption ?? string.Empty;
+						cimInstance.Dispose();
+						Error = $"Obtaining drive information for \"{currentDrive.Caption}\"...";
+						currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, FILE_ACCESS_FLAGS.FILE_GENERIC_WRITE | FILE_ACCESS_FLAGS.FILE_GENERIC_READ, FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
+						SPTI.LTO.GetTapeDriveInformation(currentDrive);
+						SPTI.LTO.GetTapeDriveIdentifiers(currentDrive);
+						SPTI.LTO.GetTapeDriveDataEncryptionCapabilities(currentDrive);
+						SPTI.LTO.GetTapeDriveKeyWrapKey(currentDrive);
+						currentDrive.Handle.Close();
+					}
+					finally
+					{
+						currentDrive.State.ErrorMessageChanged -= CurrentDriveErrorMessageChanged;
+					}
+					Error = currentDrive.State.DisplayLastErrorMessage;
+					TapeDrives.Add(currentDrive);
+				}
+				if (cbTapeDrives.SelectedIndex >= 0)
+				{
+					TapeDrives[cbTapeDrives.SelectedIndex].State.ErrorMessageChanged -= CurrentDriveErrorMessageChanged;
+				}
+				cbTapeDrives.ItemsSource = TapeDrives;
+				if (cbTapeDrives.Items.Count == 1)
+				{
+					cbTapeDrives.SelectedIndex = 0;
+					TapeDriveSelected(TapeDrives[0]);
+				}
+				if (cbTapeDrives.Items.Count > 0)
+				{
+					btnEnableDriveEncryption.IsEnabled = true;
+					btnDisableDriveEncryption.IsEnabled = true;
+				}
+				btnRescanDrives.IsEnabled = true;
+			}
+			catch (Exception ex)
+			{
+				Error = ex.Message;
+			}
 		}
 
 		private bool TryEnumerateGlobalFingerprints(List<string> globalFingerprints, List<string> accountFingerprints, [NotNullWhen(false)] out Exception? exception)
@@ -545,160 +468,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			}
 		}
 
-		private void BtnTestAccount_Click(object sender, System.Windows.RoutedEventArgs e)
-		{
-			btnTestAccount.IsEnabled = false;
-			if (!File.Exists(CurrentAccountDataFile))
-			{
-				CurrentAccountDataFile = string.Empty;
-				cbAccountFingerprints.SelectedIndex = -1;
-				cbGlobalFingerprints.SelectedIndex = -1;
-				return;
-			}
-			VerifyCurrentAccount(true);
-		}
-
-		private void CbAccountFingerprints_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-		{
-			if (e.AddedItems is null || e.AddedItems.Count == 0 || cbGlobalFingerprints.SelectedIndex == -1 || e.AddedItems[0] is not string accountFingerprint)
-			{
-				return;
-			}
-			UseAccount(accountFingerprint);
-		}
-
-		private void CbGlobalFingerprints_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-		{
-			if (e.AddedItems is null || e.AddedItems.Count == 0 || e.AddedItems[0] is not string globalFingerprint)
-			{
-				return;
-			}
-			if (!TryEnumerateGlobalFingerprints(GlobalFingerprints, AccountFingerprints, out Exception? exception))
-			{
-				Error = $"Account listing error: {exception.Message}";
-			}
-		}
-
-		private void BtnCreateAccountExistingRecoverySeed_Click(object sender, System.Windows.RoutedEventArgs e)
-		{
-			if (SecureBootEnabled && TpmSupported)
-			{
-				ShowSecureWindow(SecureWindowTypes.RestoreSeedPhraseWindow);
-			}
-		}
-
-		private void BtnCreateAccountNewRecoverySeed_Click(object sender, System.Windows.RoutedEventArgs e)
-		{
-			if (SecureBootEnabled && TpmSupported)
-			{
-				ShowSecureWindow(SecureWindowTypes.CreateNewSeedPhraseWindow);
-			}
-		}
-		
-		private void TpmStatus_Completed(object? sender, bool e)
-		{
-			if (sender is TpmStatus tpmStatus)
-			{
-				TpmSupported =
-					SecureBootEnabled &&
-					tpmStatus.HasTpm &&
-					tpmStatus.HasPcrBankAlgo.Contains(Tpm2Lib.TpmAlgId.Sha256) &&
-					tpmStatus.SupportedAlgo.Contains(Tpm2Lib.TpmAlgId.Rsa) &&
-					tpmStatus.SupportedAlgo.Contains(Tpm2Lib.TpmAlgId.Aes);
-			}
-			else
-			{
-				TpmSupported = false;
-				return;
-			}
-			if (!TryEnumerateGlobalFingerprints(GlobalFingerprints, AccountFingerprints, out Exception? exception))
-			{
-				Error = $"Account listing error: {exception.Message}";
-			}
-			EnumerateTapeDrives();
-			EnableHpeLtfsTools();
-		}
-
-		private void EnumerateTapeDrives()
-		{
-			btnRescanDrives.IsEnabled = false;
-			TapeDrives.Clear();
-			try
-			{
-				string Namespace = @"root\cimv2";
-				string ComputerName = "localhost";
-				using DComSessionOptions cimSessionOptions = new()
-				{
-					Timeout = TimeSpan.FromSeconds(30)
-				};
-				using CimSession cimSession = CimSession.Create(ComputerName, cimSessionOptions);
-				IEnumerable<CimInstance> cimInstances = cimSession.QueryInstances(Namespace, "WQL", @"SELECT * FROM Win32_TapeDrive");
-				foreach (CimInstance cimInstance in cimInstances)
-				{
-					string? deviceId = cimInstance.CimInstanceProperties["DeviceID"].Value.ToString()?.ToLowerInvariant().TrimEnd();
-					string? caption = cimInstance.CimInstanceProperties["Caption"].Value.ToString()?.TrimEnd();
-					if (deviceId == null)
-					{
-						continue;
-					}
-					TapeDrive currentDrive = new();
-					currentDrive.State.ErrorMessageChanged += CurrentDriveErrorMessageChanged;
-					try
-					{
-						currentDrive.DeviceId = deviceId;
-						currentDrive.Caption = caption ?? string.Empty;
-						cimInstance.Dispose();
-						Error = $"Obtaining drive information for \"{currentDrive.Caption}\"...";
-						currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, FILE_ACCESS_FLAGS.FILE_GENERIC_WRITE | FILE_ACCESS_FLAGS.FILE_GENERIC_READ, FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
-						SPTI.LTO.GetTapeDriveInformation(currentDrive);
-						SPTI.LTO.GetTapeDriveIdentifiers(currentDrive);
-						SPTI.LTO.GetTapeDriveDataEncryptionCapabilities(currentDrive);
-						SPTI.LTO.GetTapeDriveKeyWrapKey(currentDrive);
-						currentDrive.Handle.Close();
-					}
-					finally
-					{
-						currentDrive.State.ErrorMessageChanged -= CurrentDriveErrorMessageChanged;
-					}
-					Error = currentDrive.State.DisplayLastErrorMessage;
-					TapeDrives.Add(currentDrive);
-				}
-				if (cbTapeDrives.SelectedIndex >= 0)
-				{
-					TapeDrives[cbTapeDrives.SelectedIndex].State.ErrorMessageChanged -= CurrentDriveErrorMessageChanged;
-				}
-				cbTapeDrives.ItemsSource = TapeDrives;
-				if (cbTapeDrives.Items.Count == 1)
-				{
-					cbTapeDrives.SelectedIndex = 0;
-					TapeDriveSelected(TapeDrives[0]);
-				}
-				if (cbTapeDrives.Items.Count > 0)
-				{
-					btnEnableDriveEncryption.IsEnabled = true;
-					btnDisableDriveEncryption.IsEnabled = true;
-				}
-				btnRescanDrives.IsEnabled = true;
-			}
-			catch (Exception ex)
-			{
-				Error = ex.Message;
-			}
-		}
-
-		private static void OpenLnkFile(string filename)
-		{
-			Process process = new()
-			{
-				StartInfo = new ProcessStartInfo()
-				{
-					FileName = filename,
-					UseShellExecute = true
-				}
-			};
-			process.Start();
-		}
-
 		private void EnableHpeLtfsTools()
 		{
 			string hpeLtfsCartridgeBrowserLink = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Microsoft\Windows\Start Menu\Programs\HPE\HPE StoreOpen Software\LTFS Cartridge Browser.lnk";
@@ -739,9 +508,77 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			}
 		}
 
+		private static void OpenLnkFile(string filename)
+		{
+			Process process = new()
+			{
+				StartInfo = new ProcessStartInfo()
+				{
+					FileName = filename,
+					UseShellExecute = true
+				}
+			};
+			process.Start();
+		}
+
 		public void CurrentDriveErrorMessageChanged(object? sender, TapeDriveErrorEventArgs e)
 		{
 			Error = e.ErrorString;
+		}
+
+		private void BtnCreateRsaKey_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			if (!Utils.PKI.TryGetOrCreateRsaCertificate(out X509Certificate2? tpmCertificate, true, true))
+			{
+				Error = $"Certificate creation error";
+			}
+			else
+			{
+				X509Certificate2UI.DisplayCertificate(tpmCertificate);
+			}
+		}
+
+		private void CbGlobalFingerprints_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+		{
+			if (e.AddedItems is null || e.AddedItems.Count == 0 || e.AddedItems[0] is not string globalFingerprint)
+			{
+				return;
+			}
+			if (!TryEnumerateGlobalFingerprints(GlobalFingerprints, AccountFingerprints, out Exception? exception))
+			{
+				Error = $"Account listing error: {exception.Message}";
+			}
+		}
+
+		private void CbAccountFingerprints_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+		{
+			if (e.AddedItems is null || e.AddedItems.Count == 0 || cbGlobalFingerprints.SelectedIndex == -1 || e.AddedItems[0] is not string accountFingerprint)
+			{
+				return;
+			}
+			UseAccount(accountFingerprint);
+		}
+
+		private enum SecureWindowTypes
+		{
+			CreateNewSeedPhraseWindow = 0,
+			RestoreSeedPhraseWindow = 1
+		}
+
+		private void BtnCreateAccountNewRecoverySeed_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			if (SecureBootEnabled && TpmSupported)
+			{
+				ShowSecureWindow(SecureWindowTypes.CreateNewSeedPhraseWindow);
+			}
+		}
+
+		private void BtnCreateAccountExistingRecoverySeed_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			if (SecureBootEnabled && TpmSupported)
+			{
+				ShowSecureWindow(SecureWindowTypes.RestoreSeedPhraseWindow);
+			}
 		}
 
 		private void ShowSecureWindow(SecureWindowTypes secureWindowType)
@@ -785,23 +622,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			}
 		}
 
-		private static void PlayUacSound()
-		{
-			string uacSoundFile = Environment.GetFolderPath(Environment.SpecialFolder.Windows) + @"\Media\Windows User Account Control.wav";
-			if (File.Exists(uacSoundFile))
-			{
-				MediaPlayer player = new();
-				player.Open(new(uacSoundFile));
-				player.Play();
-			}
-		}
-
-		private enum SecureWindowTypes
-		{
-			CreateNewSeedPhraseWindow = 0,
-			RestoreSeedPhraseWindow = 1
-		}
-
 		private static void SecureDesktopThread(SafeHandle hSecureDesktop, SecureWindowTypes secureWindowType)
 		{
 			if (Windows.Win32.PInvoke.SetThreadDesktop(hSecureDesktop) == Constants.TRUE)
@@ -823,6 +643,64 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			}
 		}
 
+		private static void PlayUacSound()
+		{
+			string uacSoundFile = Environment.GetFolderPath(Environment.SpecialFolder.Windows) + @"\Media\Windows User Account Control.wav";
+			if (File.Exists(uacSoundFile))
+			{
+				MediaPlayer player = new();
+				player.Open(new(uacSoundFile));
+				player.Play();
+			}
+		}
+
+		private void BtnTestAccount_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			btnTestAccount.IsEnabled = false;
+			if (!File.Exists(CurrentAccountDataFile))
+			{
+				CurrentAccountDataFile = string.Empty;
+				cbAccountFingerprints.SelectedIndex = -1;
+				cbGlobalFingerprints.SelectedIndex = -1;
+				return;
+			}
+			VerifyCurrentAccount(true);
+		}
+
+		private void CbTapeDrives_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+		{
+			if (e.RemovedItems is not null && e.RemovedItems.Count > 0)
+			{
+				for (int i = 0; i < e.RemovedItems.Count; i++)
+				{
+					if (e.RemovedItems[i] is TapeDrive previousTapeDrive)
+					{
+						previousTapeDrive.State.ErrorMessageChanged -= CurrentDriveErrorMessageChanged;
+					}
+				}
+			}
+			if (e.AddedItems is null || e.AddedItems.Count == 0 || e.AddedItems[0] is not TapeDrive tapeDrive)
+			{
+				btnDetectTape.IsEnabled = false;
+				return;
+			}
+			TapeDriveSelected(tapeDrive);
+		}
+
+		private void TapeDriveSelected(TapeDrive? tapeDrive)
+		{
+			if (tapeDrive is not null)
+			{
+				tapeDrive.State.ErrorMessageChanged += CurrentDriveErrorMessageChanged;
+				btnDetectTape.IsEnabled = true;
+			}
+		}
+
+		private void BtnCalculateKAD_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			CalculateKAD(currentAccountSlip21Node, tbTapeLabel.Text, tbTapeKeyRollovers.Text, out kad, false);
+		}
+
 		void TapeValidationNode_FingerprintingCompleted(string? tapeValidationFingerprint)
 		{
 			if (kad is not null)
@@ -832,6 +710,129 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			}
 			tbDriveKAD.Text = kad?.GetKAD();
 			btnTestAccount.IsEnabled = true;
+		}
+
+		private void CalculateKAD(Slip21NodeEncrypted? currentAccountSlip21Node, string tapeBarcode, string tapeKeyRolloverCount, out KeyAssociatedData? kad, bool enableEncryption = false)
+		{
+			kad = null;
+			byte[]? tapeKey = null;
+			tbDriveKAD.Text = string.Empty;
+			btnCalculateKAD.IsEnabled = false;
+			if (currentAccountSlip21Node is null || currentAccountSlip21Node.RSASignature is null || string.IsNullOrEmpty(tapeBarcode) || string.IsNullOrEmpty(tapeKeyRolloverCount))
+			{
+				btnCalculateKAD.IsEnabled = true;
+				btnEnableDriveEncryption.IsEnabled = true;
+				btnDisableDriveEncryption.IsEnabled = true;
+				return;
+			}
+			if (uint.TryParse(tapeKeyRolloverCount, out uint tapeRollovercount))
+			{
+				kad = new(currentAccountSlip21Node, tapeBarcode, tapeRollovercount);
+			}
+			else
+			{
+				btnCalculateKAD.IsEnabled = true;
+				btnEnableDriveEncryption.IsEnabled = true;
+				btnDisableDriveEncryption.IsEnabled = true;
+				return;
+			}
+
+			if (!Utils.PKI.TryGetOrCreateRsaCertificate(out X509Certificate2? tpmCertificate, false))
+			{
+				tpmCertificate?.Dispose();
+				btnCalculateKAD.IsEnabled = true;
+				btnEnableDriveEncryption.IsEnabled = true;
+				btnDisableDriveEncryption.IsEnabled = true;
+				return;
+			}
+			using RSACng? rsaKey = (RSACng?)tpmCertificate.GetRSAPrivateKey();
+			using RSACng? rsaPubKey = (RSACng?)tpmCertificate.GetRSAPublicKey();
+			if (!tpmCertificate.HasPrivateKey || rsaKey == null || rsaPubKey == null || rsaKey.Key.ExportPolicy != CngExportPolicies.None)
+			{
+				tpmCertificate?.Dispose();
+				btnCalculateKAD.IsEnabled = true;
+				btnEnableDriveEncryption.IsEnabled = true;
+				btnDisableDriveEncryption.IsEnabled = true;
+				return;
+			}
+			else
+			{
+				bool signatureValid = rsaPubKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Convert.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+				if (signatureValid)
+				{
+					byte[] nodeBytes = new byte[64];
+					Array.Clear(nodeBytes, 0, 64);
+					try
+					{
+						statusbarStatus.Content = "Decrypting account key to derive tape key and KAD...";
+						byte[] nodeLeft = rsaKey.Decrypt(Convert.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
+						Array.Copy(nodeLeft, 0, nodeBytes, 0, 32);
+						Slip21Node accountNode = new(nodeBytes, currentAccountSlip21Node.GlobalKeyRolloverCount.ToString(), currentAccountSlip21Node.DerivationPath);
+						Slip21Node tapeNode = accountNode.GetChildNode(kad.TapeBarcode).GetChildNode(kad.TapeKeyRollovers.ToString());
+						if (enableEncryption)
+						{
+							tapeKey = tapeNode.Right.ToArray();
+						}
+						Slip21ValidationNode tapeValidationNode = new(tapeNode);
+
+						tapeValidationNode.FingerprintingCompleted += new EventHandler<bool>((sender, e) =>
+						{
+							if (e)
+							{
+								TapeValidationNode_FingerprintingCompleted(tapeValidationNode.Fingerprint);
+								btnCalculateKAD.IsEnabled = true;
+								if (string.IsNullOrWhiteSpace(tbDriveKAD.Text) || !tbDriveKAD.Text.StartsWith(tbTapeLabel.Text[..6]))
+								{
+									if (string.IsNullOrWhiteSpace(tbDriveKAD.Text) || !tbDriveKAD.Text.StartsWith(tbTapeLabel.Text[..6]))
+									{
+										Error = "Error: KAD/Barcode mismatch.";
+										return;
+									}
+								}
+
+								if (enableEncryption)
+								{
+									Dispatcher.Invoke(() => Error = "Enabling encryption...");
+									string kadString = tbDriveKAD.Text;
+									new Thread(() =>
+									{
+										TapeDrive currentDrive = TapeDrives[0];
+										currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, FILE_ACCESS_FLAGS.FILE_GENERIC_WRITE | FILE_ACCESS_FLAGS.FILE_GENERIC_READ, FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
+										if (TryWrapKey(currentDrive, ref tapeKey, out byte[]? wrappedKey))
+										{
+											if (tapeKey is not null)
+											{
+												Array.Clear(tapeKey, 0, tapeKey.Length);
+											}
+											//Trace.WriteLine($"Wrapped Key: {Convert.ToHexString(wrappedKey)}");
+											SPTI.LTO.EnableTapeDriveEncryption(currentDrive, ref wrappedKey, kadString);
+											Dispatcher.Invoke(() =>
+											{
+												Error = currentDrive.State.DisplayLastErrorMessage;
+												btnEnableDriveEncryption.IsEnabled = true;
+												btnDisableDriveEncryption.IsEnabled = true;
+											});
+										}
+										currentDrive.Handle.Close();
+									}).Start();
+								}
+							}
+						});
+						statusbarStatus.Content = "Calculating Key Authenticated Data...";
+						tapeValidationNode.CalculateFingerprint(24);
+					}
+					catch (Exception ex)
+					{
+						Error = $"Decryption Error: {ex.Message}";
+						btnTestAccount.IsEnabled = true;
+						btnCalculateKAD.IsEnabled = true;
+						btnEnableDriveEncryption.IsEnabled = true;
+						btnDisableDriveEncryption.IsEnabled = true;
+					}
+				}
+				tpmCertificate?.Dispose();
+				return;
+			}
 		}
 
 		private void BtnEnableDriveEncryption_Click(object sender, System.Windows.RoutedEventArgs e)
