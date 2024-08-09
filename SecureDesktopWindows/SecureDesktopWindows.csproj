@@ -9,7 +9,24 @@
 		<UseWindowsForms>true</UseWindowsForms>
 		<RootNamespace>uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows</RootNamespace>
 		<StartupObject></StartupObject>
+		<Version>0.1.0</Version>
+		<Authors>John Cook</Authors>
+		<Product>LTO-Encryption-Manager</Product>
+		<Copyright>© John Cook 2021-2024.</Copyright>
+		<PackageProjectUrl>https://github.com/watfordjc/LTO-Encryption-Manager</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/watfordjc/LTO-Encryption-Manager</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageId>uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows</PackageId>
+		<NeutralLanguage>en-GB</NeutralLanguage>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.TSS" Version="2.1.1" />

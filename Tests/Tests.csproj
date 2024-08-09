@@ -8,7 +8,7 @@
     <Product>LTO-Encryption-Manager</Product>
     <Version>0.1.0</Version>
     <NeutralLanguage>en-GB</NeutralLanguage>
-    <Copyright>© John Cook 2021-2022.</Copyright>
+    <Copyright>© John Cook 2021-2024.</Copyright>
     <Platforms>AnyCPU;x64</Platforms>
     <Nullable>enable</Nullable>
     <Authors>John Cook</Authors>
@@ -16,6 +16,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/watfordjc/LTO-Encryption-Manager</RepositoryUrl>
     <PackageProjectUrl>https://github.com/watfordjc/LTO-Encryption-Manager</PackageProjectUrl>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <ItemGroup>

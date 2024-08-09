@@ -9,7 +9,7 @@
     <UseWPF>true</UseWPF>
     <PackageId>uk.JohnCook.dotnet.LTOEncryptionManager</PackageId>
     <Authors>John Cook</Authors>
-    <Copyright>© John Cook 2020-2022.</Copyright>
+    <Copyright>© John Cook 2020-2024.</Copyright>
     <Version>0.0.1</Version>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <StartupObject></StartupObject>
