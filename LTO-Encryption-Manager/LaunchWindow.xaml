@@ -5,7 +5,7 @@
     xmlns:local="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" Height="760" Width="960" SizeToContent="WidthAndHeight" Name="Window" Title="LTO Encryption Manager" FontFamily="Open Sans" FontSize="11pt">
+    mc:Ignorable="d" Height="800" Width="1080" SizeToContent="WidthAndHeight" Name="Window" Title="LTO Encryption Manager" FontFamily="Open Sans" FontSize="11pt">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto" />
@@ -53,21 +53,33 @@
         </GroupBox>
         <GroupBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Header="LTO Tape Loading" Margin="16 8 16 8" Padding="8" BorderBrush="Blue">
             <StackPanel Orientation="Vertical">
-                <StackPanel Orientation="Horizontal" Margin="8 12">
+                <StackPanel Orientation="Horizontal" Margin="4 12">
                     <Label Content="LTO Tape Drive:" />
-                    <ComboBox Name="cbTapeDrives" MinWidth="500" VerticalContentAlignment="Center" DisplayMemberPath="Caption" />
+                    <ComboBox Name="cbTapeDrives" MinWidth="500" VerticalContentAlignment="Center" DisplayMemberPath="DeviceUIName" />
                     <Button x:Name="btnDetectTape" IsEnabled="False" Margin="8 0" Padding="8 6" Content="Detect Tape" />
+                    <Button x:Name="btnEjectTape" IsEnabled="False" Margin="8 0" Padding="8 6" Content="Eject Tape" />
+                    <Button x:Name="btnRescanDrives" IsEnabled="False" Margin="8" Padding="8 6" Content="Search for Drives" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="8 12">
+                <StackPanel Orientation="Horizontal" Margin="4 12 4 4">
                     <Label Content="LTO Tape Barcode:" />
                     <TextBox x:Name="tbTapeLabel" MinWidth="180" VerticalContentAlignment="Center" FontFamily="Consolas" />
                     <Button x:Name="btnScanBarcode" IsEnabled="False" Margin="8 0" Padding="8 6" Content="Scan Barcode" />
                     <Label Content="Tape Key Rollover Count:" />
                     <TextBox x:Name="tbTapeKeyRollovers" MinWidth="120" VerticalContentAlignment="Center" FontFamily="Consolas" />
                 </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="4 4 4 8">
+                    <Label Content="LTFS Data Partition Capacity (GB):" VerticalAlignment="Center" />
+                    <TextBox x:Name="tbLtfsDataCapacity" IsReadOnly="True" Margin="8 0" Padding="8 6" MinWidth="50" FontFamily="Consolas" />
+                    <Label Content="Remaining (GB):" VerticalAlignment="Center" />
+                    <TextBox x:Name="tbLtfsDataCapacityRemaining" IsReadOnly="True" Margin="8 0" Padding="8 6" MinWidth="50" FontFamily="Consolas" />
+                </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="4 4 4 0">
-                    <Label Content="Key Associated Data:" VerticalAlignment="Center" />
-                    <TextBox x:Name="tbKAD" IsReadOnly="True" Margin="8" Padding="8 6" MinLines="2" MaxLines="4" MinWidth="590" FontFamily="Consolas" />
+                    <Label Content="Tape KAD:" VerticalAlignment="Center" />
+                    <TextBox x:Name="tbTapeKAD" IsReadOnly="True" Margin="8 0" Padding="8 6" MinWidth="590" FontFamily="Consolas" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="4 4 4 0">
+                    <Label Content="Drive KAD:" VerticalAlignment="Center" />
+                    <TextBox x:Name="tbDriveKAD" IsReadOnly="True" Margin="8 0" Padding="8 6" MinWidth="590" FontFamily="Consolas" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="4 4 4 0">
                     <Button x:Name="btnCalculateKAD" Margin="8" Padding="8 6" Content="Calculate Key Associated Data" />
