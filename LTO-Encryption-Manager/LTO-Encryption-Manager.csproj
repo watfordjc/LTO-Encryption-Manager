@@ -14,6 +14,7 @@
     <NeutralLanguage>en-GB</NeutralLanguage>
     <StartupObject></StartupObject>
     <Nullable>enable</Nullable>
+    <Platforms>AnyCPU;x64</Platforms>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/watfordjc/LTO-Encryption-Manager</RepositoryUrl>
@@ -79,6 +80,10 @@
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
     </None>
   </ItemGroup>
 
