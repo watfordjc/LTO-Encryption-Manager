@@ -91,8 +91,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
                 _ = tpm.GetCapability(Cap.Pcrs, 0, 255, out caps);
                 PcrSelection[] pcrs = ((PcrSelectionArray)caps).pcrSelections;
 
-                Trace.WriteLine(string.Empty);
-                Trace.WriteLine("Available PCR banks:");
+                //Trace.WriteLine(string.Empty);
+                //Trace.WriteLine("Available PCR banks:");
                 foreach (PcrSelection pcrBank in pcrs)
                 {
                     HasPcrBankAlgo.Add(pcrBank.hash);
@@ -103,7 +103,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
                     {
                         _ = sb.Append($"{selectedPcr},");
                     }
-                    Trace.WriteLine(sb);
+                    //Trace.WriteLine(sb);
                 }
 
                 //
@@ -168,7 +168,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
                 for (int i = 0; i < values.Length; i++)
                 {
                     TpmHash pcrHash = new(TpmAlgId.Sha256, values[i].buffer);
-                    Trace.WriteLine($"PCR{pcrsToSelect[i]}: {BitConverter.ToString(pcrHash.HashData).Replace("-", "").ToLower(CultureInfo.InvariantCulture)}");
+                    //Trace.WriteLine($"PCR{pcrsToSelect[i]}: {BitConverter.ToString(pcrHash.HashData).Replace("-", "").ToLower(CultureInfo.InvariantCulture)}");
                 }
                 
 
