@@ -62,11 +62,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
             Argon2idHashResult argon2IdHashResult = await Task.Run(() => Algorithms.Argon2id.GetKeyValidationHash(argon2id, message, salt, argon2idOutputLength)).ConfigureAwait(true);
             Array.Clear(message, 0, message.Length);
             Array.Clear(salt, 0, salt.Length);
-            Trace.WriteLine(BitConverter.ToString(argon2IdHashResult.HashBytes));
+            //Trace.WriteLine(BitConverter.ToString(argon2IdHashResult.HashBytes));
             if (Algorithms.Z85.TryGetEncodedBytes(argon2IdHashResult.HashBytes, out byte[]? z85Hash))
             {
-                Trace.WriteLine(DerivationPath);
-                Trace.WriteLine(Encoding.UTF8.GetString(z85Hash));
+                //Trace.WriteLine(DerivationPath);
+                //Trace.WriteLine(Encoding.UTF8.GetString(z85Hash));
                 Fingerprint = Encoding.UTF8.GetString(z85Hash);
             }
         }
