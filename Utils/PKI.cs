@@ -37,7 +37,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
                     {
                         byte* oidValue = (byte*)oidValuePtr;
                         pszOID = new(oidValue);
-                        Windows.Win32.Security.Cryptography.CRYPT_OID_INFO* oidPtr = Windows.Win32.PInvoke.CryptFindOIDInfo(CRYPT_OID_INFO_OID_KEY, pszOID, 0);
+                        Windows.Win32.Security.Cryptography.CRYPT_OID_INFO* oidPtr = Windows.Win32.PInvoke.CryptFindOIDInfo(CRYPT_OID_INFO_OID_KEY, &pszOID, 0);
                         if ((IntPtr)oidPtr != IntPtr.Zero)
                         {
                             currentOidInfo = *oidPtr;
