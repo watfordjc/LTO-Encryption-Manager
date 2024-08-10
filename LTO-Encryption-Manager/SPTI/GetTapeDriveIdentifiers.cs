@@ -155,7 +155,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			{
 				if (arrayPosition < 8)
 				{
-					Windows.Win32.InlineArrayIndexerExtensions.ItemRef(ref spt.Cdb, arrayPosition) = value;
+					//Windows.Win32.InlineArrayIndexerExtensions.ItemRef(ref spt.Cdb, arrayPosition) = value;
+					spt.Cdb[arrayPosition] = value;
 				}
 				else if (arrayPosition < CdbExtendedBuffer.Length + 8)
 				{
