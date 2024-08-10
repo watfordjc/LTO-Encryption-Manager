@@ -21,8 +21,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
         public static void GetTapeDriveInformation(TapeDrive tapeDrive)
         {
             HLOCAL storageDescriptorHeaderPtr = Windows.Win32.PInvoke.LocalAlloc(Windows.Win32.System.Memory.LOCAL_ALLOC_FLAGS.LPTR, (nuint)Marshal.SizeOf<Windows.Win32.System.Ioctl.STORAGE_DESCRIPTOR_HEADER>());
-			HLOCAL adapterDescriptorPtr = HLOCAL.Null;
-			HLOCAL deviceDescriptorPtr = HLOCAL.Null;
+			HLOCAL adapterDescriptorPtr = (HLOCAL)IntPtr.Zero;
+			HLOCAL deviceDescriptorPtr = (HLOCAL)IntPtr.Zero;
             Windows.Win32.System.Ioctl.STORAGE_DESCRIPTOR_HEADER storageDescriptorHeader;
             NativeOverlapped overlapped;
             for (uint i = 0; i < 4; i++)
