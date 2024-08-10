@@ -25,7 +25,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
         public event PropertyChangedEventHandler? PropertyChanged;
         private byte[]? binarySeed;
         bool validTpmCert;
-        public List<string>? Bip39Dictionary { get; private set; }
+        public List<string> Bip39Dictionary { get; private set; }
         private Bip39SeedPhrase _newSeedPhrase = new();
         public Bip39SeedPhrase NewSeedPhrase => _newSeedPhrase;
         public SecureString? Passphrase { private get; set; }
@@ -73,6 +73,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
         {
             InitializeComponent();
             Shown += Form_Shown;
+            Bip39Dictionary = new();
             FirstLevelLabels = new()
             {
                 new Slip21Schema(Utils.Properties.Resources.slip21_schema_lto_aes256gcm),
@@ -138,7 +139,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 
         private async void GenerateBip39Dictionary()
         {
-            Bip39Dictionary = await Bip39.GetWordValues();
+            await Bip39.GetWordValues(Bip39Dictionary);
             cbWordList = new()
             {
                 cbWord1, cbWord2, cbWord3, cbWord4, cbWord5, cbWord6, cbWord7, cbWord8, cbWord9, cbWord10, cbWord11, cbWord12, cbWord13, cbWord14, cbWord15, cbWord16, cbWord17, cbWord18, cbWord19, cbWord20, cbWord21, cbWord22, cbWord23, cbWord24
@@ -162,7 +163,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             btnValidateSeedPhrase.Enabled = !NewSeedPhrase.HasErrors;
         }
 
-        private void CbWord_Validating(object sender, CancelEventArgs e)
+        private void CbWord_Validating(object? sender, CancelEventArgs e)
         {
         if (sender is not ComboBox cbWord)
             {

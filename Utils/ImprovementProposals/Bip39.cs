@@ -19,9 +19,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
             }
         }
 
-        public static Task<List<string>> GetWordValues()
+        public static Task<Boolean> GetWordValues(List<String> words)
         {
-            List<string> words = new();
+            words.Clear();
             for (int i = 0; i < 2048; i++)
             {
                 if (AmericanEnglish.TryGetWordFromInt(i, out string? word))
@@ -29,7 +29,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
                     words.Add(word);
                 }
             }
-            return Task.FromResult(words);
+            return Task.FromResult(true);
         }
 
         /// <summary>

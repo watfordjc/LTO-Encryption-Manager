@@ -11,12 +11,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
         /// <summary>
         /// The left 32 bytes of the node (the derivation key)
         /// </summary>
-        public readonly ReadOnlySpan<byte> Left { get; }
+        public readonly ReadOnlySpan<byte> Left { get { return nodeBytes.AsSpan()[..32]; } }
         /// <summary>
         /// The right 32 bytes of the node (the symmetric key)
         /// </summary>
-        public readonly ReadOnlySpan<byte> Right { get; }
-        private readonly byte[]? nodeBytes;
+        public readonly ReadOnlySpan<byte> Right { get { return nodeBytes.AsSpan()[32..64]; } }
+        private readonly byte[] nodeBytes;
         public readonly string DerivationPath { get; init; }
         public readonly string GlobalKeyRolloverCount { get; init; }
 
@@ -24,15 +24,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
         /// Instantiate a new SLIP-0021 Node.
         /// </summary>
         /// <param name="nodeBytes">The full 64 bytes of the node (i.e. the first 64 bytes of output from HMAC-SHA512)</param>
-        public Slip21Node(in byte[] nodeBytes, string globalKeyRolloverCount, string? label = null)
+        public Slip21Node(byte[] nodeBytes, string globalKeyRolloverCount, string? label = null)
         {
             if (nodeBytes.Length != 64)
             {
                 throw new ArgumentException("The byte array must have a length of exactly 64 bytes.", nameof(nodeBytes));
             }
             this.nodeBytes = nodeBytes;
-            Left = nodeBytes.AsSpan().Slice(0, 32);
-            Right = nodeBytes.AsSpan().Slice(32, 32);
             DerivationPath = label ?? Resources.slip21_master_node_ref;
             GlobalKeyRolloverCount = globalKeyRolloverCount;
         }

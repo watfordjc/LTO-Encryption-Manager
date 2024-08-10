@@ -23,7 +23,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
 {
     public class AddSeedPhraseViewModel : ViewModelBase
     {
-        public List<string>? Bip39Dictionary { get; private set; }
+        public List<string> Bip39Dictionary { get; private set; }
         private Bip39SeedPhrase _newSeedPhrase = new();
         public Bip39SeedPhrase NewSeedPhrase => _newSeedPhrase;
         public SecureString? Passphrase { private get; set; }
@@ -70,6 +70,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
 
         public AddSeedPhraseViewModel()
         {
+            Bip39Dictionary = new();
             GenerateBip39Dictionary();
             _validateSeedPhrase = new RelayCommand(
                                 execute => ValidateSeedPhrase_Execute(),
@@ -97,7 +98,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
 
         private async void GenerateBip39Dictionary()
         {
-            Bip39Dictionary = await Bip39.GetWordValues();
+            await Bip39.GetWordValues(Bip39Dictionary);
         }
 
         public void ValidateSeedPhrase_Execute()
