@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Models;
+using Windows.Win32.Foundation;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 {
@@ -19,9 +20,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
         /// <param name="tapeDrive">A <see cref="TapeDrive"/> instance</param>
         public static void GetTapeDriveInformation(TapeDrive tapeDrive)
         {
-            IntPtr storageDescriptorHeaderPtr = Windows.Win32.PInvoke.LocalAlloc(Windows.Win32.System.Memory.LOCAL_ALLOC_FLAGS.LPTR, (nuint)Marshal.SizeOf<Windows.Win32.System.Ioctl.STORAGE_DESCRIPTOR_HEADER>());
-            IntPtr adapterDescriptorPtr = IntPtr.Zero;
-            IntPtr deviceDescriptorPtr = IntPtr.Zero;
+            HLOCAL storageDescriptorHeaderPtr = Windows.Win32.PInvoke.LocalAlloc(Windows.Win32.System.Memory.LOCAL_ALLOC_FLAGS.LPTR, (nuint)Marshal.SizeOf<Windows.Win32.System.Ioctl.STORAGE_DESCRIPTOR_HEADER>());
+			HLOCAL adapterDescriptorPtr = HLOCAL.Null;
+			HLOCAL deviceDescriptorPtr = HLOCAL.Null;
             Windows.Win32.System.Ioctl.STORAGE_DESCRIPTOR_HEADER storageDescriptorHeader;
             NativeOverlapped overlapped;
             for (uint i = 0; i < 4; i++)

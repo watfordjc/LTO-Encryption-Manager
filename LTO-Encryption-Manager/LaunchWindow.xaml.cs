@@ -21,6 +21,7 @@ using uk.JohnCook.dotnet.LTOEncryptionManager.Models;
 using uk.JohnCook.dotnet.LTOEncryptionManager.SPTI;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Windows.Win32.Foundation;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager
 {
@@ -116,7 +117,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			tbTapeKAD.Text = string.Empty;
 			tbDriveKAD.Text = string.Empty;
 			TapeDrive currentDrive = TapeDrives[cbTapeDrives.SelectedIndex];
-			currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, FILE_ACCESS_FLAGS.FILE_GENERIC_WRITE | FILE_ACCESS_FLAGS.FILE_GENERIC_READ, FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
+			currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, (uint)(GENERIC_ACCESS_RIGHTS.GENERIC_WRITE | GENERIC_ACCESS_RIGHTS.GENERIC_READ), FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
 			SPTI.LTO.GetCartridgeMemory(TapeDrives[cbTapeDrives.SelectedIndex]);
 			SPTI.LTO.GetNextBlockEncryptionStatus(TapeDrives[cbTapeDrives.SelectedIndex]);
 			currentDrive.Handle.Close();
@@ -181,7 +182,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 						currentDrive.Caption = caption ?? string.Empty;
 						cimInstance.Dispose();
 						Error = $"Obtaining drive information for \"{currentDrive.Caption}\"...";
-						currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, FILE_ACCESS_FLAGS.FILE_GENERIC_WRITE | FILE_ACCESS_FLAGS.FILE_GENERIC_READ, FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
+						currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, (uint)(GENERIC_ACCESS_RIGHTS.GENERIC_WRITE | GENERIC_ACCESS_RIGHTS.GENERIC_READ), FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
 						SPTI.LTO.GetTapeDriveInformation(currentDrive);
 						SPTI.LTO.GetTapeDriveIdentifiers(currentDrive);
 						SPTI.LTO.GetTapeDriveDataEncryptionCapabilities(currentDrive);
@@ -797,7 +798,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 									new Thread(() =>
 									{
 										TapeDrive currentDrive = TapeDrives[0];
-										currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, FILE_ACCESS_FLAGS.FILE_GENERIC_WRITE | FILE_ACCESS_FLAGS.FILE_GENERIC_READ, FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
+										currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, (uint)(GENERIC_ACCESS_RIGHTS.GENERIC_WRITE | GENERIC_ACCESS_RIGHTS.GENERIC_READ), FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
 										if (TryWrapKey(currentDrive, ref tapeKey, out byte[]? wrappedKey))
 										{
 											if (tapeKey is not null)
@@ -895,7 +896,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 		private void BtnDisableDriveEncryption_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			TapeDrive currentDrive = TapeDrives[0];
-			currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, FILE_ACCESS_FLAGS.FILE_GENERIC_WRITE | FILE_ACCESS_FLAGS.FILE_GENERIC_READ, FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
+			currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, (uint)(GENERIC_ACCESS_RIGHTS.GENERIC_WRITE | GENERIC_ACCESS_RIGHTS.GENERIC_READ), FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
 			SPTI.LTO.DisableTapeDriveEncryption(currentDrive);
 			Error = currentDrive.State.DisplayLastErrorMessage;
 			currentDrive.Handle.Close();
