@@ -96,5 +96,24 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			[In] in uint nOutBufferSize,												// [in] DWORD
 			[Out, Optional] out uint pBytesReturned,									// [out, optional] LPDWORD
 			[In, Out, Optional] ref System.Threading.NativeOverlapped Overlapped);		// [in, out, optional] LPOVERLAPPED
+
+
+		//[DllImport(@"H:\source\repos\LTO-Encryption-SPTI\x64\Debug\LTO-Encryption-SPTI-Library.dll", EntryPoint = "GetTapeDriveHandle", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, SetLastError = true)]
+		//public static extern IntPtr GetTapeDriveHandle([In, MarshalAs(UnmanagedType.LPStr)] string devicePath);
+
+		//[DllImport(@"H:\source\repos\LTO-Encryption-SPTI\x64\Debug\LTO-Encryption-SPTI-Library.dll", EntryPoint = "QueryPropertyForDevice", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, SetLastError = true)]
+		//public static extern Windows.Win32.Foundation.BOOL QueryPropertyForDevice([In] SafeFileHandle DeviceHandle, [Out] out uint AlignmentMask, [Out] out byte SrbType, [Out] out Windows.Win32.Storage.FileSystem.STORAGE_BUS_TYPE StorageBusType, [In, Out, MarshalAs(UnmanagedType.LPStr)] StringBuilder driveSerialNumber, [In] int serialNumberBufferLength);
+
+		//[DllImport(@"H:\source\repos\LTO-Encryption-SPTI\x64\Debug\LTO-Encryption-SPTI-Library.dll", EntryPoint = "GetScsiPassthroughWithBuffersEx", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, SetLastError = true)]
+		//public static extern IntPtr GetScsiPassthroughWithBuffersEx();
+
+		//[DllImport(@"H:\source\repos\LTO-Encryption-SPTI\x64\Debug\LTO-Encryption-SPTI-Library.dll", EntryPoint = "ResetSrbIn", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, SetLastError = true)]
+		//public static extern uint ResetSrbIn(IntPtr psptwb_ex, byte opCode);
+
+		//[DllImport(@"H:\source\repos\LTO-Encryption-SPTI\x64\Debug\LTO-Encryption-SPTI-Library.dll", EntryPoint = "SendSrb", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, SetLastError = true)]
+		//public static extern bool SendSrb(SafeFileHandle tapeHandle, IntPtr psptwb_ex, uint length, out uint returned);
+
+		//[DllImport(@"H:\source\repos\LTO-Encryption-SPTI\x64\Debug\LTO-Encryption-SPTI-Library.dll", EntryPoint = "ParseDeviceIdentifiers", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, SetLastError = true)]
+		//public static extern void ParseDeviceIdentifiers(IntPtr deviceIdentifiers, out short pLogicalUnitIdentifierLength, out string ppLogicalUnitIdentifier);
 	}
 }

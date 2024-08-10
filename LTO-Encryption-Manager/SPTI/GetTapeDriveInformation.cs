@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Models;
 
@@ -22,7 +23,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
             IntPtr adapterDescriptorPtr = IntPtr.Zero;
             IntPtr deviceDescriptorPtr = IntPtr.Zero;
             Windows.Win32.System.Ioctl.STORAGE_DESCRIPTOR_HEADER storageDescriptorHeader;
-            Windows.Win32.System.IO.OVERLAPPED overlapped;
+            NativeOverlapped overlapped;
             for (uint i = 0; i < 4; i++)
             {
                 uint bufferSize = 0;

@@ -219,8 +219,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			};
 		}
 
-
-
 		internal static bool TrySendSrb(TapeDrive tapeDrive, ref NATIVE_SCSI_PASS_THROUGH_WITH_BUFFERS_EX sptwb_ex, uint length, out uint returnedData, out int hresult)
 		{
 			returnedData = 0;
@@ -242,7 +240,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 				bool status = false;
 				IntPtr psptwb_ex = Marshal.AllocHGlobal(Marshal.SizeOf<NATIVE_SCSI_PASS_THROUGH_WITH_BUFFERS_EX>());
 				Marshal.StructureToPtr(sptwb_ex, psptwb_ex, true);
-				Windows.Win32.System.IO.OVERLAPPED overlapped = new();
+				NativeOverlapped overlapped = new();
 				uint outputLength = 0;
 				unsafe
 				{
