@@ -153,11 +153,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 
 			public void SetCbdValue(int arrayPosition, byte value)
 			{
+				// The first 8 bytes of the CDB go in spt.Cdb
 				if (arrayPosition < 8)
 				{
-					//Windows.Win32.InlineArrayIndexerExtensions.ItemRef(ref spt.Cdb, arrayPosition) = value;
 					spt.Cdb[arrayPosition] = value;
 				}
+				// The remaining CDB bytes go in CdbExtendedBuffer
 				else if (arrayPosition < CdbExtendedBuffer.Length + 8)
 				{
 					CdbExtendedBuffer[arrayPosition - 8] = value;
@@ -1184,9 +1185,17 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		static void PrintCdb(NATIVE_SCSI_PASS_THROUGH_WITH_BUFFERS_EX sptwb_ex)
 		{
 			byte[] cdb = new byte[sptwb_ex.spt.CdbLength];
-			for (int i = 0; i < cdb.Length; i++)
+			// The first 8 bytes of the CDB are in sptwb_ex.spt.Cdb
+			int cdb_cap_len = cdb.Length < 8 ? cdb.Length : 8;
+			for (int i = 0; i < cdb_cap_len; i++)
 			{
-				cdb[i] = Windows.Win32.InlineArrayIndexerExtensions.ReadOnlyItemRef(sptwb_ex.spt.Cdb, i);
+				cdb[i] = sptwb_ex.spt.Cdb[i];
+			}
+			// The remaining CDB bytes are in sptwb_ex.CdbExtendedBuffer
+			int cdb_buf_len = sptwb_ex.CdbExtendedBuffer.Length;
+			for (int i = 0; i < cdb_buf_len; i++)
+			{
+				cdb[8 + i] = sptwb_ex.CdbExtendedBuffer[i];
 			}
 			//Trace.WriteLine($"CDB: {Convert.ToHexString(cdb)}");
 		}
