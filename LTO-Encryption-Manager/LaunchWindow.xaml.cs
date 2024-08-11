@@ -254,22 +254,21 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			exception = null;
 
 			cbGlobalFingerprints.ItemsSource = GlobalFingerprints;
-			if (GlobalFingerprints.Count != 1)
+			if (GlobalFingerprints.Count == 0)
 			{
-				AccountFingerprints.Clear();
-				cbAccountFingerprints.ItemsSource = AccountFingerprints;
-				return;
-			}
-
-			cbGlobalFingerprints.SelectedIndex = 0;
-			if (TryEnumerateAccountFingerprints(GlobalFingerprints[0], ref accountFingerprints, out exception))
-			{
-
-			}
-			else
-			{
+				cbAccountFingerprints.ItemsSource = null;
+				accountFingerprints.Clear();
 				cbAccountFingerprints.ItemsSource = accountFingerprints;
+				cbAccountFingerprints.SelectedIndex = -1;
 				return;
+			}
+			else if (GlobalFingerprints.Count == 1)
+			{
+				cbGlobalFingerprints.SelectedIndex = 0;
+			}
+			if (cbGlobalFingerprints.SelectedIndex != -1)
+			{
+				_ = TryEnumerateAccountFingerprints(GlobalFingerprints[cbGlobalFingerprints.SelectedIndex], ref accountFingerprints, out exception);
 			}
 		}
 
@@ -302,6 +301,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
 		private void OnAccountEnumerationCompleted()
 		{
+			cbAccountFingerprints.ItemsSource = null;
+			cbAccountFingerprints.Items.Clear();
 			cbAccountFingerprints.ItemsSource = AccountFingerprints;
 			if (AccountFingerprints.Count == 1)
 			{
