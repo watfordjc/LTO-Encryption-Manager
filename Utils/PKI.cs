@@ -100,17 +100,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
         {
             rsaCng = null;
 
-            CngProvider tpmCryptoProvider;
-            try
-            {
-                tpmCryptoProvider = new("Microsoft Platform Crypto Provider");
-            }
-            // CngProvider.ctor (ArgumentNullException): provider argument is null ()
-            // CngProvider.ctor (ArgumentException): provider argument has length 0
-            catch (Exception)
-            {
-                return false;
-            }
+            CngProvider tpmCryptoProvider = CngProvider.MicrosoftPlatformCryptoProvider;
 
             bool tpmKeyExists;
             try
@@ -168,17 +158,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
         {
             rsaCng = null;
 
-            CngProvider tpmCryptoProvider;
-            try
-            {
-                tpmCryptoProvider = new("Microsoft Platform Crypto Provider");
-            }
-            // CngProvider.ctor (ArgumentNullException): provider argument is null
-            // CngProvider.ctor (ArgumentException): provider argument has length 0
-            catch (Exception)
-            {
-                return false;
-            }
+            CngProvider tpmCryptoProvider = CngProvider.MicrosoftPlatformCryptoProvider;
 
             string keyName = "LTO Encryption Manager account protection";
 
