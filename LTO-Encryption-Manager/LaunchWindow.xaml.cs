@@ -398,24 +398,28 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				return;
 			}
 
-			RSACng? rsaKey = null;
-			RSACng? rsaPubKey = null;
+			RSA? rsaPrivateKey = null;
+			RSACng? rsaCngKey = null;
+			RSA? rsaPublicKey = null;
 			void Cleanup()
 			{
-				rsaKey?.Dispose();
-				rsaPubKey?.Dispose();
+				rsaPrivateKey?.Dispose();
+				rsaCngKey?.Dispose();
+				rsaPublicKey?.Dispose();
 				tpmCertificate?.Dispose();
 			}
 			try
 			{
-				rsaKey = (RSACng?)tpmCertificate?.GetRSAPrivateKey();
-				rsaPubKey = (RSACng?)tpmCertificate?.GetRSAPublicKey();
+				rsaPrivateKey = tpmCertificate?.GetRSAPrivateKey();
+				rsaCngKey = rsaPrivateKey is RSACng ? rsaPrivateKey as RSACng : null;
+				rsaPublicKey = tpmCertificate?.GetRSAPublicKey();
 			}
 			catch (Exception)
 			{
 				Cleanup();
+				return;
 			}
-			if (tpmCertificate?.HasPrivateKey == false || rsaKey is null || rsaPubKey is null || rsaKey.Key.ExportPolicy != CngExportPolicies.None)
+			if (tpmCertificate?.HasPrivateKey == false || rsaPrivateKey is null || rsaPublicKey is null || rsaCngKey is null || rsaCngKey.Key.ExportPolicy != CngExportPolicies.None)
 			{
 				Cleanup();
 				return;
@@ -423,7 +427,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
 			try
 			{
-				signatureValid = rsaPubKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Convert.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+				signatureValid = rsaPublicKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Convert.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 			}
 			catch (Exception)
 			{
@@ -443,7 +447,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				try
 				{
 					statusbarStatus.Content = "Testing account key decryption...";
-					byte[] nodeLeft = rsaKey.Decrypt(Convert.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
+					byte[] nodeLeft = rsaCngKey.Decrypt(Convert.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
 					Array.Copy(nodeLeft, 0, nodeBytes, 0, 32);
 					Slip21Node accountNode = new(nodeBytes, nodeDataSplit[2], nodeDataSplit[1]);
 					Slip21ValidationNode accountValidationNode = new(accountNode);
@@ -746,9 +750,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				btnDisableDriveEncryption.IsEnabled = true;
 				return;
 			}
-			using RSACng? rsaKey = (RSACng?)tpmCertificate.GetRSAPrivateKey();
-			using RSACng? rsaPubKey = (RSACng?)tpmCertificate.GetRSAPublicKey();
-			if (!tpmCertificate.HasPrivateKey || rsaKey == null || rsaPubKey == null || rsaKey.Key.ExportPolicy != CngExportPolicies.None)
+			using RSA? rsaPrivateKey = tpmCertificate.GetRSAPrivateKey();
+			using RSACng? rsaCngKey = rsaPrivateKey is RSACng ? rsaPrivateKey as RSACng : null;
+			using RSA? rsaPublicKey = tpmCertificate.GetRSAPublicKey();
+			if (!tpmCertificate.HasPrivateKey || rsaPrivateKey is null || rsaPublicKey is null || rsaCngKey is null || rsaCngKey.Key.ExportPolicy != CngExportPolicies.None)
 			{
 				tpmCertificate?.Dispose();
 				btnCalculateKAD.IsEnabled = true;
@@ -758,7 +763,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			}
 			else
 			{
-				bool signatureValid = rsaPubKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Convert.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+				bool signatureValid = rsaPublicKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Convert.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 				if (signatureValid)
 				{
 					byte[] nodeBytes = new byte[64];
@@ -766,7 +771,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 					try
 					{
 						statusbarStatus.Content = "Decrypting account key to derive tape key and KAD...";
-						byte[] nodeLeft = rsaKey.Decrypt(Convert.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
+						byte[] nodeLeft = rsaCngKey.Decrypt(Convert.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
 						Array.Copy(nodeLeft, 0, nodeBytes, 0, 32);
 						Slip21Node accountNode = new(nodeBytes, currentAccountSlip21Node.GlobalKeyRolloverCount.ToString(), currentAccountSlip21Node.DerivationPath);
 						Slip21Node tapeNode = accountNode.GetChildNode(kad.TapeBarcode).GetChildNode(kad.TapeKeyRollovers.ToString());

@@ -642,7 +642,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 7)]
 			public byte[] Reserved2;
 			public ushort KeyLength;
-			[MarshalAs(UnmanagedType.ByValArray)]
 			public byte[] KeyAndKADList;
 
 			private BitVector32.Section Lock;

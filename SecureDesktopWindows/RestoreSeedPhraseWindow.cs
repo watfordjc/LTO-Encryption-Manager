@@ -122,9 +122,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             {
                 return false;
             }
-            using RSACng? rsaKey = (RSACng?)tpmCertificate?.GetRSAPrivateKey();
-            using RSACng? rsaPubKey = (RSACng?)tpmCertificate?.GetRSAPublicKey();
-            bool useableCert = tpmCertificate?.HasPrivateKey == true && rsaKey is not null && rsaPubKey is not null && rsaKey.Key.ExportPolicy == CngExportPolicies.None;
+            using RSA? rsaPrivateKey = tpmCertificate?.GetRSAPrivateKey();
+            using RSACng? rsaCngKey = rsaPrivateKey is RSACng ? rsaPrivateKey as RSACng : null;
+            using RSA? rsaPublicKey = tpmCertificate?.GetRSAPublicKey();
+            bool useableCert = tpmCertificate?.HasPrivateKey == true && rsaPrivateKey is not null && rsaPublicKey is not null && rsaCngKey is not null && rsaCngKey?.Key.ExportPolicy == CngExportPolicies.None;
             tpmCertificate?.Dispose();
             return useableCert;
         }
@@ -312,15 +313,17 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
                 return;
             }
 
-            RSACng? rsaKey = null;
-            RSACng? rsaPubKey = null;
-            if (validTpmCert)
+			RSA? rsaPrivateKey = null;
+			RSACng? rsaCngKey = null;
+			RSA? rsaPublicKey = null;
+			if (validTpmCert)
             {
                 try
                 {
-                    rsaKey = (RSACng?)tpmCertificate.GetRSAPrivateKey();
-                    rsaPubKey = (RSACng?)tpmCertificate.GetRSAPublicKey();
-                    validTpmCert = tpmCertificate?.HasPrivateKey == true && rsaKey is not null && rsaPubKey is not null && rsaKey.Key.ExportPolicy == CngExportPolicies.None;
+					rsaPrivateKey = tpmCertificate.GetRSAPrivateKey();
+                    rsaCngKey = rsaPrivateKey is RSACng ? rsaPrivateKey as RSACng : null;
+					rsaPublicKey = tpmCertificate.GetRSAPublicKey();
+                    validTpmCert = tpmCertificate?.HasPrivateKey == true && rsaPrivateKey is not null && rsaPublicKey is not null && rsaCngKey is not null && rsaCngKey?.Key.ExportPolicy == CngExportPolicies.None;
                 }
                 catch (Exception)
                 {
@@ -330,8 +333,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 
             void Cleanup()
             {
-                rsaKey?.Dispose();
-                rsaPubKey?.Dispose();
+				rsaPrivateKey?.Dispose();
+                rsaCngKey?.Dispose();
+				rsaPublicKey?.Dispose();
                 tpmCertificate?.Dispose();
             }
 
@@ -344,7 +348,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
                 Cleanup();
                 return;
             }
-            if (rsaPubKey is null)
+            if (rsaPublicKey is null)
             {
                 statusLabel.Text = "Error: TPM-backed user certificate (CN=LTO Encryption Manager) does not have a public key";
                 LockSeedPhrase(true);
@@ -364,7 +368,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             byte[]? encryptedLeft = null;
             try
             {
-                encryptedLeft = rsaPubKey.Encrypt(accountNode.Left.ToArray(), RSAEncryptionPadding.Pkcs1);
+                encryptedLeft = rsaPublicKey.Encrypt(accountNode.Left.ToArray(), RSAEncryptionPadding.Pkcs1);
             }
             // RSACng.Encrypt (ArgumentNullException): arguments data and/or padding are null
             // RSACng.Encrypt (CryptographicException): argument padding has Mode property that is not Pkcs1 or Oaep
@@ -426,7 +430,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
                 if (e)
                 {
                     tbAccountFingerprint.Text = accountValidationNode.Fingerprint ?? string.Empty;
-                    if (rsaKey is null || slip21NodeEncrypted is null || slip21NodeEncrypted.GlobalFingerprint is null || accountValidationNode.Fingerprint is null)
+                    if (rsaCngKey is null || slip21NodeEncrypted is null || slip21NodeEncrypted.GlobalFingerprint is null || accountValidationNode.Fingerprint is null)
                     {
                         Cleanup();
                         return;
@@ -458,7 +462,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
                     byte[]? nodeDataSigned = null;
                     try
                     {
-                        nodeDataSigned = rsaKey.SignData(Encoding.UTF8.GetBytes(slip21NodeEncrypted.SignablePart), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                        nodeDataSigned = rsaCngKey.SignData(Encoding.UTF8.GetBytes(slip21NodeEncrypted.SignablePart), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
                         slip21NodeEncrypted.RSASignature = Convert.ToHexString(nodeDataSigned);
                         statusLabel.Text = $"Signature length: {slip21NodeEncrypted.RSASignature.Length} bytes";
                     }
