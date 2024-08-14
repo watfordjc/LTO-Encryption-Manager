@@ -18,8 +18,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
     public class TpmStatus : ViewModelBase
     {
         public bool HasTpm { get; private set; }
-        public List<TpmAlgId> SupportedAlgo { get; private set; } = new();
-        public List<TpmAlgId> HasPcrBankAlgo { get; private set; } = new();
+        public List<TpmAlgId> SupportedAlgo { get; private set; } = [];
+        public List<TpmAlgId> HasPcrBankAlgo { get; private set; } = [];
         public event EventHandler<bool>? Completed;
 
         public TpmStatus()
@@ -144,11 +144,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
                 //
                 // Read the value of the SHA256 PCR 7 and 11
                 //
-                uint[] pcrsToSelect = new uint[] { 7, 11 };
-                PcrSelection[]? valuesToRead = new PcrSelection[]
-                    {
-                    new PcrSelection(TpmAlgId.Sha256, pcrsToSelect)
-                    };
+                uint[] pcrsToSelect = [7, 11];
+                PcrSelection[]? valuesToRead =
+					[
+					new PcrSelection(TpmAlgId.Sha256, pcrsToSelect)
+                    ];
 
 
                 _ = tpm.PcrRead(valuesToRead, out PcrSelection[] valsRead, out Tpm2bDigest[] values);

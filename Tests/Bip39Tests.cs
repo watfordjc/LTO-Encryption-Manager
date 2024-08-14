@@ -9,7 +9,7 @@ using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 {
-    [TestClass]
+	[TestClass]
     public class Bip39Tests
     {
         public static async Task<List<Models.Bip39TestVector>?> GetTestVectorsAsync()

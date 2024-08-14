@@ -83,7 +83,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 		public string? PartitionTextLabel { get; set; } = null;
 		public byte? VolumeLocked { get; set; } = null;
 
-		public List<RawMamAttribute>[] MamRawAttributes { get; set; } = new List<RawMamAttribute>[4] { new(), new(), new(), new() };
+		public List<RawMamAttribute>[] MamRawAttributes { get; set; } = [[], [], [], []];
 		public ulong[] PartitionsCapacity { get; set; } = new ulong[4];
 		public ulong[] PartitionsCapacityRemaining { get; set; } = new ulong[4];
 	}
@@ -188,7 +188,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 		/// <summary>
 		/// The device's supported data encryption algorithms
 		/// </summary>
-		public List<SPTI.LTO.DATA_ENCRYPTION_ALGORITHM> DataEncryptionAlgorithms { get; set; } = new();
+		public List<SPTI.LTO.DATA_ENCRYPTION_ALGORITHM> DataEncryptionAlgorithms { get; set; } = [];
 		/// <summary>
 		/// The device's key wrapping public key
 		/// </summary>

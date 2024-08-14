@@ -70,18 +70,18 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
 
         public AddSeedPhraseViewModel()
         {
-            Bip39Dictionary = new();
+            Bip39Dictionary = [];
             GenerateBip39Dictionary();
             _validateSeedPhrase = new RelayCommand(
                                 execute => ValidateSeedPhrase_Execute(),
                                 canExecute => !NewSeedPhrase.HasErrors
                                 );
             NewSeedPhrase.Length = 24;
-            FirstLevelLabels = new()
-            {
-                new Slip21Schema(Properties.Resources.slip21_schema_lto_aes256gcm),
+            FirstLevelLabels =
+			[
+				new Slip21Schema(Properties.Resources.slip21_schema_lto_aes256gcm),
                 new Slip21Schema(Properties.Resources.slip21_schema_snowflake_hmacSha256)
-            };
+            ];
             _firstLevelLabel = FirstLevelLabels[0];
             OnPropertyChanged(nameof(FirstLevelLabel));
             GlobalKeyRollovers = "0";

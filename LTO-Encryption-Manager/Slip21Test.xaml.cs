@@ -36,14 +36,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
         private void ProcessSeedWords()
         {
             // Split BIP-0039 mnemonic input into an array of BIP-0039 words
-            string[] mnemonicTextWords = MnemonicText.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            if (mnemonicTextWords is null)
-            {
-                throw new ArgumentException("Unable to parse mnemonic seed.");
-            }
+            string[] mnemonicTextWords = MnemonicText.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? throw new ArgumentException("Unable to parse mnemonic seed.");
 
-            // Turn BIP-0039 word array into byte array
-            byte[] entropyBytes = Bip39.GetEntropyBytesFromSeedWords(ref mnemonicTextWords);
+			// Turn BIP-0039 word array into byte array
+			byte[] entropyBytes = Bip39.GetEntropyBytesFromSeedWords(ref mnemonicTextWords);
             if (entropyBytes.Length == 0)
             {
                 throw new ArgumentException("Not a valid mnemonic seed.");

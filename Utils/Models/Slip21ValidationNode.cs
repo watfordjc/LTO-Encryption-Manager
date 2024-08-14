@@ -36,7 +36,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
             validationNodeMessage = validationNode.Right.ToArray();
             // RFC 9160 Recommendation 1 means the length of the salt is already defined as 16 bytes.
             // These 16 bytes shall be the first 128 bits of the left half of the validation node.
-            validationNodeSalt = validationNode.Left.Slice(0, 16).ToArray();
+            validationNodeSalt = validationNode.Left[..16].ToArray();
             validationNode.Clear();
         }
 

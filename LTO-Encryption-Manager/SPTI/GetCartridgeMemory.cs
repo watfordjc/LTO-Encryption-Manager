@@ -114,8 +114,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			uint pageLength = ReverseByteOrder(reader.ReadUInt32());
 			while (reader.BaseStream.Position < returnedDataLength - sizeof(uint))
 			{
-				RawMamAttribute currentAttribute = new();
-				currentAttribute.ID = ReverseByteOrder(reader.ReadUInt16());
+				RawMamAttribute currentAttribute = new()
+				{
+					ID = ReverseByteOrder(reader.ReadUInt16())
+				};
 				if (currentAttribute.ID <= tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].LastOrDefault()?.ID)
 				{
 					break;

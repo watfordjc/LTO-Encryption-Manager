@@ -40,9 +40,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 		private string CurrentAccountDataFile { get; set; } = string.Empty;
 		private Slip21NodeEncrypted? currentAccountSlip21Node;
 		KeyAssociatedData? kad = null;
-		private readonly List<string> GlobalFingerprints = new();
-		private readonly List<string> AccountFingerprints = new();
-		private List<TapeDrive> TapeDrives { get; init; } = new();
+		private readonly List<string> GlobalFingerprints = [];
+		private readonly List<string> AccountFingerprints = [];
+		private List<TapeDrive> TapeDrives { get; init; } = [];
 
 		public LaunchWindow()
 		{
@@ -346,13 +346,15 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			string[] nodeDataSigSplit = nodeData.Split('\x001E');
 			string[] nodeDataSplit = nodeDataSigSplit[0].Split('\x001F');
 
-			currentAccountSlip21Node = new(nodeDataSplit[0], nodeDataSplit[1], nodeDataSplit[2]);
-			currentAccountSlip21Node.GlobalFingerprint = nodeDataSplit[3];
-			currentAccountSlip21Node.AccountFingerprint = nodeDataSplit[4];
-			currentAccountSlip21Node.RSASignature = nodeDataSigSplit[1];
+			currentAccountSlip21Node = new(nodeDataSplit[0], nodeDataSplit[1], nodeDataSplit[2])
+			{
+				GlobalFingerprint = nodeDataSplit[3],
+				AccountFingerprint = nodeDataSplit[4],
+				RSASignature = nodeDataSigSplit[1]
+			};
 
 			bool signatureValid = false;
-			List<string> keyNames = new();
+			List<string> keyNames = [];
 			keyNames.Add("LTO Encryption Manager account protection");
 			RSACng? currentRsaKey = null;
 			foreach (string keyName in keyNames)
@@ -546,7 +548,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
 		private void CbGlobalFingerprints_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
 		{
-			if (e.AddedItems is null || e.AddedItems.Count == 0 || e.AddedItems[0] is not string globalFingerprint)
+			if (e.AddedItems is null || e.AddedItems.Count == 0 || e.AddedItems[0] is not string)
 			{
 				return;
 			}

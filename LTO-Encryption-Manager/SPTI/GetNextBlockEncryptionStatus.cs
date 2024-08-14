@@ -106,11 +106,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			tapeDrive.State.CurrentTape.AlgorithmIndex = reader.ReadByte();
 			byte byte15 = reader.ReadByte();
 			byte nextBlockKadFormat = reader.ReadByte();
-			List<PLAIN_KEY_DESCRIPTOR> descriptors = new();
+			List<PLAIN_KEY_DESCRIPTOR> descriptors = [];
 			while (reader.BaseStream.Position < pageLength + 4)
 			{
-				PLAIN_KEY_DESCRIPTOR kad = new();
-				kad.Type = reader.ReadByte();
+				PLAIN_KEY_DESCRIPTOR kad = new()
+				{
+					Type = reader.ReadByte()
+				};
 				if (descriptors.Count > 0 && kad.Type <= descriptors.LastOrDefault().Type)
 				{
 					break;

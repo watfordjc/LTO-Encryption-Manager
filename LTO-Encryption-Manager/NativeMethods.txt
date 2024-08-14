@@ -1,6 +1,8 @@
 ﻿GetCurrentThreadId
 GetThreadDesktop
 CreateDesktopW
+FILE_ACCESS_RIGHTS
+GENERIC_ACCESS_RIGHTS
 SetThreadDesktop
 CloseDesktop
 SwitchDesktop
@@ -10,7 +12,6 @@ GetConsoleWindow
 ShowWindow
 SetupDiGetClassDevs
 CreateFile
-GENERIC_ACCESS_RIGHTS
 CloseHandle
 STORAGE_BUS_TYPE
 SRB_TYPE_SCSI_REQUEST_BLOCK

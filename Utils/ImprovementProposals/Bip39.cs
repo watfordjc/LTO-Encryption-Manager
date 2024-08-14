@@ -83,11 +83,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 
             // Convert the hexadecimal representation of the entropy to a byte array
             byte[] entropyBytes = Convert.FromHexString(entropyHex);
-
-            // Create a SHA256 instance
-            using SHA256 sha256 = SHA256.Create();
             // Calculate and store the checksum hash bytes
-            byte[] checksumBytes = sha256.ComputeHash(entropyBytes);
+            byte[] checksumBytes = SHA256.HashData(entropyBytes);
 
             // An integer array to store the 11-bit BIP-39 word values
             int[] wordlistValues = new int[(entropyLength + checksumLength) / 11];
@@ -265,10 +262,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
             // Clear array
             Array.Clear(seedChecksumByteInts, 0, seedChecksumByteInts.Length);
 
-            // Create a SHA256 instance
-            using SHA256 sha256 = SHA256.Create();
             // Calculate and store the checksum hash bytes
-            byte[] checksumBytes = sha256.ComputeHash(entropyBytes);
+            byte[] checksumBytes = SHA256.HashData(entropyBytes);
             // Bit shift the last relevant byte in the hashsum for the final 1-8 checksum bits
             byte checksumBits = (byte)(checksumBytes[checksumLength / 8] >> (byte)(8 - (checksumLength % 8)));
             // Bit shift the last byte in the seed checksum for the final 1-8 checksum bits

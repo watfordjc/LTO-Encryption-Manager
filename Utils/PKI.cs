@@ -156,8 +156,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
         /// <returns>true on success, otherwise false</returns>
         public static bool TryGetOrCreateRsaKey([NotNullWhen(true)] out RSACng? rsaCng)
         {
-            rsaCng = null;
-
             CngProvider tpmCryptoProvider = CngProvider.MicrosoftPlatformCryptoProvider;
 
             string keyName = "LTO Encryption Manager account protection";
@@ -301,7 +299,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
         {
             certificate = null;
 
-            OidCollection ekuOids = new();
+            OidCollection ekuOids = [];
             Oid idKpLtoEncryptionManagerOid = new("1.2.826.0.1.11484356.1.0.0.3.0", "Encrypting/decrypting account keys, and signing/verifying account records, in LTO Encryption Manager");
             ekuOids.Add(idKpLtoEncryptionManagerOid);
 

@@ -6,13 +6,8 @@ using System.Threading.Tasks;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 {
-	public class TapeDriveErrorEventArgs : EventArgs
+	public class TapeDriveErrorEventArgs(string errorString) : EventArgs
 	{
-		public string ErrorString { get; set; }
-
-		public TapeDriveErrorEventArgs(string errorString)
-		{
-			ErrorString = errorString;
-		}
+		public string ErrorString { get; set; } = errorString;
 	}
 }

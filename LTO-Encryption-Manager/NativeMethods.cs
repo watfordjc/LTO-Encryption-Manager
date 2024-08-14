@@ -1,43 +1,41 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+using Windows.Win32.Foundation;
+using Windows.Win32.Storage.FileSystem;
 using static uk.JohnCook.dotnet.LTOEncryptionManager.SPTI.LTO;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager
 {
-	internal class NativeMethods
+	internal partial class NativeMethods
 	{
 		[Flags]
 		public enum ACCESS_MASK : uint
 		{
-			DELETE = 0x00010000,
-			READ_CONTROL = 0x00020000,
-			WRITE_DAC = 0x00040000,
-			WRITE_OWNER = 0x00080000,
-			SYNCHRONIZE = 0x00100000,
+			DELETE = FILE_ACCESS_RIGHTS.DELETE,
+			READ_CONTROL = FILE_ACCESS_RIGHTS.READ_CONTROL,
+			WRITE_DAC = FILE_ACCESS_RIGHTS.WRITE_DAC,
+			WRITE_OWNER = FILE_ACCESS_RIGHTS.WRITE_OWNER,
+			SYNCHRONIZE = FILE_ACCESS_RIGHTS.SYNCHRONIZE,
 
-			STANDARD_RIGHTS_REQUIRED = 0x000F0000,
+			STANDARD_RIGHTS_REQUIRED = FILE_ACCESS_RIGHTS.STANDARD_RIGHTS_REQUIRED,
 
-			STANDARD_RIGHTS_READ = 0x00020000,
-			STANDARD_RIGHTS_WRITE = 0x00020000,
-			STANDARD_RIGHTS_EXECUTE = 0x00020000,
+			STANDARD_RIGHTS_READ = FILE_ACCESS_RIGHTS.STANDARD_RIGHTS_READ,
+			STANDARD_RIGHTS_WRITE = FILE_ACCESS_RIGHTS.STANDARD_RIGHTS_WRITE,
+			STANDARD_RIGHTS_EXECUTE = FILE_ACCESS_RIGHTS.STANDARD_RIGHTS_EXECUTE,
 
-			STANDARD_RIGHTS_ALL = 0x001F0000,
+			STANDARD_RIGHTS_ALL = FILE_ACCESS_RIGHTS.STANDARD_RIGHTS_ALL,
 
-			SPECIFIC_RIGHTS_ALL = 0x0000FFFF,
+			SPECIFIC_RIGHTS_ALL = FILE_ACCESS_RIGHTS.SPECIFIC_RIGHTS_ALL,
 
 			ACCESS_SYSTEM_SECURITY = 0x01000000,
 
 			MAXIMUM_ALLOWED = 0x02000000,
 
-			GENERIC_READ = 0x80000000,
-			GENERIC_WRITE = 0x40000000,
-			GENERIC_EXECUTE = 0x20000000,
-			GENERIC_ALL = 0x10000000,
+			GENERIC_READ = GENERIC_ACCESS_RIGHTS.GENERIC_READ,
+			GENERIC_WRITE = GENERIC_ACCESS_RIGHTS.GENERIC_WRITE,
+			GENERIC_EXECUTE = GENERIC_ACCESS_RIGHTS.GENERIC_EXECUTE,
+			GENERIC_ALL = GENERIC_ACCESS_RIGHTS.GENERIC_ALL,
 
 			DESKTOP_READOBJECTS = 0x00000001,
 			DESKTOP_CREATEWINDOW = 0x00000002,
@@ -79,12 +77,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				[In, MarshalAs(UnmanagedType.U4)] ACCESS_MASK accessMask,
 				[In, Optional, MarshalAs(UnmanagedType.Struct)] ref SECURITY_ATTRIBUTES attributes);
 
-		[DllImport("kernel32.dll")]
-		public static extern void RtlZeroMemory(IntPtr dst, int length);
+		[LibraryImport("kernel32.dll")]
+		public static partial void RtlZeroMemory(IntPtr dst, int length);
 
 
-		[DllImport("msvcrt.dll", SetLastError = false)]
-		public static extern IntPtr memcpy(IntPtr dest, IntPtr src, int count);
+		[LibraryImport("msvcrt.dll", SetLastError = false)]
+		public static partial IntPtr memcpy(IntPtr dest, IntPtr src, int count);
 
 		[DllImport("Kernel32.dll", SetLastError = false, CharSet = CharSet.Auto)]
 		public static extern bool DeviceIoControl(
@@ -97,23 +95,5 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			[Out, Optional] out uint pBytesReturned,									// [out, optional] LPDWORD
 			[In, Out, Optional] ref System.Threading.NativeOverlapped Overlapped);		// [in, out, optional] LPOVERLAPPED
 
-
-		//[DllImport(@"H:\source\repos\LTO-Encryption-SPTI\x64\Debug\LTO-Encryption-SPTI-Library.dll", EntryPoint = "GetTapeDriveHandle", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, SetLastError = true)]
-		//public static extern IntPtr GetTapeDriveHandle([In, MarshalAs(UnmanagedType.LPStr)] string devicePath);
-
-		//[DllImport(@"H:\source\repos\LTO-Encryption-SPTI\x64\Debug\LTO-Encryption-SPTI-Library.dll", EntryPoint = "QueryPropertyForDevice", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, SetLastError = true)]
-		//public static extern Windows.Win32.Foundation.BOOL QueryPropertyForDevice([In] SafeFileHandle DeviceHandle, [Out] out uint AlignmentMask, [Out] out byte SrbType, [Out] out Windows.Win32.Storage.FileSystem.STORAGE_BUS_TYPE StorageBusType, [In, Out, MarshalAs(UnmanagedType.LPStr)] StringBuilder driveSerialNumber, [In] int serialNumberBufferLength);
-
-		//[DllImport(@"H:\source\repos\LTO-Encryption-SPTI\x64\Debug\LTO-Encryption-SPTI-Library.dll", EntryPoint = "GetScsiPassthroughWithBuffersEx", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, SetLastError = true)]
-		//public static extern IntPtr GetScsiPassthroughWithBuffersEx();
-
-		//[DllImport(@"H:\source\repos\LTO-Encryption-SPTI\x64\Debug\LTO-Encryption-SPTI-Library.dll", EntryPoint = "ResetSrbIn", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, SetLastError = true)]
-		//public static extern uint ResetSrbIn(IntPtr psptwb_ex, byte opCode);
-
-		//[DllImport(@"H:\source\repos\LTO-Encryption-SPTI\x64\Debug\LTO-Encryption-SPTI-Library.dll", EntryPoint = "SendSrb", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, SetLastError = true)]
-		//public static extern bool SendSrb(SafeFileHandle tapeHandle, IntPtr psptwb_ex, uint length, out uint returned);
-
-		//[DllImport(@"H:\source\repos\LTO-Encryption-SPTI\x64\Debug\LTO-Encryption-SPTI-Library.dll", EntryPoint = "ParseDeviceIdentifiers", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, SetLastError = true)]
-		//public static extern void ParseDeviceIdentifiers(IntPtr deviceIdentifiers, out short pLogicalUnitIdentifierLength, out string ppLogicalUnitIdentifier);
 	}
 }

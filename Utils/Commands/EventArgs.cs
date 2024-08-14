@@ -6,13 +6,8 @@ using System.Threading.Tasks;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Commands
 {
-    public class EventArgs<T> : EventArgs
+    public class EventArgs<T>(T value) : EventArgs
     {
-        public T Value { get; private set; }
-
-        public EventArgs(T value)
-        {
-            Value = value;
-        }
-    }
+		public T Value { get; private set; } = value;
+	}
 }

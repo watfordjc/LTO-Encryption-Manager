@@ -16,24 +16,24 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
         public event PropertyChangedEventHandler? PropertyChanged;
         public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
-        private readonly ObservableCollection<int> _words = new();
+        private readonly ObservableCollection<int> _words = [];
         public ReadOnlyObservableCollection<int> Words { get; init; }
-        private readonly Dictionary<string, List<string>> _errorsByPropertyName12 = new();
-        private readonly Dictionary<string, List<string>> _errorsByPropertyName18 = new();
-        private readonly Dictionary<string, List<string>> _errorsByPropertyName24 = new();
-        private readonly Dictionary<string, List<string>> _errorsByPropertyNameOther = new();
-        private readonly Dictionary<string, List<string>> _errorsByPropertyName = new();
+        private readonly Dictionary<string, List<string>> _errorsByPropertyName12 = [];
+        private readonly Dictionary<string, List<string>> _errorsByPropertyName18 = [];
+        private readonly Dictionary<string, List<string>> _errorsByPropertyName24 = [];
+        private readonly Dictionary<string, List<string>> _errorsByPropertyNameOther = [];
+        private readonly Dictionary<string, List<string>> _errorsByPropertyName = [];
         public bool HasErrors
         {
             get
             {
                 return Length switch
                 {
-                    12 => _errorsByPropertyName12.Any() || _errorsByPropertyNameOther.Any(),
-                    18 => _errorsByPropertyName18.Any() || _errorsByPropertyNameOther.Any(),
-                    24 => _errorsByPropertyName24.Any() || _errorsByPropertyNameOther.Any(),
-                    _ => _errorsByPropertyName.Any()
-                };
+                    12 => _errorsByPropertyName12.Count != 0 || _errorsByPropertyNameOther.Count != 0,
+                    18 => _errorsByPropertyName18.Count != 0 || _errorsByPropertyNameOther.Count != 0,
+                    24 => _errorsByPropertyName24.Count != 0 || _errorsByPropertyNameOther.Count != 0,
+                    _ => _errorsByPropertyName.Count != 0
+				};
             }
         }
         private bool _hasEmptyPassphrase = true;
@@ -343,22 +343,23 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 
         private void AddError(string propertyName, string error)
         {
-            if (propertyName.StartsWith("Word") && int.TryParse(propertyName.Substring(4, 2), out int wordNumber))
+            if (propertyName.StartsWith("Word") && int.TryParse(propertyName.AsSpan(4, 2), out int wordNumber))
             {
-                if (!_errorsByPropertyName.ContainsKey(propertyName))
+                if (!_errorsByPropertyName.TryGetValue(propertyName, out List<string>? value))
                 {
-                    _errorsByPropertyName[propertyName] = new List<string>();
+					value = [];
+					_errorsByPropertyName[propertyName] = value;
                     if (wordNumber <= 12)
                     {
-                        _errorsByPropertyName12[propertyName] = new List<string>();
+                        _errorsByPropertyName12[propertyName] = [];
                     }
                     if (wordNumber <= 18)
                     {
-                        _errorsByPropertyName18[propertyName] = new List<string>();
+                        _errorsByPropertyName18[propertyName] = [];
                     }
                     if (wordNumber <= 24)
                     {
-                        _errorsByPropertyName24[propertyName] = new List<string>();
+                        _errorsByPropertyName24[propertyName] = [];
                     }
                 }
                 if (wordNumber <= 12 && !_errorsByPropertyName12[propertyName].Contains(error))
@@ -373,26 +374,27 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
                 {
                     _errorsByPropertyName24[propertyName].Add(error);
                 }
-                if (!_errorsByPropertyName[propertyName].Contains(error))
+                if (!value.Contains(error))
                 {
-                    _errorsByPropertyName[propertyName].Add(error);
+					value.Add(error);
                     OnErrorsChanged(propertyName);
                 }
             }
             else
             {
-                if (!_errorsByPropertyName.ContainsKey(propertyName))
+                if (!_errorsByPropertyName.TryGetValue(propertyName, out List<string>? value))
                 {
-                    _errorsByPropertyName[propertyName] = new List<string>();
-                    _errorsByPropertyNameOther[propertyName] = new List<string>();
+					value = [];
+					_errorsByPropertyName[propertyName] = value;
+                    _errorsByPropertyNameOther[propertyName] = [];
                 }
                 if (!_errorsByPropertyNameOther[propertyName].Contains(error))
                 {
                     _errorsByPropertyNameOther[propertyName].Add(error);
                 }
-                if (!_errorsByPropertyName[propertyName].Contains(error))
+                if (!value.Contains(error))
                 {
-                    _errorsByPropertyName[propertyName].Add(error);
+					value.Add(error);
                     OnErrorsChanged(propertyName);
                 }
             }
@@ -432,8 +434,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
         {
             return string.IsNullOrEmpty(propertyName)
                 ? _errorsByPropertyName
-                : _errorsByPropertyName.ContainsKey(propertyName) ? _errorsByPropertyName[propertyName]
-                : Enumerable.Empty<string>();
+                : _errorsByPropertyName.TryGetValue(propertyName, out List<string>? value) ? value : Enumerable.Empty<string>();
         }
 
         protected void NotifyPropertyChanged([CallerMemberName] string? name = null)
