@@ -22,6 +22,8 @@
   <ItemGroup>
     <None Remove="contrib\trezor\python-mnemonic\vectors.json" />
     <None Remove="data\base58-vectors.json" />
+    <None Remove="data\bip0032-child-node-vectors.json" />
+    <None Remove="data\bip0032-master-node-vectors.json" />
     <None Remove="data\slip0021-lto-aes-vectors.json" />
     <None Remove="data\slip0021-vectors.json" />
     <None Remove="data\argon2id-vectors.json" />
@@ -40,6 +42,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="data\base58-vectors.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\bip0032-child-node-vectors.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\bip0032-master-node-vectors.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="data\slip0021-lto-aes-vectors.json">
