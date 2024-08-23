@@ -61,6 +61,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			btnCreateAccountNewRecoverySeed.Click += BtnCreateAccountNewRecoverySeed_Click;
 			btnCreateAccountExistingRecoverySeed.Click += BtnCreateAccountExistingRecoverySeed_Click;
 			btnTestAccount.Click += BtnTestAccount_Click;
+			btnRefreshAccounts.Click += BtnRefreshAccounts_Click;
 			cbTapeDrives.SelectionChanged += CbTapeDrives_SelectionChanged;
 			btnDetectTape.Click += BtnDetectTape_Click;
 			btnRescanDrives.Click += BtnRescanDrives_Click;
@@ -68,6 +69,22 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			btnEnableDriveEncryption.Click += BtnEnableDriveEncryption_Click;
 			btnDisableDriveEncryption.Click += BtnDisableDriveEncryption_Click;
 			tbTapeKAD.TextChanged += TbTapeKAD_TextChanged;
+		}
+
+		private void BtnRefreshAccounts_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			statusbarStatus.Content = "Refreshing account lists...";
+			cbGlobalFingerprints.ItemsSource = null;
+			GlobalFingerprints.Clear();
+			cbAccountFingerprints.ItemsSource = null;
+			AccountFingerprints.Clear();
+			if (!TryEnumerateGlobalFingerprints(GlobalFingerprints, AccountFingerprints, out Exception? exception))
+			{
+				Error = $"Account listing error: {exception.Message}";
+			} else
+			{
+				statusbarStatus.Content = "Account lists refreshed.";
+			}
 		}
 
 		private void BtnRescanDrives_Click(object sender, System.Windows.RoutedEventArgs e)

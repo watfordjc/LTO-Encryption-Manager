@@ -42,6 +42,7 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="4 4 4 12">
                     <Button x:Name="btnTestAccount" IsEnabled="False" Margin="8" Padding="8 6" Content="Test Key" />
+                    <Button x:Name="btnRefreshAccounts" IsEnabled="True" Margin="8" Padding="8 6" Content="Refresh" />
                 </StackPanel>
             </StackPanel>
         </GroupBox>
