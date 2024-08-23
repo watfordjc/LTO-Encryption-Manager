@@ -5,7 +5,7 @@
     xmlns:local="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" Height="800" Width="1080" SizeToContent="WidthAndHeight" Name="Window" Title="LTO Encryption Manager" FontFamily="Open Sans" FontSize="11pt">
+    mc:Ignorable="d" Height="800" Width="1080" SizeToContent="WidthAndHeight" Name="Window" Title="LTO Encryption Manager" FontFamily="Open Sans" FontSize="11pt" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto" />

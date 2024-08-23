@@ -223,8 +223,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 		{
 			exception = null;
 			string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-			globalFingerprints.Clear();
-			accountFingerprints.Clear();
 			try
 			{
 				string accountDirectoriesBase = Path.Combine(appDataFolder, "John Cook UK", "LTO-Encryption-Manager", "Accounts");
@@ -578,6 +576,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			if (SecureBootEnabled && TpmSupported)
 			{
 				ShowSecureWindow(SecureWindowTypes.CreateNewSeedPhraseWindow);
+				cbGlobalFingerprints.ItemsSource = null;
+				GlobalFingerprints.Clear();
+				cbAccountFingerprints.ItemsSource = null;
+				AccountFingerprints.Clear();
+				if (!TryEnumerateGlobalFingerprints(GlobalFingerprints, AccountFingerprints, out Exception? exception))
+				{
+					Error = $"Account listing error: {exception.Message}";
+				}
 			}
 		}
 
@@ -586,6 +592,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			if (SecureBootEnabled && TpmSupported)
 			{
 				ShowSecureWindow(SecureWindowTypes.RestoreSeedPhraseWindow);
+				cbGlobalFingerprints.ItemsSource = null;
+				cbAccountFingerprints.ItemsSource = null;
+				if (!TryEnumerateGlobalFingerprints(GlobalFingerprints, AccountFingerprints, out Exception? exception))
+				{
+					Error = $"Account listing error: {exception.Message}";
+				}
 			}
 		}
 

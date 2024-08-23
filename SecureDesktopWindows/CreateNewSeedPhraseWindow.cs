@@ -39,6 +39,39 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             tbAccountRollovers.ReadOnly = !validTpmCert;
         }
 
+		private void ProgressBarParseEntropy()
+		{
+			progressBar.Style = ProgressBarStyle.Continuous;
+			progressBar.Step = 1;
+			progressBar.Minimum = 0;
+			progressBar.Value = 0;
+			progressBar.Maximum = 24;
+			Refresh();
+		}
+
+		private void ProgressBarStart()
+		{
+			progressBar.Style = ProgressBarStyle.Marquee;
+			progressBar.MarqueeAnimationSpeed = 60;
+		}
+
+		private void ProgressBarComplete()
+		{
+			progressBar.Style = ProgressBarStyle.Continuous;
+			progressBar.Minimum = 0;
+			progressBar.Maximum = 100;
+			progressBar.Value = progressBar.Maximum;
+			Refresh();
+		}
+
+		private void ProgressBarStop()
+		{
+			progressBar.Style = ProgressBarStyle.Continuous;
+			progressBar.Minimum = 0;
+			progressBar.Maximum = 100;
+			progressBar.Value = 0;
+		}
+
         private static bool ValidCertificateExists()
         {
             if (!Utils.PKI.TryGetOrCreateRsaCertificate(out X509Certificate2? tpmCertificate, true))
@@ -65,13 +98,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 
         private void ResetFingerprintDisplay()
         {
-
             tbSeedFingerprint.Text = string.Empty;
             tbAccountFingerprint.Text = string.Empty;
         }
 
         private void BtnGenerateSeed_Click(object sender, EventArgs e)
         {
+			ProgressBarParseEntropy();
             ResetSeedPhraseDisplay();
 
             using Tpm2Device tpmDevice = new TbsDevice();
@@ -91,6 +124,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             {
                 statusLabel.Text = $"Certificate/Key error";
                 binarySeed = null;
+				ProgressBarStop();
                 return;
             }
 
@@ -114,22 +148,31 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
                 btnGenerateSeed.Enabled = false;
                 btnDeriveAccountNode.Enabled = false;
                 tpmCertificate?.Dispose();
+				ProgressBarStop();
                 return;
             }
 
             try
             {
+				progressBar.Maximum = 25;
+				progressBar.Step = 1;
                 byte[] entropyBytes = tpm.GetRandom(32);
+				progressBar.PerformStep();
                 //Array.Clear(SeedBytes, 0, SeedBytes.Length);
                 //byte[] entropyBytes = Convert.FromHexString("f585c11aec520db57dd353c69554b21a89b20fb0650966fa0a9d6f74fd989d8f");
                 string seedMnemonic = Bip39.GetMnemonicFromEntropy(BitConverter.ToString(entropyBytes).Replace("-", "").ToLower(CultureInfo.InvariantCulture));
                 Array.Clear(entropyBytes, 0, entropyBytes.Length);
                 string[] seedMnemonicSplit = seedMnemonic.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+				progressBar.Step = 6;
                 binarySeed = Bip39.GetBinarySeedFromSeedWords(ref seedMnemonicSplit, null);
                 lblSeedHex1.Text = seedMnemonicSplit.Length >= 6 ? string.Format("{0} {1} {2} {3} {4} {5}", seedMnemonicSplit) : string.Empty;
+				progressBar.PerformStep();
                 lblSeedHex2.Text = seedMnemonicSplit.Length >= 12 ? string.Format("{6} {7} {8} {9} {10} {11}", seedMnemonicSplit) : string.Empty;
+				progressBar.PerformStep();
                 lblSeedHex3.Text = seedMnemonicSplit.Length >= 18 ? string.Format("{12} {13} {14} {15} {16} {17}", seedMnemonicSplit) : string.Empty;
+				progressBar.PerformStep();
                 lblSeedHex4.Text = seedMnemonicSplit.Length >= 24 ? string.Format("{18} {19} {20} {21} {22} {23}", seedMnemonicSplit) : string.Empty;
+				progressBar.PerformStep();
                 statusLabel.Text = "Success. Write down the new BIP39 recovery seed and store it securely, then derive the account node.";
                 btnDeriveAccountNode.Enabled = validTpmCert;
             }
@@ -141,15 +184,18 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             finally
             {
                 tpmCertificate?.Dispose();
+				ProgressBarComplete();
             }
         }
 
         private void BtnDeriveAccountNode_Click(object sender, EventArgs e)
         {
+			ProgressBarStart();
             ResetFingerprintDisplay();
 
             if (binarySeed == null)
             {
+				ProgressBarStop();
                 return;
             }
 
@@ -157,6 +203,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             {
                 statusLabel.Text = "Certificate/Key error";
                 binarySeed = null;
+				ProgressBarStop();
                 return;
             }
 
@@ -184,6 +231,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
                 rsaCngKey?.Dispose();
                 rsaPublicKey?.Dispose();
                 tpmCertificate?.Dispose();
+				ProgressBarStop();
             }
 
             if (!validTpmCert)
@@ -246,6 +294,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             {
                 if (e)
                 {
+					ProgressBarStart();
                     tbSeedFingerprint.Text = "Calculating...";
                 }
             });
@@ -253,6 +302,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             {
                 if (e)
                 {
+					ProgressBarStop();
                     tbSeedFingerprint.Text = validationNode.Fingerprint ?? string.Empty;
                     accountValidationNode.CalculateFingerprint();
                     if (slip21NodeEncrypted != null)
@@ -265,6 +315,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             {
                 if (e)
                 {
+					ProgressBarStart();
                     tbAccountFingerprint.Text = "Calculating...";
                 }
             });
@@ -290,6 +341,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
                         {
                             Directory.CreateDirectory(thisAppDataFolder);
                         }
+						ProgressBarComplete();
                     }
                     catch (Exception pathCheckException)
                     {
@@ -321,12 +373,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 
                     try
                     {
+						ProgressBarStart();
                         string accountFingerprintHex = Convert.ToHexString(Encoding.UTF8.GetBytes(slip21NodeEncrypted.AccountFingerprint));
                         using StreamWriter file = new(Path.Combine(thisAppDataFolder, $"{accountFingerprintHex}.blob"), false, Encoding.UTF8, 4096);
                         StringBuilder nodeBackupData = new();
                         nodeBackupData.Append(slip21NodeEncrypted.SignablePart).Append('\x001E').Append(slip21NodeEncrypted.RSASignature);
                         file.WriteAsync(nodeBackupData.ToString());
                         file.Close();
+						ProgressBarComplete();
                         DialogResult = DialogResult.OK;
                         Dispose();
                     }

@@ -10,10 +10,7 @@ using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Input;
-using uk.JohnCook.dotnet.LTOEncryptionManager.Commands;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models;
@@ -113,8 +110,26 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             tbGlobalRollovers.ReadOnly = !validTpmCert;
             tbAccount.ReadOnly = !validTpmCert;
             tbAccountRollovers.ReadOnly = !validTpmCert;
+			ProgressBarComplete();
             Refresh();
         }
+
+		private void ProgressBarStartLoadDictionary()
+		{
+			progressBar.Style = ProgressBarStyle.Continuous;
+			progressBar.Value = 0;
+			progressBar.Step = 1;
+			progressBar.Minimum = 1;
+			progressBar.Maximum = 24;
+			Refresh();
+		}
+
+		private void ProgressBarComplete()
+		{
+			progressBar.Style = ProgressBarStyle.Continuous;
+			progressBar.Value = progressBar.Maximum;
+			Refresh();
+		}
 
         private static bool ValidCertificateExists()
         {
@@ -140,6 +155,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 
         private async void GenerateBip39Dictionary()
         {
+			ProgressBarStartLoadDictionary();
             await Bip39.GetWordValues(Bip39Dictionary);
             cbWordList = new()
             {
@@ -149,6 +165,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             {
                 InitComboBoxSeedWord(cbWordList[i]);
                 cbWordList[i].SelectedIndex = -1;
+				progressBar.PerformStep();
+				Refresh();
             }
         }
 
@@ -220,48 +238,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
                 ValidationStatusColor = Color.Green;
                 ValidationStatusMessage = bip39BinarySeed.ValidationStatusMessage;
                 btnDeriveAccountNode.Enabled = true;
-                //Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(binarySeed, GlobalKeyRollovers);
-                //Slip21ValidationNode validationNode = new(masterNode.GetChildNode(FirstLevelLabel.FirstLevelLabel).GetChildNode(GlobalKeyRollovers));
-                //SeedDerivationPath = validationNode.DerivationPath;
-                //OnPropertyChanged(nameof(SeedDerivationPath));
-                //Slip21Node accountNode = masterNode.GetChildNode(FirstLevelLabel.FirstLevelLabel).GetChildNode(GlobalKeyRollovers).GetChildNode(AccountID).GetChildNode(AccountKeyRollovers);
-                //Slip21ValidationNode accountValidationNode = new(accountNode);
-                //AccountDerivationPath = accountValidationNode.DerivationPath;
-                //OnPropertyChanged(nameof(AccountDerivationPath));
-                //validationNode.FingerprintingStarted += new EventHandler<bool>((sender, e) =>
-                //{
-                //    if (e)
-                //    {
-                //        SeedValidationFingerprint = "Calculating...";
-                //        OnPropertyChanged(nameof(SeedValidationFingerprint));
-                //    }
-                //});
-                //validationNode.FingerprintingCompleted += new EventHandler<bool>((sender, e) =>
-                //{
-                //    if (e)
-                //    {
-                //        SeedValidationFingerprint = validationNode.Fingerprint ?? string.Empty;
-                //        OnPropertyChanged(nameof(SeedValidationFingerprint));
-                //        accountValidationNode.CalculateFingerprint();
-                //    }
-                //});
-                //accountValidationNode.FingerprintingStarted += new EventHandler<bool>((sender, e) =>
-                //{
-                //    if (e)
-                //    {
-                //        AccountValidationFingerprint = "Calculating...";
-                //        OnPropertyChanged(nameof(AccountValidationFingerprint));
-                //    }
-                //});
-                //accountValidationNode.FingerprintingCompleted += new EventHandler<bool>((sender, e) =>
-                //{
-                //    if (e)
-                //    {
-                //        AccountValidationFingerprint = accountValidationNode.Fingerprint ?? string.Empty;
-                //        OnPropertyChanged(nameof(AccountValidationFingerprint));
-                //    }
-                //});
-                //validationNode.CalculateFingerprint();
             }
             else
             {
@@ -297,7 +273,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             tbAccountFingerprint.Text = string.Empty;
         }
 
-        private void btnDeriveAccountNode_Click(object sender, EventArgs e)
+		private void BtnDeriveAccountNode_Click(object sender, EventArgs e)
         {
             ResetFingerprintDisplay();
 

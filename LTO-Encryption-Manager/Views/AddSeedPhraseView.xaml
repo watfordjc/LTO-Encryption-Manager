@@ -7,7 +7,7 @@
              xmlns:local="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager.Views"
              xmlns:vm="clr-namespace:uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="960">
+             d:DesignHeight="500" d:DesignWidth="960">
     <UserControl.DataContext>
         <vm:AddSeedPhraseViewModel />
     </UserControl.DataContext>
