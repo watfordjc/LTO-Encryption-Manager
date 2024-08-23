@@ -10,10 +10,20 @@ using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Properties;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 {
+    public class FingerprintingStartedEventArgs(bool hasStarted) : EventArgs
+    {
+		public bool HasStarted { get; init; } = hasStarted;
+	}
+
+	public class FingerprintingCompletedEventArgs(bool hasCompleted) : EventArgs
+    {
+		public bool HasCompleted { get; init; } = hasCompleted;
+	}
+
     public class Slip21ValidationNode
     {
-        public event EventHandler<bool>? FingerprintingStarted;
-        public event EventHandler<bool>? FingerprintingCompleted;
+        public event EventHandler<FingerprintingStartedEventArgs>? FingerprintingStarted;
+        public event EventHandler<FingerprintingCompletedEventArgs>? FingerprintingCompleted;
         private readonly byte[]? validationNodeMessage;
         private readonly byte[]? validationNodeSalt;
         public string DerivationPath { get; init; }
@@ -24,7 +34,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
             private set
             {
                 _fingerprint = value;
-                FingerprintingCompleted?.Invoke(this, true);
+                FingerprintingCompleted?.Invoke(this, new(true));
             }
         }
 
@@ -53,12 +63,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 
         public async void CalculateFingerprint(byte[] message, byte[] salt, int argon2idOutputLength = 32)
         {
+            ArgumentNullException.ThrowIfNull(message);
+            ArgumentNullException.ThrowIfNull(salt);
             if (Fingerprint is not null)
             {
                 return;
             }
             Argon2id argon2id = new();
-            FingerprintingStarted?.Invoke(this, true);
+            FingerprintingStarted?.Invoke(this, new(true));
             Argon2idHashResult argon2IdHashResult = await Task.Run(() => Algorithms.Argon2id.GetKeyValidationHash(argon2id, message, salt, argon2idOutputLength)).ConfigureAwait(true);
             Array.Clear(message, 0, message.Length);
             Array.Clear(salt, 0, salt.Length);

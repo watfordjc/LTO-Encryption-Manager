@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Commands
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Commands
 {
     public class EventArgs<T>(T value) : EventArgs
     {

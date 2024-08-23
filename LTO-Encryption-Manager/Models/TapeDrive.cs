@@ -1,25 +1,27 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Globalization;
 using uk.JohnCook.dotnet.LTOEncryptionManager.SPTI;
 using Windows.Win32.Storage.FileSystem;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 {
-	public class RawMamAttribute
+	public class RawMamAttributeValue
 	{
 		public ushort ID;
 		public BitVector32 Byte3;
 		public byte[]? RawData;
 
-		private BitVector32.Section Format;
-		private BitVector32.Section Reserved1;
-		private BitVector32.Section ReadOnly;
+		private readonly BitVector32.Section Format;
+		private readonly BitVector32.Section Reserved1;
+		private readonly BitVector32.Section ReadOnly;
 
 		public bool IsReadOnly => Byte3[ReadOnly] == 1;
 
-		public RawMamAttribute()
+		public RawMamAttributeValue()
 		{
 			Byte3 = new(0);
 			Format = BitVector32.CreateSection(1 << 2 - 1);
@@ -42,26 +44,23 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 			RawData = new byte[length];
 		}
 
-		public uint GetFormat()
+		public uint GetFormat() => Byte3[Format] switch
 		{
-			return Byte3[Format] switch
-			{
-				0b00 => Constants.MAM_FORMAT_BINARY,
-				0b01 => Constants.MAM_FORMAT_ASCII,
-				0b10 => Constants.MAM_FORMAT_TEXT,
-				0b11 => Constants.MAM_FORMAT_RESERVED,
-				_ => throw new NotImplementedException()
-			};
-		}
+			0b00 => Constants.MAM_FORMAT_BINARY,
+			0b01 => Constants.MAM_FORMAT_ASCII,
+			0b10 => Constants.MAM_FORMAT_TEXT,
+			0b11 => Constants.MAM_FORMAT_RESERVED,
+			_ => throw new NotImplementedException()
+		};
 	}
 
 	public class TapeDriveTape
 	{
-		public string? Barcode { get; set; } = null;
-		public bool? IsCompressed { get; set; } = null;
-		public bool? IsEncrypted { get; set; } = null;
-		public string? AuthKadString { get; set; } = null;
-		public string? UnauthKadString { get; set; } = null;
+		public string? Barcode { get; set; }
+		public bool? IsCompressed { get; set; }
+		public bool? IsEncrypted { get; set; }
+		public string? AuthKadString { get; set; }
+		public string? UnauthKadString { get; set; }
 		public string? KadString
 		{
 			get
@@ -69,21 +68,21 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 				return AuthKadString == null ? null : string.Concat(AuthKadString, UnauthKadString);
 			}
 		}
-		public long? FirstEncryptedBlock { get; set; } = null;
-		public long? FirstUnencryptedBlock { get; set; } = null;
-		public byte? AlgorithmIndex { get; set; } = null;
-		public string? ApplicationName { get; set; } = null;
+		public long? FirstEncryptedBlock { get; set; }
+		public long? FirstUnencryptedBlock { get; set; }
+		public byte? AlgorithmIndex { get; set; }
+		public string? ApplicationName { get; set; }
 		public bool? IsLtfsFormatted
 		{
 			get
 			{
-				return ApplicationName?.StartsWith("LTFS ");
+				return ApplicationName?.StartsWith("LTFS ", StringComparison.Ordinal);
 			}
 		}
-		public string? PartitionTextLabel { get; set; } = null;
-		public byte? VolumeLocked { get; set; } = null;
+		public string? PartitionTextLabel { get; set; }
+		public byte? VolumeLocked { get; set; }
 
-		public List<RawMamAttribute>[] MamRawAttributes { get; set; } = [[], [], [], []];
+		public Collection<RawMamAttributeValue>[] MamRawAttributes { get; set; } = [[], [], [], []];
 		public ulong[] PartitionsCapacity { get; set; } = new ulong[4];
 		public ulong[] PartitionsCapacityRemaining { get; set; } = new ulong[4];
 	}
@@ -91,12 +90,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 	{
 		public event EventHandler<int>? ScsiStatusChanged;
 		public event EventHandler<TapeDriveErrorEventArgs>? ErrorMessageChanged;
-		public DateTime? LastExceptionTime { get; set; } = null;
-		public Exception? LastException { get; set; } = null;
-		public DateTime? LastHResultTime { get; set; } = null;
-		public int LastHResult { get; set; } = 0;
-		public DateTime? LastScsiStatusTime { get; set; } = null;
-		private int _scsiStatus = 0;
+		public DateTime? LastExceptionTime { get; set; }
+		public Exception? LastException { get; set; }
+		public DateTime? LastHResultTime { get; set; }
+		public int LastHResult { get; set; }
+		public DateTime? LastScsiStatusTime { get; set; }
+		private int _scsiStatus;
 		public int LastScsiStatus
 		{
 			get
@@ -110,10 +109,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 				ScsiStatusChanged?.Invoke(this, value);
 			}
 		}
-		public DateTime? LastSenseInfoTime { get; set; } = null;
-		public byte[]? LastSenseInfo { get; set; } = null;
+		public DateTime? LastSenseInfoTime { get; set; }
+		public byte[]? LastSenseInfo { get; set; }
 
-		public DateTime? LastErrorMessageTime { get; set; } = null;
+		public DateTime? LastErrorMessageTime { get; set; }
 		private string _errorMessage = string.Empty;
 		public string LastErrorMessage
 		{
@@ -135,7 +134,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 				return LastErrorMessageTime == null ? "Drive Status: No recent errors" : string.Concat("Drive Status at ", LastErrorMessageTime.ToString(), " : ", LastErrorMessage);
 			}
 		}
-		public TapeDriveTape? CurrentTape { get; set; } = null;
+		public TapeDriveTape? CurrentTape { get; set; }
 	}
 
 	/// <summary>
@@ -146,7 +145,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 		/// <summary>
 		/// The <see cref="Guid"/> for a tape device interface
 		/// </summary>
-		static Guid GUID_DEVINTERFACE_TAPE = new("{53F5630B-B6BF-11D0-94F2-00A0C91EFB8B}");
+		static readonly Guid GUID_DEVINTERFACE_TAPE = new("{53F5630B-B6BF-11D0-94F2-00A0C91EFB8B}");
 		/// <summary>
 		/// The device's identifier
 		/// </summary>
@@ -154,7 +153,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 		/// <summary>
 		/// The full file path for opening the device
 		/// </summary>
-		public string Path => string.Concat(@"\\?\", DeviceId.Replace("\\", "#"), "#{", GUID_DEVINTERFACE_TAPE.ToString(), "}");
+		public string Path => string.Concat(@"\\?\", DeviceId.Replace("\\", "#", StringComparison.Ordinal), "#{", GUID_DEVINTERFACE_TAPE.ToString(), "}");
 		/// <summary>
 		/// A <see cref="SafeFileHandle"/> opened for the drive's <see cref="Path"/>
 		/// </summary>
@@ -174,12 +173,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 		/// <summary>
 		/// The device's alignment mask
 		/// </summary>
-		public uint AlignmentMask { get; set; } = 0;
+		public uint AlignmentMask { get; set; }
 		/// <summary>
 		/// The device's SCSI Request Block (SRB) type
 		/// </summary>
 		/// <remarks>Only <see cref="Windows.Win32.PInvoke.SRB_TYPE_STORAGE_REQUEST_BLOCK"/> is supported</remarks>
-		public byte SrbType { get; set; } = 0;
+		public byte SrbType { get; set; }
 		//internal STORAGE_BUS_TYPE StorageBusType = STORAGE_BUS_TYPE.BusTypeUnknown;
 		/// <summary>
 		/// The device's LUN/WWN
@@ -188,7 +187,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 		/// <summary>
 		/// The device's supported data encryption algorithms
 		/// </summary>
-		public List<SPTI.LTO.DATA_ENCRYPTION_ALGORITHM> DataEncryptionAlgorithms { get; set; } = [];
+		public Collection<SPTI.LTO.DATA_ENCRYPTION_ALGORITHM> DataEncryptionAlgorithms { get; set; } = [];
 		/// <summary>
 		/// The device's key wrapping public key
 		/// </summary>

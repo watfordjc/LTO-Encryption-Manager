@@ -26,6 +26,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
         /// <param name="nodeBytes">The full 64 bytes of the node (i.e. the first 64 bytes of output from HMAC-SHA512)</param>
         public Slip21Node(byte[] nodeBytes, string globalKeyRolloverCount, string? label = null)
         {
+            ArgumentNullException.ThrowIfNull(nodeBytes);
             if (nodeBytes.Length != 64)
             {
                 throw new ArgumentException("The byte array must have a length of exactly 64 bytes.", nameof(nodeBytes));

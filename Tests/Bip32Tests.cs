@@ -1,48 +1,42 @@
 ﻿using CryptHash.Net.Encoding;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.DirectoryServices;
 using System.IO;
-using System.Printing;
-using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 {
 	[TestClass]
 	public class Bip32Tests
 	{
-		public static async Task<List<Models.Bip32TestVector>?> GetMasterNodeTestVectorsAsync()
+		public static async Task<Collection<Models.Bip32TestVector>?> GetMasterNodeTestVectorsAsync()
 		{
 			using FileStream openStream = File.OpenRead(@"data/bip0032-master-node-vectors.json");
-			Models.Bip32TestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Bip32TestVectorsRoot>(openStream);
+			Models.Bip32TestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Bip32TestVectorsRoot>(openStream).ConfigureAwait(false);
 			openStream.Close();
 			return jsonRoot?.Vectors;
 		}
 
-		public static async Task<List<Models.Bip32TestVector>?> GetChildNodeTestVectorsAsync()
+		public static async Task<Collection<Models.Bip32TestVector>?> GetChildNodeTestVectorsAsync()
 		{
 			using FileStream openStream = File.OpenRead(@"data/bip0032-child-node-vectors.json");
-			Models.Bip32TestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Bip32TestVectorsRoot>(openStream);
+			Models.Bip32TestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Bip32TestVectorsRoot>(openStream).ConfigureAwait(false);
 			openStream.Close();
 			return jsonRoot?.Vectors;
 		}
 
-		public static async Task<List<Models.Bip32TestVector>?> PrivateKeyOutOfRangeTestVectorsAsync()
+		public static async Task<Collection<Models.Bip32TestVector>?> PrivateKeyOutOfRangeTestVectorsAsync()
 		{
 			using FileStream openStream = File.OpenRead(@"data/bip0032-error-01-vectors.json");
-			Models.Bip32TestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Bip32TestVectorsRoot>(openStream);
+			Models.Bip32TestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Bip32TestVectorsRoot>(openStream).ConfigureAwait(false);
 			openStream.Close();
 			return jsonRoot?.Vectors;
 		}
@@ -51,16 +45,17 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 		public async Task GetMasterNodeFromBinarySeedTest()
 		{
 			string masterNodeDerivationPath = "m";
-			IEnumerable<Models.Bip32TestVector>? testVectors = await GetMasterNodeTestVectorsAsync();
+			IEnumerable<Models.Bip32TestVector>? testVectors = await GetMasterNodeTestVectorsAsync().ConfigureAwait(false);
 			Assert.IsNotNull(testVectors);
-			SemaphoreSlim semaphore = new(1);
+			using SemaphoreSlim semaphore = new(1);
 			_ = Parallel.ForEach(testVectors, testVector =>
 			{
 				if (Debugger.IsAttached)
 				{
 					semaphore.Wait();
 				}
-				Bip32Node masterNode = Bip32.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed), testVector.PublicKeyPrefixValue, testVector.PrivateKeyPrefixValue, testVector.CurveName);
+				Bip32Node? masterNode = Bip32.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed), testVector.PublicKeyPrefixValue, testVector.PrivateKeyPrefixValue, testVector.CurveName);
+				Assert.IsNotNull(masterNode);
 				Assert.IsTrue(masterNode.IsMasterNode);
 				Assert.IsTrue(masterNode.IsHardenedNode);
 				Assert.AreEqual(masterNodeDerivationPath, masterNode.DerivationPath);
@@ -70,7 +65,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				Assert.AreEqual(masterNode.Depth, 0);
 				Assert.IsNotNull(masterNode.KeyIdentifier);
 				Assert.IsNotNull(masterNode.Fingerprint);
-				Assert.AreEqual(masterNode.KeyIdentifier[..8], masterNode.Fingerprint);
+				Assert.AreEqual(Bip32.GetHostUInt32FromNetworkBytes(Hexadecimal.ToByteArray(masterNode.KeyIdentifier[..8])), masterNode.Fingerprint);
 				Assert.IsNotNull(masterNode.PrivateKeySerialised);
 				Assert.AreEqual(testVector.PrivateKey, new(masterNode.PrivateKeySerialised));
 				Assert.IsNotNull(masterNode.PublicKeySerialised);
@@ -87,12 +82,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 		public async Task GetMasterNodeFromSerialisedPrivateKeyTest()
 		{
 			string masterNodeDerivationPath = "m";
-			IEnumerable<Models.Bip32TestVector>? testVectors = await GetMasterNodeTestVectorsAsync();
+			IEnumerable<Models.Bip32TestVector>? testVectors = await GetMasterNodeTestVectorsAsync().ConfigureAwait(false);
 			Assert.IsNotNull(testVectors);
-			SemaphoreSlim semaphore = new(1);
+			using SemaphoreSlim semaphore = new(1);
 			_ = Parallel.ForEach(testVectors, testVector =>
 			{
-
 				if (Debugger.IsAttached)
 				{
 					semaphore.Wait();
@@ -107,7 +101,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				Assert.AreEqual(masterNode.Depth, 0);
 				Assert.IsNotNull(masterNode.KeyIdentifier);
 				Assert.IsNotNull(masterNode.Fingerprint);
-				Assert.AreEqual(masterNode.KeyIdentifier[..8], masterNode.Fingerprint);
+				Assert.AreEqual(Bip32.GetHostUInt32FromNetworkBytes(Hexadecimal.ToByteArray(masterNode.KeyIdentifier[..8])), masterNode.Fingerprint);
 				Assert.IsNotNull(masterNode.PrivateKeySerialised);
 				Assert.AreEqual(testVector.PrivateKey, new(masterNode.PrivateKeySerialised));
 				Assert.IsNotNull(masterNode.PublicKeySerialised);
@@ -123,9 +117,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 		[TestMethod]
 		public async Task GetChildNodeTest()
 		{
-			IEnumerable<Models.Bip32TestVector>? testVectors = await GetChildNodeTestVectorsAsync();
+			IEnumerable<Models.Bip32TestVector>? testVectors = await GetChildNodeTestVectorsAsync().ConfigureAwait(false);
 			Assert.IsNotNull(testVectors);
-			SemaphoreSlim semaphore = new(1);
+			using SemaphoreSlim semaphore = new(1);
 			_ = Parallel.ForEach(testVectors, testVector =>
 			{
 				if (Debugger.IsAttached)
@@ -133,12 +127,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 					semaphore.Wait();
 				}
 				Bip32Node parentNode = new(testVector.ParentPrivateKey, testVector.ParentDerivationPath);
+				Assert.IsNotNull(parentNode);
 				Assert.IsTrue(parentNode.IsInitialised);
-				Assert.IsNotNull(parentNode.VersionBytesPrivate);
-				uint versionBytesPrivate = (uint)parentNode.VersionBytesPrivate;
+				Assert.IsNotNull(parentNode.VersionPrefixPrivate);
+				uint versionBytesPrivate = (uint)parentNode.VersionPrefixPrivate;
 				ECDomainParameters? domainParams = Bip32.GetDomainParameters(versionBytesPrivate);
 				Assert.IsNotNull(domainParams);
-				Bip32Node childNode = Bip32Node.GetChildNode(domainParams, ref parentNode, testVector.Index);
+				Bip32Node? childNode = Bip32Node.GetChildNode(domainParams, ref parentNode, testVector.Index);
+				Assert.IsNotNull(childNode);
 				Assert.IsFalse(childNode.IsMasterNode);
 				Assert.AreEqual(testVector.IsHardenedChild, childNode.IsHardenedNode);
 				Assert.AreEqual(testVector.DerivationPath, childNode.DerivationPath);
@@ -147,7 +143,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				Assert.AreEqual(childNode.Depth, parentNode.Depth + 1);
 				Assert.IsNotNull(childNode.KeyIdentifier);
 				Assert.IsNotNull(childNode.Fingerprint);
-				Assert.AreEqual(childNode.KeyIdentifier[..8], childNode.Fingerprint);
+				Assert.AreEqual(parentNode.Fingerprint, childNode.ParentFingerprint);
+				Assert.AreEqual(Bip32.GetHostUInt32FromNetworkBytes(Hexadecimal.ToByteArray(childNode.KeyIdentifier[..8])), childNode.Fingerprint);
 				Assert.IsNotNull(childNode.PrivateKeySerialised);
 				Assert.AreEqual(testVector.PrivateKey, new(childNode.PrivateKeySerialised));
 				Assert.IsNotNull(childNode.PublicKeySerialised);

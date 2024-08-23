@@ -1,8 +1,11 @@
-﻿using System;
+﻿using Microsoft.Management.Infrastructure;
+using Microsoft.Management.Infrastructure.Options;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -10,18 +13,13 @@ using System.Text;
 using System.Threading;
 using System.Windows.Media;
 using System.Windows.Threading;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Models;
+using uk.JohnCook.dotnet.LTOEncryptionManager.SPTI;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models;
 using uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels;
-using Microsoft.Management.Infrastructure;
-using Microsoft.Management.Infrastructure.Options;
-using Windows.Win32.Storage.FileSystem;
-using Microsoft.Win32.SafeHandles;
-using uk.JohnCook.dotnet.LTOEncryptionManager.Models;
-using uk.JohnCook.dotnet.LTOEncryptionManager.SPTI;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Windows.Win32.Foundation;
+using Windows.Win32.Storage.FileSystem;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager
 {
@@ -31,15 +29,15 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 	public sealed partial class LaunchWindow : System.Windows.Window
 	{
 		private bool _secureBootEnabled;
-		private bool SecureBootEnabled { get { return _secureBootEnabled; } set { _secureBootEnabled = value; lblSecureBootStatus.Content = string.Format("Secure Boot Enabled: {0}", value ? "Yes" : "No"); } }
+		private bool SecureBootEnabled { get { return _secureBootEnabled; } set { _secureBootEnabled = value; lblSecureBootStatus.Content = string.Format(CultureInfo.InvariantCulture, "Secure Boot Enabled: {0}", value ? "Yes" : "No"); } }
 		private TpmStatus? TpmStatus { get; set; }
 		private bool _tpmSupported;
-		private bool TpmSupported { get { return _tpmSupported; } set { _tpmSupported = value; lblTpmStatus.Content = string.Format("Suitable TPM 2.0 Available: {0}", value ? "Yes" : "No"); } }
+		private bool TpmSupported { get { return _tpmSupported; } set { _tpmSupported = value; lblTpmStatus.Content = string.Format(CultureInfo.InvariantCulture, "Suitable TPM 2.0 Available: {0}", value ? "Yes" : "No"); } }
 		private string _error = string.Empty;
-		private string Error { get { return _error; } set { _error = value; statusbarStatus.Content = _error == string.Empty ? "No recent errors" : $"{value}"; } }
+		private string Error { get { return _error; } set { _error = value; statusbarStatus.Content = _error.Length == 0 ? "No recent errors" : $"{value}"; } }
 		private string CurrentAccountDataFile { get; set; } = string.Empty;
 		private Slip21NodeEncrypted? currentAccountSlip21Node;
-		KeyAssociatedData? kad = null;
+		KeyAssociatedData? kad;
 		private readonly List<string> GlobalFingerprints = [];
 		private readonly List<string> AccountFingerprints = [];
 		private List<TapeDrive> TapeDrives { get; init; } = [];
@@ -140,12 +138,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			currentDrive.Handle.Close();
 			tbTapeLabel.Text = currentDrive.State.CurrentTape?.Barcode;
 			tbTapeKAD.Text = currentDrive.State.CurrentTape?.KadString;
-			tbLtfsDataCapacity.Text = (currentDrive.State.CurrentTape?.PartitionsCapacity[1] / 1000).ToString();
-			tbLtfsDataCapacityRemaining.Text = (currentDrive?.State.CurrentTape?.PartitionsCapacityRemaining[1] / 1000).ToString();
+			tbLtfsDataCapacity.Text = (currentDrive.State.CurrentTape?.PartitionsCapacity[1] / 1000)?.ToString(CultureInfo.InvariantCulture);
+			tbLtfsDataCapacityRemaining.Text = (currentDrive?.State.CurrentTape?.PartitionsCapacityRemaining[1] / 1000)?.ToString(CultureInfo.InvariantCulture);
 			btnDetectTape.IsEnabled = true;
 		}
 
-		private void TpmStatus_Completed(object? sender, bool e)
+		private void TpmStatus_Completed(object? sender, TpmInitialisedEventArgs e)
 		{
 			if (sender is TpmStatus tpmStatus)
 			{
@@ -185,7 +183,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				IEnumerable<CimInstance> cimInstances = cimSession.QueryInstances(Namespace, "WQL", @"SELECT * FROM Win32_TapeDrive");
 				foreach (CimInstance cimInstance in cimInstances)
 				{
-					string? deviceId = cimInstance.CimInstanceProperties["DeviceID"].Value.ToString()?.ToLowerInvariant().TrimEnd();
+					string? deviceId = cimInstance.CimInstanceProperties["DeviceID"].Value.ToString()?.ToUpperInvariant().TrimEnd();
 					string? caption = cimInstance.CimInstanceProperties["Caption"].Value.ToString()?.TrimEnd();
 					if (deviceId == null)
 					{
@@ -374,7 +372,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			RSACng? currentRsaKey = null;
 			foreach (string keyName in keyNames)
 			{
-				if (!Utils.PKI.TryGetRsaKeyByName(keyName, out currentRsaKey))
+				currentRsaKey = Utils.PKI.GetRsaKeyByName(keyName);
+				if (currentRsaKey is null)
 				{
 					continue;
 				}
@@ -399,7 +398,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				btnTestAccount.IsEnabled = true;
 				return;
 			}
-			else if (signatureValid && currentRsaKey?.Key.KeyName?.Equals(keyNames[0]) == false)
+			else if (signatureValid && currentRsaKey?.Key.KeyName?.Equals(keyNames[0], StringComparison.Ordinal) == false)
 			{
 				Error = "Account data validation warning: Account file needs upgrading";
 				btnTestAccount.IsEnabled = true;
@@ -410,7 +409,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
 			using X509Store my = new(StoreName.My, StoreLocation.CurrentUser);
 			my.Open(OpenFlags.ReadOnly);
-			if (!Utils.PKI.TryGetOrCreateRsaCertificate(out X509Certificate2? tpmCertificate))
+			using X509Certificate2? tpmCertificate = Utils.PKI.GetOrCreateRsaCertificate();
+			if (tpmCertificate is null)
 			{
 				Error = $"Certificate retrieval/creation error";
 				return;
@@ -428,16 +428,16 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			}
 			try
 			{
-				rsaPrivateKey = tpmCertificate?.GetRSAPrivateKey();
+				rsaPrivateKey = tpmCertificate.GetRSAPrivateKey();
 				rsaCngKey = rsaPrivateKey is RSACng ? rsaPrivateKey as RSACng : null;
-				rsaPublicKey = tpmCertificate?.GetRSAPublicKey();
+				rsaPublicKey = tpmCertificate.GetRSAPublicKey();
 			}
 			catch (Exception)
 			{
 				Cleanup();
 				return;
 			}
-			if (tpmCertificate?.HasPrivateKey == false || rsaPrivateKey is null || rsaPublicKey is null || rsaCngKey is null || rsaCngKey.Key.ExportPolicy != CngExportPolicies.None)
+			if (tpmCertificate.HasPrivateKey == false || rsaPrivateKey is null || rsaPublicKey is null || rsaCngKey is null || rsaCngKey.Key.ExportPolicy != CngExportPolicies.None)
 			{
 				Cleanup();
 				return;
@@ -469,14 +469,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 					Array.Copy(nodeLeft, 0, nodeBytes, 0, 32);
 					Slip21Node accountNode = new(nodeBytes, nodeDataSplit[2], nodeDataSplit[1]);
 					Slip21ValidationNode accountValidationNode = new(accountNode);
-					accountValidationNode.FingerprintingCompleted += new EventHandler<bool>((sender, e) =>
+					accountValidationNode.FingerprintingCompleted += new EventHandler<FingerprintingCompletedEventArgs>((sender, e) =>
 					{
-						if (e)
+						if (e.HasCompleted)
 						{
 							string accountValidationFingerprint = accountValidationNode.Fingerprint ?? string.Empty;
-							bool accountFingerprintMatches = accountValidationFingerprint != string.Empty && accountValidationFingerprint == nodeDataSplit[4];
+							bool accountFingerprintMatches = accountValidationFingerprint.Length > 0 && accountValidationFingerprint == nodeDataSplit[4];
 							//Trace.WriteLine(string.Format("RSA-signed account node fingerprint: {0}. Fingerprint derived from decrypted account derivation key: {1}. TPM-backed keypair {2} validation check. Global node fingerprint: {3}", nodeDataSplit[4], accountValidationFingerprint, accountFingerprintMatches ? "passes" : "fails", nodeDataSplit[3]));
-							statusbarStatus.Content = string.Format("Account Test Result: TPM-backed keypair {0} validation check.", accountFingerprintMatches ? "passes" : "fails");
+							statusbarStatus.Content = string.Format(CultureInfo.InvariantCulture, "Account Test Result: TPM-backed keypair {0} validation check.", accountFingerprintMatches ? "passes" : "fails");
 							btnTestAccount.IsEnabled = true;
 						}
 					});
@@ -546,12 +546,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
 		public void CurrentDriveErrorMessageChanged(object? sender, TapeDriveErrorEventArgs e)
 		{
+			ArgumentNullException.ThrowIfNull(e);
 			Error = e.ErrorString;
 		}
 
 		private void BtnCreateRsaKey_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
-			if (!Utils.PKI.TryGetOrCreateRsaCertificate(out X509Certificate2? tpmCertificate, true, true))
+			using X509Certificate2? tpmCertificate = Utils.PKI.GetOrCreateRsaCertificate(true, true);
+			if (tpmCertificate is null)
 			{
 				Error = $"Certificate creation error";
 			}
@@ -631,12 +633,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				bInheritHandle = 1
 			};
 			lpsa.nLength = Marshal.SizeOf(lpsa);
-			Windows.Win32.CloseDesktopSafeHandle hOldDesktop = new(Windows.Win32.PInvoke.GetThreadDesktop(Windows.Win32.PInvoke.GetCurrentThreadId()));
+			using Windows.Win32.CloseDesktopSafeHandle hOldDesktop = new(Windows.Win32.PInvoke.GetThreadDesktop(Windows.Win32.PInvoke.GetCurrentThreadId()));
 			if (hOldDesktop.IsInvalid)
 			{
 				return;
 			}
-			Windows.Win32.CloseDesktopSafeHandle hSecureDesktop = new(NativeMethods.CreateDesktop("Mydesktop", null, null, 0, dwDesiredAccess, ref lpsa));
+			using Windows.Win32.CloseDesktopSafeHandle hSecureDesktop = new(NativeMethods.CreateDesktop("Mydesktop", null, null, 0, dwDesiredAccess, ref lpsa));
 			if (hSecureDesktop.IsInvalid)
 			{
 				return;
@@ -670,10 +672,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 					case SecureWindowTypes.CreateNewSeedPhraseWindow:
 						SecureDesktopWindows.CreateNewSeedPhraseWindow secureCreateNewSeedPhraseWindow = new();
 						secureCreateNewSeedPhraseWindow.ShowDialog();
+						secureCreateNewSeedPhraseWindow.Dispose();
 						break;
 					case SecureWindowTypes.RestoreSeedPhraseWindow:
 						SecureDesktopWindows.RestoreSeedPhraseWindow secureRestoreSeedPhraseWindow = new();
 						secureRestoreSeedPhraseWindow.ShowDialog();
+						secureRestoreSeedPhraseWindow.Dispose();
 						break;
 				}
 				Dispatcher.CurrentDispatcher.InvokeShutdown();
@@ -742,7 +746,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 		{
 			if (kad is not null)
 			{
-				statusbarStatus.Content = string.Format("Key Authenticated Data generated");
+				statusbarStatus.Content = string.Format(CultureInfo.InvariantCulture, "Key Authenticated Data generated");
 				kad.TapeFingerprint = tapeValidationFingerprint;
 			}
 			tbDriveKAD.Text = kad?.GetKAD();
@@ -774,9 +778,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				return;
 			}
 
-			if (!Utils.PKI.TryGetOrCreateRsaCertificate(out X509Certificate2? tpmCertificate, false))
+			using X509Certificate2? tpmCertificate = Utils.PKI.GetOrCreateRsaCertificate(false);
+			if (tpmCertificate is null)
 			{
-				tpmCertificate?.Dispose();
 				btnCalculateKAD.IsEnabled = true;
 				btnEnableDriveEncryption.IsEnabled = true;
 				btnDisableDriveEncryption.IsEnabled = true;
@@ -787,7 +791,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			using RSA? rsaPublicKey = tpmCertificate.GetRSAPublicKey();
 			if (!tpmCertificate.HasPrivateKey || rsaPrivateKey is null || rsaPublicKey is null || rsaCngKey is null || rsaCngKey.Key.ExportPolicy != CngExportPolicies.None)
 			{
-				tpmCertificate?.Dispose();
 				btnCalculateKAD.IsEnabled = true;
 				btnEnableDriveEncryption.IsEnabled = true;
 				btnDisableDriveEncryption.IsEnabled = true;
@@ -805,23 +808,23 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 						statusbarStatus.Content = "Decrypting account key to derive tape key and KAD...";
 						byte[] nodeLeft = rsaCngKey.Decrypt(Convert.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
 						Array.Copy(nodeLeft, 0, nodeBytes, 0, 32);
-						Slip21Node accountNode = new(nodeBytes, currentAccountSlip21Node.GlobalKeyRolloverCount.ToString(), currentAccountSlip21Node.DerivationPath);
-						Slip21Node tapeNode = accountNode.GetChildNode(kad.TapeBarcode).GetChildNode(kad.TapeKeyRollovers.ToString());
+						Slip21Node accountNode = new(nodeBytes, currentAccountSlip21Node.GlobalKeyRolloverCount.ToString(CultureInfo.InvariantCulture), currentAccountSlip21Node.DerivationPath);
+						Slip21Node tapeNode = accountNode.GetChildNode(kad.TapeBarcode).GetChildNode(kad.TapeKeyRollovers.ToString(CultureInfo.InvariantCulture));
 						if (enableEncryption)
 						{
 							tapeKey = tapeNode.Right.ToArray();
 						}
 						Slip21ValidationNode tapeValidationNode = new(tapeNode);
 
-						tapeValidationNode.FingerprintingCompleted += new EventHandler<bool>((sender, e) =>
+						tapeValidationNode.FingerprintingCompleted += new EventHandler<FingerprintingCompletedEventArgs>((sender, e) =>
 						{
-							if (e)
+							if (e.HasCompleted)
 							{
 								TapeValidationNode_FingerprintingCompleted(tapeValidationNode.Fingerprint);
 								btnCalculateKAD.IsEnabled = true;
-								if (string.IsNullOrWhiteSpace(tbDriveKAD.Text) || !tbDriveKAD.Text.StartsWith(tbTapeLabel.Text[..6]))
+								if (string.IsNullOrWhiteSpace(tbDriveKAD.Text) || !tbDriveKAD.Text.StartsWith(tbTapeLabel.Text[..6], StringComparison.Ordinal))
 								{
-									if (string.IsNullOrWhiteSpace(tbDriveKAD.Text) || !tbDriveKAD.Text.StartsWith(tbTapeLabel.Text[..6]))
+									if (string.IsNullOrWhiteSpace(tbDriveKAD.Text) || !tbDriveKAD.Text.StartsWith(tbTapeLabel.Text[..6], StringComparison.Ordinal))
 									{
 										Error = "Error: KAD/Barcode mismatch.";
 										return;
@@ -868,7 +871,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 						btnDisableDriveEncryption.IsEnabled = true;
 					}
 				}
-				tpmCertificate?.Dispose();
 				return;
 			}
 		}

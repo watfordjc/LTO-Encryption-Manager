@@ -1,6 +1,8 @@
 ﻿using CryptHash.Net.Encoding;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -12,10 +14,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 	[TestClass]
 	public class Base58Tests
 	{
-		public static async Task<List<Models.Base58TestVector>?> GetTestVectorsAsync()
+		public static async Task<Collection<Models.Base58TestVector>?> GetTestVectorsAsync()
 		{
 			using FileStream openStream = File.OpenRead(@"data/base58-vectors.json");
-			Models.Base58TestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Base58TestVectorsRoot>(openStream);
+			Models.Base58TestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Base58TestVectorsRoot>(openStream).ConfigureAwait(false);
 			openStream.Close();
 			return jsonRoot?.Vectors;
 		}
@@ -23,7 +25,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 		[TestMethod]
 		public async Task Base58Encode()
 		{
-			IEnumerable<Models.Base58TestVector>? testVectors = await GetTestVectorsAsync();
+			IEnumerable<Models.Base58TestVector>? testVectors = await GetTestVectorsAsync().ConfigureAwait(false);
 			Assert.IsNotNull(testVectors);
 			_ = Parallel.ForEach(testVectors, testVector =>
 			{
@@ -37,14 +39,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				bool success = Base58.TryGetRawBase58FromBase256(input, out byte[]? outputRaw);
 				Assert.IsTrue(success);
 				string output = Base58.TryGetBase58StringFromRawBase58(outputRaw);
-				Assert.AreEqual(testVector.OutputEncoded, output, false);
+				Assert.AreEqual(testVector.OutputEncoded, output, false, CultureInfo.InvariantCulture);
 			});
 		}
 
 		[TestMethod]
 		public async Task Base58Decode()
 		{
-			IEnumerable<Models.Base58TestVector>? testVectors = await GetTestVectorsAsync();
+			IEnumerable<Models.Base58TestVector>? testVectors = await GetTestVectorsAsync().ConfigureAwait(false);
 			Assert.IsNotNull(testVectors);
 			_ = Parallel.ForEach(testVectors, testVector =>
 			{
@@ -52,11 +54,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				string? input = testVector.InputEncoding switch
 				{
 					"UTF-8" => Encoding.UTF8.GetString(inputRaw),
-					"HEX" => testVector.InputDecoded.Length > 0 ? Hexadecimal.ToHexString(inputRaw).ToLowerInvariant() : string.Empty,
+					"HEX" => testVector.InputDecoded.Length > 0 ? Hexadecimal.ToHexString(inputRaw).ToUpperInvariant() : string.Empty,
 					_ => null
 				};
 				Assert.IsNotNull(input);
-				Assert.AreEqual(testVector.InputDecoded, input, false);
+				Assert.AreEqual(testVector.InputDecoded, input, false, CultureInfo.InvariantCulture);
 			});
 		}
 	}

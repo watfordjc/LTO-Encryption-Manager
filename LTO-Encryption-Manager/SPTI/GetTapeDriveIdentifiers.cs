@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -29,6 +30,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		/// <para>"For Win64, need to ensure all variable length components are 8 bytes align so the pointer fields within the variable length components are 8 bytes align."</para>
 		/// </remarks>
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
 		public struct STOR_ADDR_BTL8
 		{
 			[MarshalAs(UnmanagedType.U2)]
@@ -187,6 +189,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
 		public struct DEVICE_SERVER_KEY_WRAPPING_PUBLIC_KEY
 		{
 			public ushort PageCode; /* Network Byte Order */
@@ -198,6 +201,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
 		public struct WRAPPED_KEY_DESCRIPTOR
 		{
 			public byte Type;
@@ -292,9 +296,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			{
 				length = ResetSrbIn(ref sptwb_ex, Constants.SCSIOP_REQUEST_SENSE);
 
-				uint returnedData = 0;
-
-				status = TrySendSrb(tapeDrive, ref sptwb_ex, length, out returnedData, out int hresult);
+				status = TrySendSrb(tapeDrive, ref sptwb_ex, length, out uint returnedData, out int hresult);
 
 				senseKey = (byte)(sptwb_ex.ucSenseBuf[2] & 0x0F);
 				retriesRemaining--;
@@ -432,6 +434,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
 		public struct DATA_ENCRYPTION_CAPABILITIES
 		{
 			public ushort PageCode; /* Network Byte Order */
@@ -440,7 +443,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			public BitVector32 Byte5;
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 15)]
 			public byte[] Reserved2;
-			public List<DATA_ENCRYPTION_ALGORITHM> AlgorithmList;
+			public Collection<DATA_ENCRYPTION_ALGORITHM> AlgorithmList;
 
 			private BitVector32.Section ConfigurationPrevented;
 			private BitVector32.Section ExternalDataEncryptionCapable;
@@ -450,7 +453,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			{
 				Byte5 = new(0);
 				Reserved2 = new byte[15];
-				AlgorithmList = new();
+				AlgorithmList = [];
 				ConfigurationPrevented = BitVector32.CreateSection(1 << 2 -1);
 				ExternalDataEncryptionCapable = BitVector32.CreateSection(1 << 2 -1, ConfigurationPrevented);
 				Reserved1 = BitVector32.CreateSection(1 << 4 -1, ExternalDataEncryptionCapable);
@@ -475,6 +478,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
 		public struct DATA_ENCRYPTION_ALGORITHM
 		{
 			public byte AlgorithmIndex;
@@ -626,6 +630,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
 		public struct KEY_HEADER
 		{
 			public ushort PageCode; /* Network Byte Order */
@@ -758,6 +763,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
 		public struct PLAIN_KEY_DESCRIPTOR
 		{
 			public byte Type;
@@ -768,7 +774,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 
 			private BitVector32.Section Authenticated;
 			private BitVector32.Section Reserved1;
-			private readonly static ushort DescriptorOffset = 4;
+			private const ushort DescriptorOffset = 4;
 
 			public void Init()
 			{
@@ -777,7 +783,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 				Reserved1 = BitVector32.CreateSection(1 << 5 - 1, Authenticated);
 			}
 
-			public ushort GetLength()
+			public readonly ushort GetLength()
 			{
 				return (ushort)(DescriptorOffset + Descriptor.Length);
 			}
@@ -857,7 +863,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			return (ushort)(keyField != null ? keyFieldLength : 0);
 		}
 
-		public static bool TryProcessKad(bool clearKey, ushort keyAssociatedDataLength, byte[]? keyAssociatedData, DATA_ENCRYPTION_ALGORITHM encryptionAlgorithm, out ushort kadFieldLength, out List<PLAIN_KEY_DESCRIPTOR>? kadField)
+		public static bool TryProcessKad(bool clearKey, ushort keyAssociatedDataLength, byte[]? keyAssociatedData, DATA_ENCRYPTION_ALGORITHM encryptionAlgorithm, out ushort kadFieldLength, out Collection<PLAIN_KEY_DESCRIPTOR>? kadField)
 		{
 			kadField = null;
 			kadFieldLength = 0;
@@ -912,7 +918,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			// Calculate the combined lengths of aKad and uKad
 			kadFieldLength = (ushort)(aKadLength + uKadLength);
 			// Allocate memory to store KAD list
-			kadField = new();
+			kadField = [];
 			if (kadField == null)
 			{
 				return false;
@@ -940,7 +946,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			return true;
 		}
 
-		private static void SetDataEncryption(ref NATIVE_SCSI_PASS_THROUGH_WITH_BUFFERS_EX sptwb_ex, uint allocationLength, byte aesGcmAlgorithmIndex, bool clearKey, byte keyFormat, ushort keyFieldLength, byte[]? keyField, int kadFieldLength, List<PLAIN_KEY_DESCRIPTOR>? kad)
+		private static void SetDataEncryption(ref NATIVE_SCSI_PASS_THROUGH_WITH_BUFFERS_EX sptwb_ex, uint allocationLength, byte aesGcmAlgorithmIndex, bool clearKey, byte keyFormat, ushort keyFieldLength, byte[]? keyField, int kadFieldLength, Collection<PLAIN_KEY_DESCRIPTOR>? kad)
 		{
 			sptwb_ex.SetCbdValue(6, (byte)((allocationLength >> 24) & 0xFF));
 			sptwb_ex.SetCbdValue(7, (byte)((allocationLength >> 16) & 0xFF));
@@ -988,6 +994,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 
 		public static void EnableTapeDriveEncryption(TapeDrive tapeDrive, ref byte[]? wrappedKey, string? kad)
 		{
+			ArgumentNullException.ThrowIfNull(tapeDrive);
 			if (tapeDrive.Handle is null || tapeDrive.Handle.IsInvalid || tapeDrive.Handle.IsClosed)
 			{
 				return;
@@ -999,7 +1006,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			NATIVE_SCSI_PASS_THROUGH_WITH_BUFFERS_EX sptwb_ex = new();
 			sptwb_ex.Init();
 			uint length = CreateSecurityProtocolOutSrb(ref sptwb_ex, Constants.SECURITY_PROTOCOL_TAPE, Constants.SPOUT_TAPE_SET_DATA_ENCRYPTION);
-			if (kad is not null && SPTI.LTO.TryProcessKad(false, (ushort)kad.Length, Encoding.ASCII.GetBytes(kad), tapeDrive.DataEncryptionAlgorithms[0], out ushort kadFieldLength, out List<LTO.PLAIN_KEY_DESCRIPTOR>? kadField))
+			if (kad is not null && SPTI.LTO.TryProcessKad(false, (ushort)kad.Length, Encoding.ASCII.GetBytes(kad), tapeDrive.DataEncryptionAlgorithms[0], out ushort kadFieldLength, out Collection<LTO.PLAIN_KEY_DESCRIPTOR>? kadField))
 			{
 				byte[]? wrappedKeyDescriptors = tapeDrive.WrappedKeyDescriptors;
 				ushort keyFieldLength = SPTI.LTO.ProcessKey(Constants.SPIN_TAPE_KEY_FORMAT_WRAPPED, Constants.SPIN_TAPE_PUBKEY_TYPE_RSA2048, wrappedKey.Length, ref wrappedKey, (ushort)tapeDrive.WrappedKeyDescriptors.Length, ref wrappedKeyDescriptors, out byte[]? keyField);
@@ -1028,6 +1035,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 
 		public static void DisableTapeDriveEncryption(TapeDrive tapeDrive)
 		{
+			ArgumentNullException.ThrowIfNull(tapeDrive);
 			if (tapeDrive.Handle is null || tapeDrive.Handle.IsInvalid || tapeDrive.Handle.IsClosed)
 			{
 				return;
@@ -1055,6 +1063,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 
 		public static void GetTapeDriveIdentifiers(TapeDrive tapeDrive)
 		{
+			ArgumentNullException.ThrowIfNull(tapeDrive);
 			if (tapeDrive.Handle is null || tapeDrive.Handle.IsInvalid || tapeDrive.Handle.IsClosed)
 			{
 				return;
@@ -1079,19 +1088,23 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			if (ok)
 			{
 				//Trace.WriteLine(Convert.ToHexString(sptwb_ex.ucDataBuf, 0, (int)sptwb_ex.spt.DataInTransferLength));
-				VPD_IDENTIFICATION_PAGE page = new();
-				page.Byte1 = sptwb_ex.ucDataBuf[0];
-				page.PageCode = sptwb_ex.ucDataBuf[1];
-				page.PageLength = sptwb_ex.ucDataBuf[3];
-				page.Descriptors = new();
+				VPD_IDENTIFICATION_PAGE page = new()
+				{
+					Byte1 = sptwb_ex.ucDataBuf[0],
+					PageCode = sptwb_ex.ucDataBuf[1],
+					PageLength = sptwb_ex.ucDataBuf[3],
+					Descriptors = []
+				};
 				int descriptorLength = 0;
 				for (int i = 4; i < 4 + page.PageLength; i += 4 + descriptorLength)
 				{
-					VPD_IDENTIFICATION_DESCRIPTOR descriptor = new();
-					descriptor.Byte1 = sptwb_ex.ucDataBuf[i];
-					descriptor.Byte2 = sptwb_ex.ucDataBuf[i + 1];
-					descriptor.Byte3 = sptwb_ex.ucDataBuf[i + 2];
-					descriptor.IdentifierLength = sptwb_ex.ucDataBuf[i + 3];
+					VPD_IDENTIFICATION_DESCRIPTOR descriptor = new()
+					{
+						Byte1 = sptwb_ex.ucDataBuf[i],
+						Byte2 = sptwb_ex.ucDataBuf[i + 1],
+						Byte3 = sptwb_ex.ucDataBuf[i + 2],
+						IdentifierLength = sptwb_ex.ucDataBuf[i + 3]
+					};
 					descriptorLength = descriptor.IdentifierLength;
 					descriptor.Identifier = new byte[descriptorLength];
 					Array.Copy(sptwb_ex.ucDataBuf, i + 4, descriptor.Identifier, 0, descriptorLength);
@@ -1108,6 +1121,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 
 		public static void GetTapeDriveDataEncryptionCapabilities(TapeDrive tapeDrive)
 		{
+			ArgumentNullException.ThrowIfNull(tapeDrive);
 			if (tapeDrive.Handle is null || tapeDrive.Handle.IsInvalid || tapeDrive.Handle.IsClosed)
 			{
 				return;
@@ -1217,6 +1231,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 
 		public static void GetTapeDriveKeyWrapKey(TapeDrive tapeDrive)
 		{
+			ArgumentNullException.ThrowIfNull(tapeDrive);
 			if (tapeDrive.Handle is null || tapeDrive.Handle.IsInvalid || tapeDrive.Handle.IsClosed)
 			{
 				return;
@@ -1282,17 +1297,21 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 						// Type 0x4: Wrapped key length (always 256 bytes for a 2048-bit/256-byte RSA public key)
 
 						// Key descriptor type 0x0 - device server ID (probably an 8 byte long WWN, but 16 byte WWNs exist)
-						WRAPPED_KEY_DESCRIPTOR lunKeyDescriptor = new();
-						lunKeyDescriptor.Type = Constants.WRAPPED_KEY_DESCRIPTOR_TYPE_DEVICE_ID;
+						WRAPPED_KEY_DESCRIPTOR lunKeyDescriptor = new()
+						{
+							Type = Constants.WRAPPED_KEY_DESCRIPTOR_TYPE_DEVICE_ID
+						};
 						ushort lunByteLength = (ushort)(tapeDrive.LogicalUnitIdentifier.Length / 2);
 						lunKeyDescriptor.Length = ReverseByteOrder(lunByteLength);
 						lunKeyDescriptor.Descriptor = new byte[lunByteLength];
 						lunKeyDescriptor.Descriptor = Convert.FromHexString(tapeDrive.LogicalUnitIdentifier);
 
 						// Key descriptor type 0x4 - wrapped key length (256 bytes)
-						WRAPPED_KEY_DESCRIPTOR keyLengthKeyDescriptor = new();
-						keyLengthKeyDescriptor.Type = Constants.WRAPPED_KEY_DESCRIPTOR_TYPE_KEY_LENGTH;
-						keyLengthKeyDescriptor.Length = ReverseByteOrder(2); // The decimal value 256 takes 2 bytes to store
+						WRAPPED_KEY_DESCRIPTOR keyLengthKeyDescriptor = new()
+						{
+							Type = Constants.WRAPPED_KEY_DESCRIPTOR_TYPE_KEY_LENGTH,
+							Length = ReverseByteOrder(2) // The decimal value 256 takes 2 bytes to store
+						};
 						keyLengthKeyDescriptor.Descriptor = new byte[keyLengthKeyDescriptor.Length];
 						ushort reversedKeyLength = ReverseByteOrder(256);
 						keyLengthKeyDescriptor.Descriptor = BitConverter.GetBytes(reversedKeyLength);

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms
@@ -54,7 +55,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms
             {
                 // Initialize checksumRegister to 0xFFFFFFFF and calculate the checksum.
                 checksum = ~byteStream.Aggregate(0xFFFFFFFF, (checksumRegister, currentByte) =>
-                          (m_checksumTable[(checksumRegister & 0xFF) ^ Convert.ToByte(currentByte)] ^ (checksumRegister >> 8)));
+                          (m_checksumTable[(checksumRegister & 0xFF) ^ Convert.ToByte(currentByte, CultureInfo.InvariantCulture)] ^ (checksumRegister >> 8)));
                 return true;
             }
             catch (Exception e)

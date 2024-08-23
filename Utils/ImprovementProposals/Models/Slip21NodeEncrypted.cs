@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.ObjectModel;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -53,7 +53,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 		/// </summary>
 		public string? RSASignature { get; set; }
 
-		public List<string> NodeLabels { get; init; } = [];
+		public Collection<string> NodeLabels { get; init; } = [];
 		public string? FirstLevelLabel => NodeLabels.Count > 0 ? NodeLabels[0] : null;
 		public uint? GlobalRolloverCountLabel => NodeLabels.Count > 1 && uint.TryParse(NodeLabels[1], out uint count) ? count : null;
 		public string? AccountLabel => NodeLabels.Count > 2 ? NodeLabels[2] : null;

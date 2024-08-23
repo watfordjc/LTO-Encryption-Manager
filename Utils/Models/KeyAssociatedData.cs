@@ -21,15 +21,15 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
         /// <summary>
         /// The number of global key rollovers
         /// </summary>
-        public uint GlobalKeyRollovers { get; set; } = 0;
+        public uint GlobalKeyRollovers { get; set; }
         /// <summary>
         /// The number of account key rollovers
         /// </summary>
-        public uint AccountKeyRollovers { get; set; } = 0;
+        public uint AccountKeyRollovers { get; set; }
         /// <summary>
         /// The number of tape key rollovers
         /// </summary>
-        public uint TapeKeyRollovers { get; set; } = 0;
+        public uint TapeKeyRollovers { get; set; }
         /// <summary>
         /// The identifier for the key-derivation function's schema
         /// </summary>
@@ -71,6 +71,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
         /// </remarks>
         public KeyAssociatedData(ImprovementProposals.Models.Slip21NodeEncrypted encryptedAccountNode, string tapeBarcode, uint tapeKeyRollovers, string? tapeFingerprint = null)
         {
+            ArgumentNullException.ThrowIfNull(encryptedAccountNode);
             Debug.Assert(HashingSchema.Count(x => x.Equals(' ')) <= 1, $"{nameof(HashingSchema)} contains more than one space character");
             TapeBarcode = tapeBarcode;
             GlobalKeyRollovers = encryptedAccountNode.GlobalKeyRolloverCount;
@@ -158,7 +159,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
                 _ = sb.Append(':'); // Key Validation Schema/Standard field terminator
                 _ = sb.Append(HashingSchema); // Hashing Algorithm and Parameters Schema/Standard Reference field
                 // The Hashing Algorithm and Parameters Schema/Standard Reference field contains up to two space-separated values
-                if (!HashingSchema.Contains(' '))
+                if (!HashingSchema.Contains(' ', System.StringComparison.Ordinal))
                 {
                     _ = sb.Append(' '); // The Hashing Algorithm and Parameters Schema/Standard Reference field must be padded with a space character if it doesn't contain a space character
                 }

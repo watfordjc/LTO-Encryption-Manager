@@ -15,7 +15,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms
 	public static class Base58
     {
 		// Base58 digits, from [0] to [57]
-        private static readonly string encoderAlphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+        private const string encoderAlphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 		// byte values for UTF-8 Base58 digits - use sbyte[] so invalid values can be set to -1 (Base58 alphabet is ASCII, so values fit in range 0 through +127)
         private static readonly sbyte[] decoderAlphabet = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -1, -1, -1, -1, -1, -1, 9, 10, 11, 12, 13, 14, 15, 16, -1, 17, 18, 19, 20, 21, -1, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, -1, -1, -1, -1, -1, -1, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, -1, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 		// A static BigInteger = 58
@@ -86,6 +86,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms
 		/// <returns>true on success.</returns>
 		public static bool TryGetRawBase58FromBase58String(string input, [NotNullWhen(true)] out byte[]? output)
 		{
+			ArgumentNullException.ThrowIfNull(input);
 			return TryGetRawBase58FromBase256(Encoding.UTF8.GetBytes(input.Trim()), out output);
 		}
 

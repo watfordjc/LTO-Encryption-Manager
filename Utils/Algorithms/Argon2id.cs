@@ -11,6 +11,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms
     {
         public static Argon2idHashResult GetHash(CryptHash.Net.Hash.Argon2id argon2id, byte[] message, byte[] salt, int iterations, int memKibiBytes, int parallelism, int outputLength, byte[]? associatedData = null, byte[]? knownSecret = null)
         {
+            ArgumentNullException.ThrowIfNull(argon2id);
             return argon2id.ComputeHash(
                     stringToComputeHashBytes: message,
                     iterations: iterations,

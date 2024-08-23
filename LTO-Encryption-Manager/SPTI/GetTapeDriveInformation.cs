@@ -20,6 +20,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
         /// <param name="tapeDrive">A <see cref="TapeDrive"/> instance</param>
         public static void GetTapeDriveInformation(TapeDrive tapeDrive)
         {
+            ArgumentNullException.ThrowIfNull(tapeDrive);
             HLOCAL storageDescriptorHeaderPtr = Windows.Win32.PInvoke.LocalAlloc(Windows.Win32.System.Memory.LOCAL_ALLOC_FLAGS.LPTR, (nuint)Marshal.SizeOf<Windows.Win32.System.Ioctl.STORAGE_DESCRIPTOR_HEADER>());
 			HLOCAL adapterDescriptorPtr = (HLOCAL)IntPtr.Zero;
 			HLOCAL deviceDescriptorPtr = (HLOCAL)IntPtr.Zero;

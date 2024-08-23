@@ -7,11 +7,12 @@ using static uk.JohnCook.dotnet.LTOEncryptionManager.SPTI.LTO;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager
 {
-	internal partial class NativeMethods
+	internal sealed partial class NativeMethods
 	{
 		[Flags]
 		public enum ACCESS_MASK : uint
 		{
+#pragma warning disable CA1069 // Enums values should not be duplicated
 			DELETE = FILE_ACCESS_RIGHTS.DELETE,
 			READ_CONTROL = FILE_ACCESS_RIGHTS.READ_CONTROL,
 			WRITE_DAC = FILE_ACCESS_RIGHTS.WRITE_DAC,
@@ -58,6 +59,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			WINSTA_READSCREEN = 0x00000200,
 
 			WINSTA_ALL_ACCESS = 0x0000037F
+#pragma warning restore CA1069 // Enums values should not be duplicated
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -69,6 +71,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 		}
 
 		[DllImport("user32.dll", EntryPoint = "CreateDesktop", CharSet = CharSet.Unicode, SetLastError = true)]
+		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
 		public static extern IntPtr CreateDesktop(
 				[In, MarshalAs(UnmanagedType.LPWStr)] string desktopName,
 				[MarshalAs(UnmanagedType.LPWStr)] string? device, // must be null.
@@ -78,13 +81,16 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				[In, Optional, MarshalAs(UnmanagedType.Struct)] ref SECURITY_ATTRIBUTES attributes);
 
 		[LibraryImport("kernel32.dll")]
+		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
 		public static partial void RtlZeroMemory(IntPtr dst, int length);
 
 
 		[LibraryImport("msvcrt.dll", SetLastError = false)]
+		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
 		public static partial IntPtr memcpy(IntPtr dest, IntPtr src, int count);
 
-		[DllImport("Kernel32.dll", SetLastError = false, CharSet = CharSet.Auto)]
+		[DllImport("kernel32.dll", SetLastError = false, CharSet = CharSet.Auto)]
+		[DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
 		public static extern bool DeviceIoControl(
 			[In] in SafeFileHandle hDevice,												// [in] HANDLE
 			[In] in uint IoControlCode,													// [in] DWORD

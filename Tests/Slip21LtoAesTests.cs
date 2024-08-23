@@ -1,10 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,13 +12,13 @@ using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 {
-    [TestClass]
+	[TestClass]
     public class Slip21LtoAesTests
     {
-        public static async Task<List<Models.Slip21LtoAesTestVector>?> GetTestVectorsAsync()
+        public static async Task<Collection<Models.Slip21LtoAesTestVector>?> GetTestVectorsAsync()
         {
             using FileStream openStream = File.OpenRead(@"data/slip0021-lto-aes-vectors.json");
-            Models.Slip21LtoAesTestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Slip21LtoAesTestVectorsRoot>(openStream);
+            Models.Slip21LtoAesTestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Slip21LtoAesTestVectorsRoot>(openStream).ConfigureAwait(false);
             openStream.Close();
             return jsonRoot?.English;
         }
@@ -28,13 +26,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
         [TestMethod]
         public async Task GetBinarySeedFromSeedWordsTest()
         {
-            IEnumerable<Models.Slip21LtoAesTestVector>? testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Slip21LtoAesTestVector>? testVectors = await GetTestVectorsAsync().ConfigureAwait(false);
             Assert.IsNotNull(testVectors);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 string[] mnemonic = testVector.MnemonicSeed.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 byte[] binarySeed = Bip39.GetBinarySeedFromSeedWords(ref mnemonic, null);
-                string binarySeedHex = Convert.ToHexString(binarySeed).ToLowerInvariant();
+                string binarySeedHex = Convert.ToHexString(binarySeed).ToUpperInvariant();
                 Assert.AreEqual(testVector.MnemonicBinarySeed, binarySeedHex);
             });
         }
@@ -42,12 +40,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
         [TestMethod]
         public async Task DeriveMasterNodeTest()
         {
-            IEnumerable<Models.Slip21LtoAesTestVector>? testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Slip21LtoAesTestVector>? testVectors = await GetTestVectorsAsync().ConfigureAwait(false);
             Assert.IsNotNull(testVectors);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
-                string masterNodePrivateKey = Convert.ToHexString(masterNode.Right).ToLowerInvariant();
+                string masterNodePrivateKey = Convert.ToHexString(masterNode.Right).ToUpperInvariant();
                 Assert.AreEqual(testVector.MasterNodeKey, masterNodePrivateKey);
             });
         }
@@ -55,70 +53,76 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
         [TestMethod]
         public async Task FingerprintGlobalNodeTest()
         {
-            IEnumerable<Models.Slip21LtoAesTestVector>? testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Slip21LtoAesTestVector>? testVectors = await GetTestVectorsAsync().ConfigureAwait(false);
             Assert.IsNotNull(testVectors);
-            SemaphoreSlim semaphore = new(1);
+			using SemaphoreSlim semaphore = new(1);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
-                semaphore.Wait();
                 Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
                 Slip21Node globalNode = masterNode.GetChildNode(testVector.Slip0021Schema).GetChildNode(testVector.GlobalKeyRolloverCount);
-                Slip21ValidationNode validationNode = new(globalNode);
-                validationNode.FingerprintingCompleted += (object? sender, bool e) =>
-                {
-                    Assert.AreEqual(testVector.MasterNodeFingerprint, validationNode.Fingerprint);
-                    semaphore.Release();
+				Slip21ValidationNode validationNode = new(globalNode);
+                validationNode.FingerprintingCompleted += (object? sender, FingerprintingCompletedEventArgs e) =>
+				{
+					semaphore.Release();
+                    Assert.IsTrue(e.HasCompleted);
+					Assert.AreEqual(testVector.MasterNodeFingerprint, validationNode.Fingerprint);
                 };
-                validationNode.CalculateFingerprint();
+				// Given the memory usage of Argon2id, only allow one thread to calculate a fingerprint at a time
+				semaphore.Wait();
+				validationNode.CalculateFingerprint();
             });
-            semaphore.Wait();
-            semaphore.Dispose();
-        }
+			await semaphore.WaitAsync().ConfigureAwait(false);
+			semaphore.Dispose();
+		}
 
         [TestMethod]
         public async Task FingerprintAccountNodeTest()
         {
-            IEnumerable<Models.Slip21LtoAesTestVector>? testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Slip21LtoAesTestVector>? testVectors = await GetTestVectorsAsync().ConfigureAwait(false);
             Assert.IsNotNull(testVectors);
-            SemaphoreSlim semaphore = new(1);
+			using SemaphoreSlim semaphore = new(1);
             _ = Parallel.ForEach(testVectors, testVector =>
-            {
-                semaphore.Wait();
-                Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
+			{
+				Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
                 Slip21Node accountNode = masterNode.GetChildNode(testVector.Slip0021Schema).GetChildNode(testVector.GlobalKeyRolloverCount).GetChildNode(testVector.AccountId).GetChildNode(testVector.AccountKeyRolloverCount);
-                Slip21ValidationNode validationNode = new(accountNode);
-                validationNode.FingerprintingCompleted += (object? sender, bool e) =>
-                {
-                    Assert.AreEqual(testVector.AccountNodeFingerprint, validationNode.Fingerprint);
-                    semaphore.Release();
+				Slip21ValidationNode validationNode = new(accountNode);
+                validationNode.FingerprintingCompleted += (object? sender, FingerprintingCompletedEventArgs e) =>
+				{
+					semaphore.Release();
+                    Assert.IsTrue(e.HasCompleted);
+					Assert.AreEqual(testVector.AccountNodeFingerprint, validationNode.Fingerprint);
                 };
-                validationNode.CalculateFingerprint();
-            });
-            semaphore.Wait();
-            semaphore.Release();
-        }
+				// Given the memory usage of Argon2id, only allow one thread to calculate a fingerprint at a time
+				semaphore.Wait();
+				validationNode.CalculateFingerprint();
+			});
+			await semaphore.WaitAsync().ConfigureAwait(false);
+			semaphore.Dispose();
+		}
 
         [TestMethod]
         public async Task FingerprintTapeNodeTest()
         {
-            IEnumerable<Models.Slip21LtoAesTestVector>? testVectors = await GetTestVectorsAsync();
+            IEnumerable<Models.Slip21LtoAesTestVector>? testVectors = await GetTestVectorsAsync().ConfigureAwait(false);
             Assert.IsNotNull(testVectors);
-            SemaphoreSlim semaphore = new(1);
+            using SemaphoreSlim semaphore = new(1);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
-                semaphore.Wait();
                 Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
                 Slip21Node tapeNode = masterNode.GetChildNode(testVector.Slip0021Schema).GetChildNode(testVector.GlobalKeyRolloverCount).GetChildNode(testVector.AccountId).GetChildNode(testVector.AccountKeyRolloverCount).GetChildNode(testVector.TapeLabel).GetChildNode(testVector.TapeKeyRolloverCount);
-                Slip21ValidationNode validationNode = new(tapeNode);
-                validationNode.FingerprintingCompleted += (object? sender, bool e) =>
-                {
-                    Assert.AreEqual(testVector.TapeNodeFingerprint, validationNode.Fingerprint);
-                    semaphore.Release();
+				Slip21ValidationNode validationNode = new(tapeNode);
+                validationNode.FingerprintingCompleted += (object? sender, FingerprintingCompletedEventArgs e) =>
+				{
+					semaphore.Release();
+                    Assert.IsTrue(e.HasCompleted);
+					Assert.AreEqual(testVector.TapeNodeFingerprint, validationNode.Fingerprint);
                 };
-                validationNode.CalculateFingerprint();
-            });
-            semaphore.Wait();
-            semaphore.Release();
-        }
+				// Given the memory usage of Argon2id, only allow one thread to calculate a fingerprint at a time
+				semaphore.Wait();
+				validationNode.CalculateFingerprint();
+			});
+			await semaphore.WaitAsync().ConfigureAwait(false);
+			semaphore.Dispose();
+		}
     }
 }

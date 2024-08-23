@@ -343,7 +343,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 
         private void AddError(string propertyName, string error)
         {
-            if (propertyName.StartsWith("Word") && int.TryParse(propertyName.AsSpan(4, 2), out int wordNumber))
+            if (propertyName.StartsWith("Word", StringComparison.Ordinal) && int.TryParse(propertyName.AsSpan(4, 2), out int wordNumber))
             {
                 if (!_errorsByPropertyName.TryGetValue(propertyName, out List<string>? value))
                 {

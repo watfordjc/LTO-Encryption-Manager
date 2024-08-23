@@ -32,6 +32,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 
 		public static void GetCartridgeMemory(Models.TapeDrive tapeDrive)
 		{
+			ArgumentNullException.ThrowIfNull(tapeDrive);
 			if (tapeDrive.Handle is null || tapeDrive.Handle.IsInvalid || tapeDrive.Handle.IsClosed)
 			{
 				return;
@@ -57,7 +58,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			}
 			else if (!ok && sptwb_ex.spt.ScsiStatus == Constants.SCSISTAT_GOOD)
 			{
-				ok = WaitForSenseChange(tapeDrive, ref sptwb_ex);
+				_ = WaitForSenseChange(tapeDrive, ref sptwb_ex);
 			}
 			else if (!ok || sptwb_ex.spt.ScsiStatus != Constants.SCSISTAT_GOOD)
 			{
@@ -72,6 +73,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 
 		public static void GetCartridgeMemory(Models.TapeDrive tapeDrive, byte partitionNumber)
 		{
+			ArgumentNullException.ThrowIfNull(tapeDrive);
 			if (tapeDrive.Handle is null || tapeDrive.Handle.IsInvalid || tapeDrive.Handle.IsClosed)
 			{
 				return;
@@ -114,7 +116,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			uint pageLength = ReverseByteOrder(reader.ReadUInt32());
 			while (reader.BaseStream.Position < returnedDataLength - sizeof(uint))
 			{
-				RawMamAttribute currentAttribute = new()
+				RawMamAttributeValue currentAttribute = new()
 				{
 					ID = ReverseByteOrder(reader.ReadUInt16())
 				};
@@ -133,7 +135,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			if (tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].Count > 0)
 			{
 				string barcodeSuffix = "";
-				RawMamAttribute? attribute = tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].FirstOrDefault(x => x.ID == Constants.MAM_MEDIUM_TYPE);
+				RawMamAttributeValue? attribute = tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].FirstOrDefault(x => x.ID == Constants.MAM_MEDIUM_TYPE);
 				byte mediumType = new();
 				if (attribute is not null && attribute != default && attribute.RawData is not null)
 				{

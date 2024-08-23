@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
+﻿namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 {
-	public class Constants
+	public static class Constants
 	{
 		internal static readonly Windows.Win32.Foundation.BOOL FALSE = (Windows.Win32.Foundation.BOOL)0;
 		internal static readonly Windows.Win32.Foundation.BOOL TRUE = (Windows.Win32.Foundation.BOOL)1;
 
+#pragma warning disable CA1707 // Identifiers should not contain underscores
 		public const int SPT_CDB_LENGTH = 32;
 		public const int SPT_SENSE_LENGTH = 32;
 		public const int SPTWB_DATA_LENGTH = 65280;
@@ -469,5 +464,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		public const int TAPE_ALERT_SEVERITY_WARN = 1;
 		public const int TAPE_ALERT_SEVERITY_CRIT = 2;
 		public const int TAPE_ALERT_SEVERITY_UNKNOWN = 3;
+#pragma warning restore CA1707 // Identifiers should not contain underscores
 	}
 }

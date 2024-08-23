@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 {
-	public partial class LTO
+	public static partial class LTO
 	{
 		public static void GetNextBlockEncryptionStatus(Models.TapeDrive tapeDrive)
 		{
+			ArgumentNullException.ThrowIfNull(tapeDrive);
 			if (tapeDrive.Handle is null || tapeDrive.Handle.IsInvalid || tapeDrive.Handle.IsClosed)
 			{
 				return;

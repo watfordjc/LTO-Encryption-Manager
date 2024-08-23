@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
@@ -19,8 +20,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
             }
         }
 
-        public static Task<Boolean> GetWordValues(List<String> words)
+		public static Task<Boolean> GetWordValues(Collection<string> words)
         {
+            ArgumentNullException.ThrowIfNull(words);
             words.Clear();
             for (int i = 0; i < 2048; i++)
             {
@@ -153,10 +155,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
         /// <returns>The binary representation of the original entropy.</returns>
         public static byte[] GetEntropyBytesFromSeedWords(ref string[] seedWords)
         {
-            if (seedWords.Length == 0)
-            {
-                throw new ArgumentException($"No mnemonic seed entered.");
-            }
+            ArgumentNullException.ThrowIfNull(seedWords);
+            ArgumentException.ThrowIfNullOrEmpty("No mnemonic seed entered.", nameof(seedWords));
             // An int array to store the seed word values
             int?[] wordlistValues = new int?[seedWords.Length];
             // Convert the seed words to integers
@@ -296,13 +296,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
             return entropyBytes;
         }
 
-        /// <summary>
-        /// Convert BIP-0039 mnemonic seed words and a passphrase to a BIP-0039 binary seed.
-        /// </summary>
-        /// <param name="seedWords">An array of BIP-0039 mnemonic words.</param>
-        /// <param name="passphrase">The BIP-0039 passphrase used in PBKDF2. Use <see cref="string.Empty"/> if no passphrase.</param>
-        /// <returns>The binary representation of a BIP-0039 binary seed.</returns>
-        public static byte[] GetBinarySeedFromSeedWords(ref string[] seedWords, SecureString? passphrase)
+		/// <summary>
+		/// Convert BIP-0039 mnemonic seed words and a passphrase to a BIP-0039 binary seed.
+		/// </summary>
+		/// <param name="seedWords">An array of BIP-0039 mnemonic words.</param>
+		/// <param name="passphrase">The BIP-0039 passphrase used in PBKDF2. Use <see cref="string.Empty"/> if no passphrase.</param>
+		/// <returns>The binary representation of a BIP-0039 binary seed.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5387:Use at least 100000 iterations when deriving a cryptographic key from a password", Justification = "BIP-0039 uses a hard-coded number of iterations.")]
+		public static byte[] GetBinarySeedFromSeedWords(ref string[] seedWords, SecureString? passphrase)
         {
             // Password for PBKDF2
             byte[] passwordBytes = Encoding.UTF8.GetBytes(string.Join(' ', seedWords).Normalize(NormalizationForm.FormKD));
@@ -359,8 +360,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
             // Clear arrays
             Array.Clear(passwordBytes, 0, passwordBytes.Length);
             Array.Clear(salt, 0, salt.Length);
-            // Return the first 64 bytes from PBKDF2 (the binary seed)
-            return pbkdf2Instance.GetBytes(64);
+			// Return the first 64 bytes from PBKDF2 (the binary seed)
+			return pbkdf2Instance.GetBytes(64);
         }
     }
 }

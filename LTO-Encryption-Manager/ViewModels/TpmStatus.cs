@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -11,16 +12,21 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Tpm2Lib;
-using uk.JohnCook.dotnet.LTOEncryptionManager.Commands;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Commands;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
 {
-    public class TpmStatus : ViewModelBase
+	public class TpmInitialisedEventArgs(bool hasCompleted) : EventArgs
+	{
+		public bool HasCompleted { get; init; } = hasCompleted;
+	}
+
+	public class TpmStatus : ViewModelBase
     {
-        public bool HasTpm { get; private set; }
-        public List<TpmAlgId> SupportedAlgo { get; private set; } = [];
-        public List<TpmAlgId> HasPcrBankAlgo { get; private set; } = [];
-        public event EventHandler<bool>? Completed;
+		public bool HasTpm { get; private set; }
+        public Collection<TpmAlgId> SupportedAlgo { get; private set; } = [];
+        public Collection<TpmAlgId> HasPcrBankAlgo { get; private set; } = [];
+        public event EventHandler<TpmInitialisedEventArgs>? Completed;
 
         public TpmStatus()
         {
@@ -41,15 +47,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
                 // Pass the device object used for communication to the TPM 2.0 object
                 // which provides the command interface.
                 //
-                Tpm2 tpm = new(tpmDevice);
-                if (tpm is not null)
-                {
-                    HasTpm = true;
-                } else
-                {
-                    HasTpm = false;
-                    return;
-                }
+                using Tpm2 tpm = new(tpmDevice);
+                HasTpm = true;
 
                 _ = tpm.GetCapability(Cap.Algs, 0, 1000, out ICapabilitiesUnion caps);
                 AlgPropertyArray algsx = (AlgPropertyArray)caps;
@@ -97,11 +96,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
                 {
                     HasPcrBankAlgo.Add(pcrBank.hash);
                     StringBuilder? sb = new();
-                    _ = sb.Append($"PCR bank for algorithm {pcrBank.hash} has registers at index:");
+                    _ = sb.Append(CultureInfo.InvariantCulture, $"PCR bank for algorithm {pcrBank.hash} has registers at index:");
                     _ = sb.AppendLine();
                     foreach (uint selectedPcr in pcrBank.GetSelectedPcrs())
                     {
-                        _ = sb.Append($"{selectedPcr},");
+                        _ = sb.Append(CultureInfo.InvariantCulture, $"{selectedPcr},");
                     }
                     //Trace.WriteLine(sb);
                 }
@@ -123,7 +122,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
 
                     uint pcrIndex = 0;
                     StringBuilder? sb = new();
-                    _ = sb.Append($"PCR property {pcrProperty.tag} supported by these registers: ");
+                    _ = sb.Append(CultureInfo.InvariantCulture, $"PCR property {pcrProperty.tag} supported by these registers: ");
                     _ = sb.AppendLine();
                     foreach (byte pcrBitmap in pcrProperty.pcrSelect)
                     {
@@ -131,7 +130,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
                         {
                             if ((pcrBitmap & (1 << i)) != 0)
                             {
-                                _ = sb.Append($"{pcrIndex},");
+                                _ = sb.Append(CultureInfo.InvariantCulture, $"{pcrIndex},");
                             }
                             pcrIndex++;
                         }
@@ -176,12 +175,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
                 // Clean up.
                 //
                 tpm.Dispose();
-                Completed?.Invoke(this, true);
+                Completed?.Invoke(this, new(true));
             }
             catch (Exception e)
             {
                 Trace.WriteLine($"Exception occurred: {e.Message}");
-                Completed?.Invoke(this, true);
+                Completed?.Invoke(this, new(true));
             }
         }
     }

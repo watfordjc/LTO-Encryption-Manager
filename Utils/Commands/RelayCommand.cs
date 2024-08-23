@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Commands
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Commands
 {
     public class RelayCommand<T> : ICommand
     {
