@@ -22,7 +22,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
         public event PropertyChangedEventHandler? PropertyChanged;
         private byte[]? binarySeed;
         bool validTpmCert;
-        public List<string> Bip39Dictionary { get; private set; }
+		bool comboboxesPopulated;
         private Bip39SeedPhrase _newSeedPhrase = new();
         public Bip39SeedPhrase NewSeedPhrase => _newSeedPhrase;
         public SecureString? Passphrase { private get; set; }
@@ -83,9 +83,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 
         private void Form_Shown(object? sender, EventArgs e)
         {
-            statusLabel.Text = "Loading window content...";
+			statusLabel.Text = "Loading window content, which may take a few seconds...";
+			btnValidateSeedPhrase.Enabled = false;
+			btnDeriveAccountNode.Enabled = false;
             Refresh();
             GenerateBip39Dictionary();
+			comboboxesPopulated = true;
             NewSeedPhrase.Length = 24;
 
             AccountID = "0";
@@ -163,8 +166,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             };
             for (int i = 0; i < 24; ++i)
             {
+				cbWordList[i].BeginUpdate();
                 InitComboBoxSeedWord(cbWordList[i]);
                 cbWordList[i].SelectedIndex = -1;
+				cbWordList[i].EndUpdate();
 				progressBar.PerformStep();
 				Refresh();
             }
@@ -172,7 +177,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 
         private void RestoreSeedPhraseWindow_SelectedIndexChanged(object? sender, EventArgs e)
         {
-            if (sender is not ComboBox cbWord)
+			if (sender is not ComboBox cbWord || !comboboxesPopulated)
             {
                 return;
             }
@@ -184,7 +189,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 
         private void CbWord_Validating(object? sender, CancelEventArgs e)
         {
-        if (sender is not ComboBox cbWord)
+			if (sender is not ComboBox cbWord || !comboboxesPopulated)
             {
                 return;
             }
@@ -211,7 +216,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 
         private void ValidateSeedPhrase(object sender, EventArgs e)
         {
-            if (cbWordList is null)
+			if (cbWordList is null || !comboboxesPopulated)
             {
                 return;
             }
