@@ -3,16 +3,11 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using Tpm2Lib;
-using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Commands;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
 {
@@ -50,13 +45,17 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
                 using Tpm2 tpm = new(tpmDevice);
                 HasTpm = true;
 
-                _ = tpm.GetCapability(Cap.Algs, 0, 1000, out ICapabilitiesUnion caps);
-                AlgPropertyArray algsx = (AlgPropertyArray)caps;
+                _ = tpm.GetCapability(Cap.Algs, 0, 1000, out ICapabilitiesUnion capabilities);
+				if (capabilities is not AlgPropertyArray algPropertyArray)
+				{
+					Completed?.Invoke(this, new(true));
+					return;
+				}
 
-                //Trace.WriteLine("Supported algorithms:");
-                foreach (AlgProperty? alg in algsx.algProperties)
+				//Trace.WriteLine("Supported algorithms:");
+				foreach (AlgProperty algProperty in algPropertyArray.algProperties)
                 {
-                    SupportedAlgo.Add(alg.alg);
+                    SupportedAlgo.Add(algProperty.alg);
                     //Trace.WriteLine($"  {alg.alg}");
                 }
                 /*
@@ -87,18 +86,22 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
                 // in different PCR banks. The PCR banks are identified by the hash algorithm
                 // used to extend values into the PCRs of this bank.
                 //
-                _ = tpm.GetCapability(Cap.Pcrs, 0, 255, out caps);
-                PcrSelection[] pcrs = ((PcrSelectionArray)caps).pcrSelections;
+                _ = tpm.GetCapability(Cap.Pcrs, 0, 255, out capabilities);
+				if (capabilities is not PcrSelectionArray pcrSelectionArray)
+				{
+					Completed?.Invoke(this, new(true));
+					return;
+				}
 
                 //Trace.WriteLine(string.Empty);
                 //Trace.WriteLine("Available PCR banks:");
-                foreach (PcrSelection pcrBank in pcrs)
+                foreach (PcrSelection pcrSelection in pcrSelectionArray.pcrSelections)
                 {
-                    HasPcrBankAlgo.Add(pcrBank.hash);
+                    HasPcrBankAlgo.Add(pcrSelection.hash);
                     StringBuilder? sb = new();
-                    _ = sb.Append(CultureInfo.InvariantCulture, $"PCR bank for algorithm {pcrBank.hash} has registers at index:");
+                    _ = sb.Append(CultureInfo.InvariantCulture, $"PCR bank for algorithm {pcrSelection.hash} has registers at index:");
                     _ = sb.AppendLine();
-                    foreach (uint selectedPcr in pcrBank.GetSelectedPcrs())
+                    foreach (uint selectedPcr in pcrSelection.GetSelectedPcrs())
                     {
                         _ = sb.Append(CultureInfo.InvariantCulture, $"{selectedPcr},");
                     }
@@ -108,23 +111,27 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
                 //
                 // Read PCR attributes. Cap.PcrProperties checks for certain properties of each PCR register.
                 //
-                _ = tpm.GetCapability(Cap.PcrProperties, 0, 255, out caps);
+                _ = tpm.GetCapability(Cap.PcrProperties, 0, 255, out capabilities);
+				if (capabilities is not TaggedPcrPropertyArray taggedPcrPropertyArray)
+				{
+					Completed?.Invoke(this, new(true));
+					return;
+				}
 
-                //Trace.WriteLine(string.Empty);
-                //Trace.WriteLine("PCR attributes:");
-                TaggedPcrSelect[] pcrProperties = ((TaggedPcrPropertyArray)caps).pcrProperty;
-                foreach (TaggedPcrSelect pcrProperty in pcrProperties)
+				//Trace.WriteLine(string.Empty);
+				//Trace.WriteLine("PCR attributes:");
+                foreach (TaggedPcrSelect taggedPcrSelect in taggedPcrPropertyArray.pcrProperty)
                 {
-                    if (pcrProperty.tag == PtPcr.None)
+                    if (taggedPcrSelect.tag == PtPcr.None)
                     {
                         continue;
                     }
 
                     uint pcrIndex = 0;
                     StringBuilder? sb = new();
-                    _ = sb.Append(CultureInfo.InvariantCulture, $"PCR property {pcrProperty.tag} supported by these registers: ");
+                    _ = sb.Append(CultureInfo.InvariantCulture, $"PCR property {taggedPcrSelect.tag} supported by these registers: ");
                     _ = sb.AppendLine();
-                    foreach (byte pcrBitmap in pcrProperty.pcrSelect)
+                    foreach (byte pcrBitmap in taggedPcrSelect.pcrSelect)
                     {
                         for (int i = 0; i < 8; i++)
                         {
@@ -174,12 +181,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
                 //
                 // Clean up.
                 //
-                tpm.Dispose();
                 Completed?.Invoke(this, new(true));
             }
-            catch (Exception e)
+			// StringBuilder.AppendLine (ArgumentOutOfRangeException)
+			catch (Exception ex) when
+            (ex is ArgumentOutOfRangeException)
             {
-                Trace.WriteLine($"Exception occurred: {e.Message}");
+                Trace.WriteLine($"Exception occurred: {ex.Message}");
                 Completed?.Invoke(this, new(true));
             }
         }

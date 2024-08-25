@@ -300,7 +300,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			// 160 bits is 20 bytes
 			byte[] tempKeyIdentifier = new byte[20];
 			// Pass SHA2-256(serialize_point(K)) to RIPEMD160
-			ripeMD160.BlockUpdate(SHA256.HashData(compressedPublicKey.ToArray()), 0, SHA256.HashSizeInBytes);
+			ripeMD160.BlockUpdate(SHA256.HashData([.. compressedPublicKey]), 0, SHA256.HashSizeInBytes);
 			// Calculate the RIPEMD160 digest
 			ripeMD160.DoFinal(tempKeyIdentifier, 0);
 			// Return the key identifier
@@ -344,7 +344,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			byte[] hmacKey = Encoding.UTF8.GetBytes(curveString);
 			using HMACSHA512 hmac = new(hmacKey);
 			// Compute the hash
-			byte[] hashResult = hmac.ComputeHash(seedBytes.ToArray());
+			byte[] hashResult = hmac.ComputeHash([.. seedBytes]);
 
 			// The master key is the left half of the hash, convert for sanity checks
 			BigInteger d = new(1, hashResult[..32]);

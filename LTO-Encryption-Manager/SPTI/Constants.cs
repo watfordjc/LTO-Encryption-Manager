@@ -407,6 +407,7 @@
 		public const int MAM_FORMAT_ASCII = 0b01;
 		public const int MAM_FORMAT_TEXT = 0b10;
 		public const int MAM_FORMAT_RESERVED = 0b11;
+		public const int MAM_FORMAT_INVALID = int.MaxValue;
 
 		public const int TAPE_ALERT_READ_WARNING = 1;
 		public const int TAPE_ALERT_WRITE_WARNING = 2;

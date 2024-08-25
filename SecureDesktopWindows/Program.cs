@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
@@ -17,7 +14,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new RestoreSeedPhraseWindow());
+            using RestoreSeedPhraseWindow window = new();
+			Application.Run(window);
         }
     }
 }

@@ -107,14 +107,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			tapeDrive.State.CurrentTape.AlgorithmIndex = reader.ReadByte();
 			byte byte15 = reader.ReadByte();
 			byte nextBlockKadFormat = reader.ReadByte();
-			List<PLAIN_KEY_DESCRIPTOR> descriptors = [];
+			List<PLAIN_KEY_DESCRIPTOR?> descriptors = [];
 			while (reader.BaseStream.Position < pageLength + 4)
 			{
 				PLAIN_KEY_DESCRIPTOR kad = new()
 				{
 					Type = reader.ReadByte()
 				};
-				if (descriptors.Count > 0 && kad.Type <= descriptors.LastOrDefault().Type)
+				if (descriptors.Count > 0 && kad.Type <= descriptors.LastOrDefault()?.Type)
 				{
 					break;
 				}
@@ -126,13 +126,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			}
 			if (descriptors.Count > 0 && nextBlockKadFormat == Constants.SPOUT_TAPE_KAD_FORMAT_ASCII)
 			{
-				PLAIN_KEY_DESCRIPTOR? descriptorType = descriptors.FirstOrDefault(x => x.Type == Constants.SPOUT_TAPE_KAD_PLAIN_TYPE_AUTH);
-				if (descriptorType is not null && descriptorType?.Descriptor is not null)
+				PLAIN_KEY_DESCRIPTOR? descriptorType = descriptors.FirstOrDefault(x => x?.Type == Constants.SPOUT_TAPE_KAD_PLAIN_TYPE_AUTH, null);
+				if (descriptorType is not null &&  ((PLAIN_KEY_DESCRIPTOR)descriptorType).Descriptor is not null)
 				{
 					tapeDrive.State.CurrentTape.AuthKadString = Encoding.ASCII.GetString(descriptorType.Value.Descriptor).TrimEnd();
 				}
-				descriptorType = descriptors.FirstOrDefault(x => x.Type == Constants.SPOUT_TAPE_KAD_PLAIN_TYPE_UNAUTH);
-				if (descriptorType is not null && descriptorType?.Descriptor is not null)
+				descriptorType = descriptors.FirstOrDefault(x => x?.Type == Constants.SPOUT_TAPE_KAD_PLAIN_TYPE_UNAUTH, null);
+				if (descriptorType is not null && ((PLAIN_KEY_DESCRIPTOR)descriptorType).Descriptor is not null)
 				{
 					tapeDrive.State.CurrentTape.UnauthKadString = Encoding.ASCII.GetString(descriptorType.Value.Descriptor).TrimEnd();
 				}

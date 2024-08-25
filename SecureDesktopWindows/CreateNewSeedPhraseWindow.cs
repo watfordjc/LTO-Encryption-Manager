@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -24,7 +25,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 			//processCollection = Process.GetProcesses();
 			//statusLabel.Text = $"Number of processes: {processCollection.Length}";
 			validTpmCert = ValidCertificateExists();
-			statusLabel.Text = validTpmCert ? "OK: TPM-backed certificate exists" : "Error: TPM-backed user certificate (CN=LTO Encryption Manager) not found";
+			statusLabel.Text = validTpmCert ? Properties.Resources.tpm_cert_found : Properties.Resources.tpm_cert_not_found;
 			btnGenerateSeed.Enabled = validTpmCert;
 			tbGlobalRollovers.ReadOnly = !validTpmCert;
 			tbAccount.ReadOnly = !validTpmCert;
@@ -115,7 +116,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 			using X509Certificate2? tpmCertificate = Utils.PKI.GetOrCreateRsaCertificate(true);
 			if (tpmCertificate is null)
 			{
-				statusLabel.Text = $"Certificate/Key error";
+				statusLabel.Text = Properties.Resources.cert_key_error;
 				binarySeed = null;
 				ProgressBarStop();
 				return;
@@ -130,14 +131,18 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 					RSA? rsaPublicKey = tpmCertificate.GetRSAPublicKey();
 					validTpmCert = tpmCertificate.HasPrivateKey == true && rsaPrivateKey is not null && rsaPublicKey is not null && rsaCngKey is not null && rsaCngKey.Key.ExportPolicy == CngExportPolicies.None;
 				}
-				catch (Exception)
+				// RSA.GetRSAPrivateKey (ArgumentNullException)
+				// RSA.GetRSAPublicKey (ArgumentNullException)
+				// RSA.GetRSAPublicKey (CryptographicException)
+				catch (Exception ex) when
+				(ex is ArgumentNullException || ex is CryptographicException)
 				{
 					validTpmCert = false;
 				}
 			}
 			if (!validTpmCert)
 			{
-				statusLabel.Text = "Error: TPM-backed user certificate (CN=LTO Encryption Manager) not found";
+				statusLabel.Text = Properties.Resources.tpm_cert_not_found;
 				btnGenerateSeed.Enabled = false;
 				btnDeriveAccountNode.Enabled = false;
 				ProgressBarStop();
@@ -165,10 +170,16 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 				progressBar.PerformStep();
 				lblSeedHex4.Text = seedMnemonicSplit.Length >= 24 ? string.Format(CultureInfo.InvariantCulture, "{18} {19} {20} {21} {22} {23}", seedMnemonicSplit) : string.Empty;
 				progressBar.PerformStep();
-				statusLabel.Text = "Success. Write down the new BIP39 recovery seed and store it securely, then derive the account node.";
+				statusLabel.Text = Properties.Resources.recovery_seed_created;
 				btnDeriveAccountNode.Enabled = validTpmCert;
 			}
-			catch (Exception ex)
+			// BitConverter.ToString (ArgumentNullException)
+			// string.Replace (ArgumentNullException)
+			// string.Replace (ArgumentException)
+			// string.Format (ArgumentNullException)
+			// string.Format (FormatException)
+			catch (Exception ex) when
+			(ex is ArgumentNullException || ex is ArgumentException || ex is FormatException)
 			{
 				statusLabel.Text = $"Exception occurred: {ex.Message}";
 				ResetSeedPhraseDisplay();
@@ -193,7 +204,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 			using X509Certificate2? tpmCertificate = Utils.PKI.GetOrCreateRsaCertificate(true);
 			if (tpmCertificate is null)
 			{
-				statusLabel.Text = "Certificate/Key error";
+				statusLabel.Text = Properties.Resources.cert_key_error;
 				binarySeed = null;
 				ProgressBarStop();
 				return;
@@ -211,7 +222,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 					rsaPublicKey = tpmCertificate.GetRSAPublicKey();
 					validTpmCert = tpmCertificate.HasPrivateKey == true && rsaPrivateKey is not null && rsaPublicKey is not null && rsaCngKey is not null && rsaCngKey.Key.ExportPolicy == CngExportPolicies.None;
 				}
-				catch (Exception)
+				// RSA.GetRSAPrivateKey (ArgumentNullException)
+				// RSA.GetRSAPublicKey (ArgumentNullException)
+				// RSA.GetRSAPublicKey (CryptographicException)
+				catch (Exception ex) when
+				(ex is ArgumentNullException || ex is CryptographicException)
 				{
 					validTpmCert = false;
 				}
@@ -228,7 +243,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 
 			if (!validTpmCert)
 			{
-				statusLabel.Text = "Error: TPM-backed user certificate (CN=LTO Encryption Manager) not found";
+				statusLabel.Text = Properties.Resources.tpm_cert_not_found;
 				btnGenerateSeed.Enabled = false;
 				btnDeriveAccountNode.Enabled = false;
 				Cleanup();
@@ -236,7 +251,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 			}
 			if (rsaPublicKey is null)
 			{
-				statusLabel.Text = "Error: TPM-backed user certificate (CN=LTO Encryption Manager) does not have a public key";
+				statusLabel.Text = Properties.Resources.tpm_cert_no_pubkey;
 				btnGenerateSeed.Enabled = false;
 				btnDeriveAccountNode.Enabled = false;
 				Cleanup();
@@ -253,11 +268,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 			byte[]? encryptedLeft = null;
 			try
 			{
-				encryptedLeft = rsaPublicKey.Encrypt(accountNode.Left.ToArray(), RSAEncryptionPadding.Pkcs1);
+				encryptedLeft = rsaPublicKey.Encrypt([.. accountNode.Left], RSAEncryptionPadding.Pkcs1);
 			}
-			// RSACng.Encrypt (ArgumentNullException): arguments data and/or padding are null
-			// RSACng.Encrypt (CryptographicException): argument padding has Mode property that is not Pkcs1 or Oaep
-			catch (Exception)
+			// RSA.Encrypt (ArgumentNullException)
+			// RSA.Encrypt (NotImplementedException)
+			// RSA.Encrypt (CryptographicException)
+			catch (Exception ex) when
+			(ex is ArgumentNullException || ex is NotImplementedException || ex is CryptographicException)
 			{
 				btnGenerateSeed.Enabled = false;
 				btnDeriveAccountNode.Enabled = false;
@@ -269,9 +286,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 			{
 				encryptedLeftHex = Convert.ToHexString(encryptedLeft);
 			}
-			// Convert.ToHexString (ArgumentNullException): argument inArray is null
-			// Convert.ToHexString (ArgumentOutOfRangeException): argument inArray is too large to be encoded
-			catch (Exception)
+			// Convert.ToHexString (ArgumentNullException)
+			// Convert.ToHexString (ArgumentOutOfRangeException)
+			catch (Exception ex) when
+			(ex is ArgumentNullException || ex is ArgumentOutOfRangeException)
 			{
 				btnGenerateSeed.Enabled = false;
 				btnDeriveAccountNode.Enabled = false;
@@ -287,7 +305,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 				if (e.HasStarted)
 				{
 					ProgressBarStart();
-					tbSeedFingerprint.Text = "Calculating...";
+					tbSeedFingerprint.Text = Properties.Resources.status_calculating;
 				}
 			});
 			validationNode.FingerprintingCompleted += new EventHandler<FingerprintingCompletedEventArgs>((sender, e) =>
@@ -308,7 +326,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 				if (e.HasStarted)
 				{
 					ProgressBarStart();
-					tbAccountFingerprint.Text = "Calculating...";
+					tbAccountFingerprint.Text = Properties.Resources.status_calculating;
 				}
 			});
 			accountValidationNode.FingerprintingCompleted += new EventHandler<FingerprintingCompletedEventArgs>((sender, e) =>
@@ -335,9 +353,27 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 						}
 						ProgressBarComplete();
 					}
-					catch (Exception pathCheckException)
+					// Environment.GetFolderPath (ArgumentException)
+					// Environment.GetFolderPath (PlatformNotSupportedException)
+					// Convert.ToHexString (ArgumentNullException)
+					// Convert.ToHexString (ArgumentOutOfRangeException)
+					// Encoding.GetBytes (ArgumentNullException)
+					// Encoding.GetBytes (EncoderFallbackException)
+					// Path.Combine (ArgumentException)
+					// Path.Combine (ArgumentNullException)
+					// Directory.CreateDirectory (IOException)
+					// Directory.CreateDirectory (UnauthorizedAccessException)
+					// Directory.CreateDirectory (ArgumentException)
+					// Directory.CreateDirectory (ArgumentNullException)
+					// Directory.CreateDirectory (PathTooLongException)
+					// Directory.CreateDirectory (DirectoryNotFoundException)
+					// Directory.CreateDirectory (NotSupportedException)
+					catch (Exception ex) when
+					(ex is ArgumentException || ex is PlatformNotSupportedException || ex is ArgumentNullException || ex is ArgumentOutOfRangeException
+					|| ex is EncoderFallbackException || ex is IOException || ex is UnauthorizedAccessException || ex is PathTooLongException
+					|| ex is DirectoryNotFoundException || ex is NotSupportedException)
 					{
-						statusLabel.Text = $"Account data storage error: {pathCheckException.Message}";
+						statusLabel.Text = $"Account data storage error: {ex.Message}";
 					}
 					if (thisAppDataFolder is null)
 					{
@@ -345,7 +381,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 						return;
 					}
 
-					statusLabel.Text = "Signing SLIP21 node data...";
+					statusLabel.Text = Properties.Resources.status_signing_node;
 					byte[]? nodeDataSigned = null;
 					try
 					{
@@ -353,9 +389,18 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 						slip21NodeEncrypted.RSASignature = Convert.ToHexString(nodeDataSigned);
 						statusLabel.Text = $"Signature length: {slip21NodeEncrypted.RSASignature.Length} bytes";
 					}
-					catch (Exception accountDataSigningException)
+					// RSA.SignData (ArgumentNullException)
+					// RSA.SignData (ArgumentException)
+					// RSA.SignData (CryptographicException)
+					// Encoding.GetBytes (ArgumentNullException)
+					// Encoding.GetBytes (EncoderFallbackException)
+					// Convert.ToHexString (ArgumentNullException)
+					// Convert.ToHexString (ArgumentOutOfRangeException)
+					catch (Exception ex) when
+					(ex is ArgumentNullException || ex is ArgumentException || ex is CryptographicException || ex is ArgumentOutOfRangeException
+					|| ex is EncoderFallbackException)
 					{
-						statusLabel.Text = $"Account data signing error: {accountDataSigningException.Message}";
+						statusLabel.Text = $"Account data signing error: {ex.Message}";
 					}
 					if (nodeDataSigned is null)
 					{
@@ -376,9 +421,30 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 						DialogResult = DialogResult.OK;
 						Dispose();
 					}
-					catch (Exception accountDataStorageException)
+					// Convert.ToHexString (ArgumentNullException)
+					// Convert.ToHexString (ArgumentOutOfRangeException)
+					// Encoding.GetBytes (ArgumentNullException)
+					// Encoding.GetBytes (EncoderFallbackException)
+					// StreamWriter.StreamWriter (ArgumentException)
+					// StreamWriter.StreamWriter (ArgumentNullException)
+					// StreamWriter.StreamWriter (ArgumentOutOfRangeException)
+					// StreamWriter.StreamWriter (IOException)
+					// StreamWriter.StreamWriter (SecurityException)
+					// StreamWriter.StreamWriter (UnauthorizedAccessException)
+					// StreamWriter.StreamWriter (DirectoryNotFoundException)
+					// StreamWriter.StreamWriter (PathTooLongException)
+					// Path.Combine (ArgumentException)
+					// Path.Combine (ArgumentNullException)
+					// StringBuilder.Append (ArgumentOutOfRangeException)
+					// StreamWriter.WriteAsync (ObjectDisposedException)
+					// StreamWriter.WriteAsync (InvalidOperationException)
+					// StreamWriter.Close (EncoderFallbackException)
+					catch (Exception ex) when
+					(ex is ArgumentNullException || ex is ArgumentOutOfRangeException || ex is EncoderFallbackException || ex is ArgumentOutOfRangeException
+					|| ex is ArgumentException || ex is IOException || ex is SecurityException || ex is UnauthorizedAccessException
+					|| ex is DirectoryNotFoundException || ex is PathTooLongException || ex is ObjectDisposedException || ex is InvalidOperationException)
 					{
-						statusLabel.Text = $"Account data storage error: {accountDataStorageException.Message}";
+						statusLabel.Text = $"Account data storage error: {ex.Message}";
 						Cleanup();
 						return;
 					}

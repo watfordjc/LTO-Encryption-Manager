@@ -4,7 +4,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.BIP
 {
     public static partial class AmericanEnglish
     {
-        public static bool TryGetIntFromWord(string word, [NotNullWhen(true)] out int? value)
+		/// <summary>
+		/// Tries to get the 0-based index for a given <paramref name="word"/> in the BIP-0039 American English dictionary
+		/// </summary>
+		/// <param name="word">The BIP-0039 word.</param>
+		/// <param name="index">The 0-based index for the BIP-0039 word if found, or <c>null</c>..</param>
+		/// <returns><c>true</c> if the <paramref name="word"/> was found, else <c>false</c>.</returns>
+		public static bool TryGetIntFromWord(string word, [NotNullWhen(true)] out int? value)
         {
             value = word switch
             {

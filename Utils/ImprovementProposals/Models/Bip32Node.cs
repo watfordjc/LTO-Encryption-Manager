@@ -137,7 +137,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 			DerivationPath = IsMasterNode ? "m" : string.Format(CultureInfo.InvariantCulture, "{0}/{1}", parentDerivationPath, ChildNumberString);
 
 			// Create the private key
-			PrivateKey = CalculateECPrivateKey(domainParams, Left.ToArray());
+			PrivateKey = CalculateECPrivateKey(domainParams, [.. Left]);
 			// Create the public key
 			PublicKey = CalculateECPublicKey(domainParams, PrivateKey);
 			bool serialisePrivSuccess = TryCalculateSerialisedPrivateKey(PrivateKey, out string? privKeySerialised);
@@ -242,7 +242,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 				// Copy the uncollapsed private key to the left half of the node's bytes
 				Array.Copy(deserialisedKey[46..78], 0, NodeBytes, 0, 32);
 				// Create the private key
-				PrivateKey = CalculateECPrivateKey(domainParams, Left.ToArray());
+				PrivateKey = CalculateECPrivateKey(domainParams, [.. Left]);
 				// Create the public key
 				PublicKey = CalculateECPublicKey(domainParams, PrivateKey);
 				bool serialisePrivSuccess = TryCalculateSerialisedPrivateKey(PrivateKey, out string? privKeySerialised);

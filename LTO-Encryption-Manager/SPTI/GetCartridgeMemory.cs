@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Models;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
@@ -129,24 +126,25 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 				currentAttribute.SetReadOnly((byte)(byte3 >> 7 & 0b00000001));
 				ushort attributeLength = ReverseByteOrder(reader.ReadUInt16());
 				currentAttribute.SetAttributeLength(attributeLength);
-				currentAttribute.RawData = reader.ReadBytes(attributeLength);
+				currentAttribute.SetRawData(reader.ReadBytes(attributeLength));
 				tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].Add(currentAttribute);
 			}
 			if (tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].Count > 0)
 			{
 				string barcodeSuffix = "";
-				RawMamAttributeValue? attribute = tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].FirstOrDefault(x => x.ID == Constants.MAM_MEDIUM_TYPE);
+				RawMamAttributeValue? attribute = tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].FirstOrDefault(x => x?.ID == Constants.MAM_MEDIUM_TYPE, null);
+				byte[]? attributeRawData = attribute?.GetRawData();
 				byte mediumType = new();
-				if (attribute is not null && attribute != default && attribute.RawData is not null)
+				if (attribute is not null && attributeRawData is not null)
 				{
-					mediumType = attribute.RawData[0];
+					mediumType = attributeRawData[0];
 				}
-				attribute = tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].FirstOrDefault(x => x.ID == Constants.MAM_MEDIUM_DENSITY_CODE);
-				if (attribute is not null && attribute != default && attribute.RawData is not null)
+				attribute = tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].FirstOrDefault(x => x?.ID == Constants.MAM_MEDIUM_DENSITY_CODE, null);
+				if (attribute is not null && attributeRawData is not null)
 				{
 					if (mediumType == 0x00)
 					{
-						barcodeSuffix = attribute.RawData[0] switch
+						barcodeSuffix = attributeRawData[0] switch
 						{
 							0x40 => "L1",
 							0x42 => "L2",
@@ -163,7 +161,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 					}
 					else if (mediumType == 0x80)
 					{
-						barcodeSuffix = attribute.RawData[0] switch
+						barcodeSuffix = attributeRawData[0] switch
 						{
 							0x44 => "LT",
 							0x46 => "LU",
@@ -176,20 +174,20 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 						};
 					}
 				}
-				attribute = tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].FirstOrDefault(x => x.ID == Constants.MAM_BARCODE);
-				if (attribute is not null && attribute != default && attribute.RawData is not null)
+				attribute = tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].FirstOrDefault(x => x?.ID == Constants.MAM_BARCODE, null);
+				if (attribute is not null && attributeRawData is not null)
 				{
-					tapeDrive.State.CurrentTape.Barcode = string.Concat(Encoding.ASCII.GetString(attribute.RawData).TrimEnd(), barcodeSuffix);
+					tapeDrive.State.CurrentTape.Barcode = string.Concat(Encoding.ASCII.GetString(attributeRawData).TrimEnd(), barcodeSuffix);
 				}
-				attribute = tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].FirstOrDefault(x => x.ID == Constants.MAM_MAXIMUM_PARTITION_CAPACITY);
-				if (attribute is not null && attribute != default && attribute.RawData is not null)
+				attribute = tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].FirstOrDefault(x => x?.ID == Constants.MAM_MAXIMUM_PARTITION_CAPACITY, null);
+				if (attribute is not null && attributeRawData is not null)
 				{
-					tapeDrive.State.CurrentTape.PartitionsCapacity[partitionNumber] = ReverseByteOrder(BitConverter.ToUInt64(attribute.RawData));
+					tapeDrive.State.CurrentTape.PartitionsCapacity[partitionNumber] = ReverseByteOrder(BitConverter.ToUInt64(attributeRawData));
 				}
-				attribute = tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].FirstOrDefault(x => x.ID == Constants.MAM_REMAINING_PARTITION_CAPACITY);
-				if (attribute is not null && attribute != default && attribute.RawData is not null)
+				attribute = tapeDrive.State.CurrentTape.MamRawAttributes[partitionNumber].FirstOrDefault(x => x?.ID == Constants.MAM_REMAINING_PARTITION_CAPACITY, null);
+				if (attribute is not null && attributeRawData is not null)
 				{
-					tapeDrive.State.CurrentTape.PartitionsCapacityRemaining[partitionNumber] = ReverseByteOrder(BitConverter.ToUInt64(attribute.RawData));
+					tapeDrive.State.CurrentTape.PartitionsCapacityRemaining[partitionNumber] = ReverseByteOrder(BitConverter.ToUInt64(attributeRawData));
 				}
 			}
 		}

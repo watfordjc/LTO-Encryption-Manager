@@ -5,105 +5,264 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Windows.Win32.Foundation;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 {
 	public static class PKI
 	{
-		static readonly Windows.Win32.Foundation.BOOL FALSE = (Windows.Win32.Foundation.BOOL)0;
-		static readonly Windows.Win32.Foundation.BOOL TRUE = (Windows.Win32.Foundation.BOOL)1;
+		// Win32 FALSE = 0
+		static readonly BOOL FALSE = (BOOL)0;
+		// Win32 TRUE = 1
+		static readonly BOOL TRUE = (BOOL)1;
 
+		/// <summary>
+		/// Try to remove the registration of an OID from the system
+		/// </summary>
+		/// <param name="oidInfo">The OID to unregister.</param>
+		/// <returns><c>true</c> if <see cref="Windows.Win32.PInvoke.CryptUnregisterOIDInfo(in Windows.Win32.Security.Cryptography.CRYPT_OID_INFO)"/> does not return <c>FALSE</c>, else returns <c>false</c>.</returns>
 		static bool TryUnregisterOid(Windows.Win32.Security.Cryptography.CRYPT_OID_INFO oidInfo)
 		{
 			return Windows.Win32.PInvoke.CryptUnregisterOIDInfo(oidInfo) != FALSE;
 		}
 
+		/// <summary>
+		/// Copies a <see cref="string"/> to a <see cref="PCSTR"/>
+		/// </summary>
+		/// <param name="inputString">The <see cref="string"/> to copy.</param>
+		/// <returns>The <see cref="PCSTR"/> equivalent of <paramref name="inputString"/>.</returns>
+		/// <exception cref="UnreachableException">Thrown if an <see cref="Exception"/> occurs that is not silently handled.</exception>
+		internal static PCSTR? StringToPCSTR(string inputString)
+		{
+			// Throw exception if non-nullable parameters are null
+			ArgumentNullException.ThrowIfNull(inputString);
+			// A pointer to hold the ANSI string
+			IntPtr nativeStringPtr = IntPtr.Zero;
+			// Try to convert the string
+			try
+			{
+				// Copy the string to an ANSI string
+				nativeStringPtr = Marshal.StringToHGlobalAnsi(inputString);
+				// As value is not null, StringToHGlobalAnsi() should not return 0
+				if (nativeStringPtr == IntPtr.Zero)
+				{
+					return null;
+				}
+				// Working with pointers requires unsafe context
+				unsafe
+				{
+					// Cast the IntPtr to the ANSI string, to a C byte* pointer/array
+					byte* byteArray = (byte*)nativeStringPtr;
+					// Create a native ANSI string from the byte* array and return it
+					return new(byteArray);
+				}
+			}
+			// Catch all expected Exception types:
+			// Marshal.StringToHGlobalAnsi (OutOfMemoryException)
+			// Marshal.StringToHGlobalAnsi (ArgumentOutOfRangeException)
+			catch (Exception ex) when
+			(ex is OutOfMemoryException || ex is ArgumentOutOfRangeException)
+			{
+				return null;
+			}
+			// All Exception types should be handled above - if not, the above needs fixing
+			catch (Exception ex2)
+			{
+				throw new UnreachableException("Unhandled exception.", ex2);
+			}
+			finally
+			{
+				// Free the ANSI string pointer
+				Marshal.FreeHGlobal(nativeStringPtr);
+			}
+		}
+
+		/// <summary>
+		/// Copies a <see cref="string"/> to a <see cref="PCWSTR"/>
+		/// </summary>
+		/// <param name="inputString">The <see cref="string"/> to copy.</param>
+		/// <returns>The <see cref="PCWSTR"/> equivalent of <paramref name="inputString"/>.</returns>
+		/// <exception cref="UnreachableException">Thrown if an <see cref="Exception"/> occurs that is not silently handled.</exception>
+		internal static PCWSTR? StringToPCWSTR(string inputString)
+		{
+			// Throw exception if non-nullable parameters are null
+			ArgumentNullException.ThrowIfNull(inputString);
+			// A pointer to hold the UTF-16 string
+			IntPtr nativeStringPtr = IntPtr.Zero;
+			// Try to convert the string
+			try
+			{
+				// Copy the string to an UTF-16 string
+				nativeStringPtr = Marshal.StringToHGlobalUni(inputString);
+				// As value is not null, StringToHGlobalUni() should not return 0
+				if (nativeStringPtr == IntPtr.Zero)
+				{
+					return null;
+				}
+				// Working with pointers requires unsafe context
+				unsafe
+				{
+					// Cast the IntPtr to the UTF-16 string, to a C char* pointer/array
+					char* charArray = (char*)nativeStringPtr;
+					// Create a native UTF-16 string from the byte* array and return it
+					return new(charArray);
+				}
+			}
+			// Catch all expected Exception types:
+			// Marshal.StringToHGlobalUni (OutOfMemoryException)
+			// Marshal.StringToHGlobalUni (ArgumentOutOfRangeException)
+			catch (Exception ex) when
+			(ex is OutOfMemoryException || ex is ArgumentOutOfRangeException)
+			{
+				return null;
+			}
+			// All Exception types should be handled above - if not, the above needs fixing
+			catch (Exception ex2)
+			{
+				throw new UnreachableException("Unhandled exception.", ex2);
+			}
+			finally
+			{
+				// Free the UTF-16 string pointer
+				Marshal.FreeHGlobal(nativeStringPtr);
+			}
+		}
+
+		/// <summary>
+		/// Searches the system for a registered <see cref="Oid"/>
+		/// </summary>
+		/// <param name="oid">The <see cref="Oid"/> to search for.</param>
+		/// <param name="currentOidInfo">The found OID, as a native <see cref="Windows.Win32.Security.Cryptography.CRYPT_OID_INFO"/> struct.</param>
+		/// <returns><c>true</c> if found, <c>false</c> if not found or an error occurred.</returns>
+		/// <exception cref="UnreachableException">Thrown if an <see cref="Exception"/> occurs that is not silently handled.</exception>
+		internal static bool TryGetSystemRegisteredOid(Oid oid, [NotNullWhen(true)] out Windows.Win32.Security.Cryptography.CRYPT_OID_INFO? currentOidInfo)
+		{
+			// Throw exception if non-nullable parameters are null
+			ArgumentNullException.ThrowIfNull(oid);
+			// Initialise outputs to null
+			currentOidInfo = null;
+			// An Oid with a null/empty dotted-decimal value is invalid and won't be registered on the system
+			if (string.IsNullOrEmpty(oid.Value))
+			{
+				return false;
+			}
+
+			// The CRYPT_OID_INFO key type value CRYPT_OID_INFO_OID_KEY
+			uint CRYPT_OID_INFO_OID_KEY = (uint)NativeMethods.OidKeyType.Oid;
+
+			// Convert the dotted-decimal OID value to an ANSI string
+			PCSTR? pszOID = StringToPCSTR(oid.Value);
+			if (pszOID is null)
+			{
+				return false;
+			}
+
+			// Try to get the system-registered OID, if it already exists
+			try
+			{
+				// Working with pointers requires unsafe context
+				unsafe
+				{
+					// Get a native CRYPT_OID_INFO* pointer for the system-registered OID
+					Windows.Win32.Security.Cryptography.CRYPT_OID_INFO* oidPtr = Windows.Win32.PInvoke.CryptFindOIDInfo(CRYPT_OID_INFO_OID_KEY, pszOID, 0);
+					// If NULL is returned, the OID is not already registered on the system
+					if ((IntPtr)oidPtr == IntPtr.Zero)
+					{
+						return false;
+					}
+					// Update the nullable native CRYPT_OID_INFO struct so it points to the returned system-registered OID
+					currentOidInfo = *oidPtr;
+					// Double-check the dotted-decimal value of the found OID matches what was searched for
+					return currentOidInfo.Value.pszOID.AsSpan().SequenceEqual(pszOID.Value.AsSpan());
+				}
+			}
+			// Catch all expected Exception types:
+			// string.Equals (ArgumentException)
+			// Oid.Value (PlatformNotSupportedException)
+			catch (Exception ex) when
+			(ex is ArgumentException || ex is PlatformNotSupportedException)
+			{
+				return false;
+			}
+			// All Exception types should be handled above - if not, the above needs fixing
+			catch (Exception ex2)
+			{
+				throw new UnreachableException("Unhandled exception.", ex2);
+			}
+		}
+
+		/// <summary>
+		/// Try to update the system's Friendly Names for a collection of OIDs - does not give confirmation of success/failure
+		/// </summary>
+		/// <param name="oids">A collection of <see cref="Oid"/>s.</param>
+		/// <param name="forceRefresh">Whether any <see cref="Oid"/>s in the collection already known by the system should have their Friendly Names updated.</param>
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <c>null</c>.</exception>
+		/// <exception cref="UnreachableException">Thrown if an <see cref="Exception"/> occurs that is not silently handled.</exception>
 		public static void UpdateOidFriendlyNames(OidCollection oids, bool forceRefresh = false)
 		{
+			// Throw exception if non-nullable parameters are null
 			ArgumentNullException.ThrowIfNull(oids);
+			// The CRYPT_OID_INFO.dwGroupId value CRYPT_ENHKEY_USAGE_OID_GROUP_ID
+			uint CRYPT_ENHKEY_USAGE_OID_GROUP_ID = (uint)NativeMethods.OidGroup.EnhancedKeyUsage;
+			// Cycle through each Oid in the OidCollection
 			foreach (Oid oid in oids)
 			{
-				Windows.Win32.Security.Cryptography.CRYPT_OID_INFO? currentOidInfo = null;
-				uint CRYPT_OID_INFO_OID_KEY = (uint)NativeMethods.OidKeyType.Oid;
-				IntPtr oidValuePtr = IntPtr.Zero;
-				Windows.Win32.Foundation.PCSTR? pszOID = null;
+				// An Oid with a null/empty dotted-decimal value is invalid
+				if (string.IsNullOrEmpty(oid.Value))
+				{
+					continue;
+				}
+				// See if the current OID is already registered on the system, and if so get it as an CRYPT_OID_INFO struct
+				bool oidAlreadyRegistered = TryGetSystemRegisteredOid(oid, out Windows.Win32.Security.Cryptography.CRYPT_OID_INFO? currentOidInfo);
+				// If the OID is already registered and we're not forcing an update, go to the next Oid
+				if (oidAlreadyRegistered && !forceRefresh)
+				{
+					continue;
+				}
+
+				// Convert the Friendly Name to a native UTF-16 string
+				PCWSTR? friendlyName = oid.FriendlyName is not null ? StringToPCWSTR(oid.FriendlyName) : null;
+				// Initialise a native CRYPT_OID_INFO for holding the new information of the OID to be updated/registered
 				Windows.Win32.Security.Cryptography.CRYPT_OID_INFO oidInfo = new();
+				// Try to register/update the OID's information on the system
 				try
 				{
-					oidValuePtr = Marshal.StringToHGlobalAnsi(oid.Value);
-					unsafe
+					// Create a variable for the dotted-decimal OID value as an ANSI string
+					PCSTR? oidValue = currentOidInfo?.pszOID ?? StringToPCSTR(oid.Value);
+					// If the OID value is null, go to the next OID
+					if (!oidValue.HasValue)
 					{
-						byte* oidValue = (byte*)oidValuePtr;
-						pszOID = new(oidValue);
-						Windows.Win32.Security.Cryptography.CRYPT_OID_INFO* oidPtr = Windows.Win32.PInvoke.CryptFindOIDInfo(CRYPT_OID_INFO_OID_KEY, &pszOID, 0);
-						if ((IntPtr)oidPtr != IntPtr.Zero)
-						{
-							currentOidInfo = *oidPtr;
-							string? currentOidValue = Marshal.PtrToStringAnsi(oidValuePtr);
-							if (currentOidValue is not null && currentOidValue.Equals(oid.Value, StringComparison.Ordinal) && !forceRefresh)
-							{
-								Marshal.FreeHGlobal(oidValuePtr);
-								continue;
-							}
-						}
+						continue;
 					}
+					// Set the dotted-decimal OID value
+					oidInfo.pszOID = oidValue.Value;
+					// Set the OID group ID
+					oidInfo.dwGroupId = CRYPT_ENHKEY_USAGE_OID_GROUP_ID;
+					// If the OID has a Friendly Name, set it
+					if (friendlyName.HasValue)
+					{
+						oidInfo.pwszName = friendlyName.Value;
+					}
+					// Get and set the size of the CRYPT_OID_INFO object
+					oidInfo.cbSize = (uint)Marshal.SizeOf(oidInfo);
+					// Try to register/update the OID on the system
+					Windows.Win32.PInvoke.CryptRegisterOIDInfo(oidInfo, 0);
 				}
-				// Marshal.StringToHGlobalAnsi (OutOfMemoryException) // There is insufficient memory available.
-				// Marshal.StringToHGlobalAnsi (ArgumentOutOfRangeException) // The s parameter exceeds the maximum length allowed by the operating system.
-				// string.Equals (ArgumentException) // comparisonType is not a System.StringComparison value.
-				// Oid.Value (PlatformNotSupportedException) // .NET 5 and later: An attempt is made to set the value and the value has previously been set.
+				// Catch all expected Exception types:
+				// PCSTR?.Value (InvalidOperationException)
+				// PCWSTR?.Value (InvalidOperationException)
+				// Marshal.SizeOf (ArgumentNullException)
 				catch (Exception ex) when
-				(ex is OutOfMemoryException || ex is ArgumentOutOfRangeException || ex is ArgumentException || ex is PlatformNotSupportedException)
+				(ex is InvalidOperationException || ex is ArgumentNullException)
 				{
-					if (oidValuePtr != IntPtr.Zero)
-					{
-						Marshal.FreeHGlobal(oidValuePtr);
-						return;
-					}
-				}
-				catch (Exception ex2)
-				{
-					throw new UnreachableException("Unhandled exception.", ex2);
-				}
-				IntPtr oidNamePtr = IntPtr.Zero;
-				if (pszOID is null)
-				{
+					// Silently give up
 					return;
 				}
-				try
-				{
-					oidNamePtr = Marshal.StringToHGlobalUni(oid.FriendlyName);
-					uint CRYPT_ENHKEY_USAGE_OID_GROUP_ID = (uint)NativeMethods.OidGroup.EnhancedKeyUsage;
-					unsafe
-					{
-						oidInfo.pszOID = pszOID.Value;
-						char* oidName = (char*)oidNamePtr;
-						oidInfo.pwszName = (Windows.Win32.Foundation.PCWSTR)oidName;
-						oidInfo.dwGroupId = CRYPT_ENHKEY_USAGE_OID_GROUP_ID;
-						oidInfo.cbSize = (uint)Marshal.SizeOf(oidInfo);
-						Windows.Win32.PInvoke.CryptRegisterOIDInfo(oidInfo, 0);
-					}
-				}
-				// Marshal.StringToHGlobalAnsi (OutOfMemoryException) // There is insufficient memory available.
-				// Marshal.StringToHGlobalAnsi (ArgumentOutOfRangeException) // The s parameter exceeds the maximum length allowed by the operating system.
-				// PCSTR?.Value (InvalidOperationException) // The System.Nullable`1.HasValue property is false.
-				// Marshal.SizeOf (ArgumentNullException) // The structure parameter is null.
-				catch (Exception ex) when
-				(ex is OutOfMemoryException || ex is ArgumentOutOfRangeException || ex is InvalidOperationException || ex is ArgumentNullException)
-				{
-					if (oidNamePtr != IntPtr.Zero)
-					{
-						Marshal.FreeHGlobal(oidValuePtr);
-						Marshal.FreeHGlobal(oidNamePtr);
-						return;
-					}
-				}
+				// All Exception types should be handled above - if not, the above needs fixing
 				catch (Exception ex2)
 				{
 					throw new UnreachableException("Unhandled exception.", ex2);
 				}
-				Marshal.FreeHGlobal(oidValuePtr);
-				Marshal.FreeHGlobal(oidNamePtr);
 			}
 		}
 
@@ -282,34 +441,41 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 		}
 
 		/// <summary>
-		/// Try to get a TPM-backed certificate, or try to create one
+		/// Get/create a TPM-backed certificate
 		/// </summary>
-		/// <param name="certificate">The retrieved or created certificate</param>
 		/// <param name="updateSystemOids">Whether system OID database should be updated (true) or not (false)</param>
-		/// <returns>true on success, otherwise false</returns>
+		/// <param name="forceRefreshSystemOids">If <paramref name="updateSystemOids"/> is <c>true</c>, whether existing system-registered OIDs should also be updated</param>
+		/// <returns>The retrieved or created certificate, or <c>null</c></returns>
 		public static X509Certificate2? GetOrCreateRsaCertificate(bool updateSystemOids = false, bool forceRefreshSystemOids = false)
 		{
-
+			// Initialise a new collection of Oids that will store the EKU OIDs required in the certificate
 			OidCollection ekuOids = [];
+			// Add the application's EKU OID to the collection
 			Oid idKpLtoEncryptionManagerOid = new("1.2.826.0.1.11484356.1.0.0.3.0", "Encrypting/decrypting account keys, and signing/verifying account records, in LTO Encryption Manager");
 			ekuOids.Add(idKpLtoEncryptionManagerOid);
 
+			// Try to update the system OID database if the parameter requested it
 			if (updateSystemOids)
 			{
 				UpdateOidFriendlyNames(ekuOids, forceRefreshSystemOids);
 			}
 
+			// The 'name' of our RSA key
 			string keyName = "LTO Encryption Manager account protection";
+			// Get or create a TPM-backed RSA key
 			using RSACng? rsaCng = GetRsaKeyByName(keyName) ?? CreateRsaKey(keyName);
+			// Check the key was found/created and it is not exportable
 			if (rsaCng is not null && rsaCng.Key.ExportPolicy != CngExportPolicies.None)
 			{
 				rsaCng.Dispose();
 			}
+			// Something went wrong finding/creating a TPM-backed key
 			else if (rsaCng is null)
 			{
 				return null;
 			}
 
+			// If a key was found, verify it is a TPM-backed key
 			bool tpmKeyExists;
 			try
 			{
@@ -334,15 +500,20 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 				return null;
 			}
 
+			// If a valid certificate already exists, return it
 			if (TryGetValidCertificate(ekuOids, out X509Certificate2? certificate))
 			{
 				return certificate;
 			}
 
+			// If a valid certificate doesn't exist, we need to try and create one
+			// Create a variable to hold a CSR
 			CertificateRequest certificateRequest;
+			// Create a variable to hold a distinguished name
 			X500DistinguishedName distinguishedName = new("CN=LTO Encryption Manager", X500DistinguishedNameFlags.None);
 			try
 			{
+				// Create a new basic CSR for our distinguished name and TPM-backed RSA key, using SHA-256 and PKCS1 padding
 				certificateRequest = new(distinguishedName, rsaCng, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 			}
 			// CertificateRequest.ctor (ArgumentNullException): arguments subjectName and/or key are null
@@ -356,12 +527,21 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 			{
 				throw new UnreachableException("Unhandled exception.", ex2);
 			}
+
+			// Add some extensions to our CSR
+			// Create a basic constraints extension: our certificate is not a CA cert, there are no path length restrictions - this extension is marked not critical
 			X509BasicConstraintsExtension basicConstraintsExtension = new(false, false, 0, false);
+			// Add the basic constraints extension to our CSR
 			certificateRequest.CertificateExtensions.Add(basicConstraintsExtension);
+			// Create a key usage extension: key can be used for encrypting and signing - this extension is marked critical
 			X509KeyUsageExtension keyUsageExtension = new(X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, true);
+			// Add our key usage extension to our CSR
 			certificateRequest.CertificateExtensions.Add(keyUsageExtension);
+			// Create a subject key identifier extension, using our public key and SHA-1 - this extension is not marked critical
 			X509SubjectKeyIdentifierExtension subjectKeyIdentifierExtension = new(certificateRequest.PublicKey, X509SubjectKeyIdentifierHashAlgorithm.Sha1, false);
+			// Add our subject key identifier extension to the CSR
 			certificateRequest.CertificateExtensions.Add(subjectKeyIdentifierExtension);
+			// Create an enhanced key usage extension, adding the EKU OIDs our certificate requires - this extension is marked critical
 			X509EnhancedKeyUsageExtension enhancedKeyUsageExtension;
 			try
 			{
@@ -376,11 +556,17 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 			{
 				throw new UnreachableException("Unhandled exception.", ex2);
 			}
+			// Add our enhanced key usage extenion to our CSR
 			certificateRequest.CertificateExtensions.Add(enhancedKeyUsageExtension);
+
+			// Try to turn our CSR into a self-signed certificate
 			try
 			{
+				// Make the certificate valid from one hour ago (covers incorrect daylight savings time system setting)
 				DateTimeOffset notBefore = DateTimeOffset.UtcNow - TimeSpan.FromHours(1);
+				// Make the certificate valid for 90 days
 				DateTimeOffset notAfter = DateTimeOffset.UtcNow + TimeSpan.FromDays(90);
+				// Try to create a self-signed certificate from the CSR
 				certificate = certificateRequest.CreateSelfSigned(notBefore, notAfter);
 			}
 			// TimeSpan.X (OverflowException) // value is less than TimeSpan.MinValue or greater than TimeSpan.MaxValue. -or- value is System.Double.PositiveInfinity. -or- value is System.Double.NegativeInfinity.
@@ -399,13 +585,18 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 				throw new UnreachableException("Unhandled exception.", ex2);
 			}
 
+			// Add a Friendly Name to our certificate
 			certificate.FriendlyName = "LTO Encryption Manager";
 			try
 			{
+				// Open the user certificate store for the current user in read/write mode
 				using X509Store my = new(StoreName.My, StoreLocation.CurrentUser);
 				my.Open(OpenFlags.ReadWrite);
+				// Add the new certificate to the user certificate store
 				my.Add(certificate);
+				// Close the certificate store
 				my.Close();
+				// Return the new certificate
 				return certificate;
 			}
 			// X509Store.ctor (ArgumentException): argument storeLocation is not a valid location or argument storeName is not a valid name

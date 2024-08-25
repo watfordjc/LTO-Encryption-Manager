@@ -43,10 +43,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
         /// <returns>The child <see cref="Slip21Node"/>.</returns>
         public Slip21Node GetChildNode(string label)
         {
-            byte[] key = Left.ToArray();
-            using HMACSHA512 hmac = new(key);
-            // Clear array
-            Array.Clear(key, 0, key.Length);
+            using HMACSHA512 hmac = new([.. Left]);
             string derivationPath = string.Concat(DerivationPath, '/', '"', label, '"');
             byte[] hashResult = hmac.ComputeHash(Encoding.ASCII.GetBytes('\0' + label));
             hmac.Clear();

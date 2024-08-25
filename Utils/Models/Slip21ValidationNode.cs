@@ -43,10 +43,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
             Slip21Node validationNode = nodeToValidate.GetChildNode(Resources.slip21_schema_validation).GetChildNode(nodeToValidate.GlobalKeyRolloverCount.ToString(CultureInfo.InvariantCulture));
             DerivationPath = validationNode.DerivationPath;
             // The password/message to hash shall be the right half of the validation node... in Z85 encoding.
-            validationNodeMessage = validationNode.Right.ToArray();
+            validationNodeMessage = [.. validationNode.Right];
             // RFC 9160 Recommendation 1 means the length of the salt is already defined as 16 bytes.
             // These 16 bytes shall be the first 128 bits of the left half of the validation node.
-            validationNodeSalt = validationNode.Left[..16].ToArray();
+            validationNodeSalt = [.. validationNode.Left[..16]];
             validationNode.Clear();
         }
 

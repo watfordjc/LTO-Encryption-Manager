@@ -1,5 +1,6 @@
 ﻿using Microsoft.Management.Infrastructure;
 using Microsoft.Management.Infrastructure.Options;
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -79,7 +80,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			if (!TryEnumerateGlobalFingerprints(GlobalFingerprints, AccountFingerprints, out Exception? exception))
 			{
 				Error = $"Account listing error: {exception.Message}";
-			} else
+			}
+			else
 			{
 				statusbarStatus.Content = "Account lists refreshed.";
 			}
@@ -198,11 +200,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 						cimInstance.Dispose();
 						Error = $"Obtaining drive information for \"{currentDrive.Caption}\"...";
 						currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, (uint)(GENERIC_ACCESS_RIGHTS.GENERIC_WRITE | GENERIC_ACCESS_RIGHTS.GENERIC_READ), FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
-						SPTI.LTO.GetTapeDriveInformation(currentDrive);
-						SPTI.LTO.GetTapeDriveIdentifiers(currentDrive);
-						SPTI.LTO.GetTapeDriveDataEncryptionCapabilities(currentDrive);
-						SPTI.LTO.GetTapeDriveKeyWrapKey(currentDrive);
-						currentDrive.Handle.Close();
+						if (!currentDrive.Handle.IsInvalid)
+						{
+							SPTI.LTO.GetTapeDriveInformation(currentDrive);
+							SPTI.LTO.GetTapeDriveIdentifiers(currentDrive);
+							SPTI.LTO.GetTapeDriveDataEncryptionCapabilities(currentDrive);
+							SPTI.LTO.GetTapeDriveKeyWrapKey(currentDrive);
+							currentDrive.Handle.Close();
+						}
 					}
 					finally
 					{
@@ -228,7 +233,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				}
 				btnRescanDrives.IsEnabled = true;
 			}
-			catch (Exception ex)
+			// TimeSpan.FromSeconds (OverflowException)
+			// TimeSpan.FromSeconds (ArgumentException)
+			catch (Exception ex) when
+			(ex is OverflowException || ex is ArgumentException)
 			{
 				Error = ex.Message;
 			}
@@ -237,9 +245,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 		private bool TryEnumerateGlobalFingerprints(List<string> globalFingerprints, List<string> accountFingerprints, [NotNullWhen(false)] out Exception? exception)
 		{
 			exception = null;
-			string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 			try
 			{
+				string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 				string accountDirectoriesBase = Path.Combine(appDataFolder, "John Cook UK", "LTO-Encryption-Manager", "Accounts");
 				string[] globalFingerprintDirectories = Directory.GetDirectories(accountDirectoriesBase, "*", SearchOption.TopDirectoryOnly);
 				foreach (string dir in globalFingerprintDirectories)
@@ -250,9 +258,27 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 						globalFingerprints.Add(Encoding.UTF8.GetString(Convert.FromHexString(dirInfo.Name)));
 					}
 				}
-
 			}
-			catch (Exception ex)
+			// Environment.GetFolderPath (ArgumentException)
+			// Environment.GetFolderPath (PlatformNotSupportedException)
+			// Path.Combine (ArgumentException)
+			// Path.Combine (ArgumentNullException)
+			// Directory.GetDirectories (ArgumentException)
+			// Directory.GetDirectories (ArgumentNullException)
+			// Directory.GetDirectories (ArgumentOutOfRangeException)
+			// Directory.GetDirectories (UnauthorizedAccessException)
+			// Directory.GetDirectories (PathTooLongException)
+			// Directory.GetDirectories (IOException)
+			// Directory.GetDirectories (DirectoryNotFoundException)
+			// Encoding.GetString (ArgumentException)
+			// Encoding.GetString (ArgumentNullException)
+			// Encoding.GetString (DecoderFallbackException)
+			// Convert.FromHexString (ArgumentNullException)
+			// Convert.FromHexString (FormatException)
+			catch (Exception ex) when
+			(ex is ArgumentException || ex is PlatformNotSupportedException || ex is ArgumentNullException || ex is ArgumentOutOfRangeException
+			|| ex is UnauthorizedAccessException || ex is PathTooLongException || ex is IOException || ex is DirectoryNotFoundException
+			|| ex is DecoderFallbackException || ex is FormatException)
 			{
 				exception = ex;
 				return false;
@@ -288,9 +314,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 		private bool TryEnumerateAccountFingerprints(string globalFingerprint, ref List<string> accountFingerprints, [NotNullWhen(false)] out Exception? exception)
 		{
 			exception = null;
-			string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 			try
 			{
+				string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 				string accountDirectoriesBase = Path.Combine(appDataFolder, "John Cook UK", "LTO-Encryption-Manager", "Accounts", Convert.ToHexString(Encoding.UTF8.GetBytes(globalFingerprint)));
 				string[] accountFingerprintFiles = Directory.GetFiles(accountDirectoriesBase, "*.blob", SearchOption.TopDirectoryOnly);
 				accountFingerprints.Clear();
@@ -305,7 +331,30 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				OnAccountEnumerationCompleted();
 				return true;
 			}
-			catch (Exception ex)
+			// Environment.GetFolderPath (ArgumentException)
+			// Environment.GetFolderPath (PlatformNotSupportedException)
+			// Path.Combine (ArgumentException)
+			// Path.Combine (ArgumentNullException)
+			// Convert.ToHexString (ArgumentNullException)
+			// Convert.ToHexString (ArgumentOutOfRangeException)
+			// Encoding.GetBytes (ArgumentNullException)
+			// Encoding.GetBytes (EncoderFallbackException)
+			// Directory.GetFiles (ArgumentException)
+			// Directory.GetFiles (ArgumentNullException)
+			// Directory.GetFiles (ArgumentOutOfRangeException)
+			// Directory.GetFiles (UnauthorizedAccessException)
+			// Directory.GetFiles (DirectoryNotFoundException)
+			// Directory.GetFiles (PathTooLongException)
+			// Directory.GetFiles (IOException)
+			// Encoding.GetString (ArgumentException)
+			// Encoding.GetString (ArgumentNullException)
+			// Encoding.GetString (DecoderFallbackException)
+			// Convert.FromHexString (ArgumentNullException)
+			// Convert.FromHexString (FormatException)
+			catch (Exception ex) when
+			(ex is ArgumentException || ex is PlatformNotSupportedException || ex is ArgumentNullException || ex is ArgumentOutOfRangeException
+			|| ex is EncoderFallbackException || ex is UnauthorizedAccessException || ex is DirectoryNotFoundException || ex is PathTooLongException
+			|| ex is IOException || ex is DecoderFallbackException || ex is FormatException)
 			{
 				exception = ex;
 				return false;
@@ -334,9 +383,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			{
 				return;
 			}
-			string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
 			try
 			{
+				string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 				string fileName = Convert.ToHexString(Encoding.UTF8.GetBytes(accountFingerprint)) + ".blob";
 				string thisAppDataFile = Path.Combine(appDataFolder, "John Cook UK", "LTO-Encryption-Manager", "Accounts", Convert.ToHexString(Encoding.UTF8.GetBytes(globalFingerprint)), fileName);
 				btnTestAccount.IsEnabled = File.Exists(thisAppDataFile);
@@ -344,7 +394,17 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				Error = string.Empty;
 				VerifyCurrentAccount(false);
 			}
-			catch (Exception ex)
+			// Environment.GetFolderPath (ArgumentException)
+			// Environment.GetFolderPath (PlatformNotSupportedException)
+			// Convert.ToHexString (ArgumentNullException)
+			// Convert.ToHexString (ArgumentOutOfRangeException)
+			// Encoding.GetBytes (ArgumentNullException)
+			// Encoding.GetBytes (EncoderFallbackException)
+			// Path.Combine (ArgumentException)
+			// Path.Combine (ArgumentNullException)
+			catch (Exception ex) when
+			(ex is ArgumentException || ex is PlatformNotSupportedException || ex is ArgumentNullException || ex is ArgumentOutOfRangeException
+			|| ex is EncoderFallbackException)
 			{
 				Error = $"Account listing error: {ex.Message}";
 			}
@@ -381,7 +441,16 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				{
 					signatureValid = currentRsaKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Convert.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 				}
-				catch (Exception)
+				// RSA.VerifyData (ArgumentNullException)
+				// RSA.VerifyData (ArgumentException)
+				// RSA.VerifyData (CryptographicException)
+				// Encoding.GetBytes (ArgumentNullException)
+				// Encoding.GetBytes (EncoderFallbackException)
+				// Convert.FromHexString (ArgumentNullException)
+				// Convert.FromHexString (FormatException)
+				catch (Exception ex) when
+				(ex is ArgumentNullException || ex is ArgumentException || ex is CryptographicException || ex is EncoderFallbackException
+				|| ex is FormatException)
 				{
 					continue;
 				}
@@ -432,7 +501,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				rsaCngKey = rsaPrivateKey is RSACng ? rsaPrivateKey as RSACng : null;
 				rsaPublicKey = tpmCertificate.GetRSAPublicKey();
 			}
-			catch (Exception)
+			// X509Certificate2.GetRSAPrivateKey (ArgumentNullException)
+			// X509Certificate2.GetRSAPublicKey (ArgumentNullException)
+			// X509Certificate2.GetRSAPublicKey (CryptographicException)
+			catch (Exception ex) when
+			(ex is ArgumentNullException || ex is CryptographicException)
 			{
 				Cleanup();
 				return;
@@ -447,7 +520,16 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			{
 				signatureValid = rsaPublicKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Convert.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 			}
-			catch (Exception)
+			// RSA.VerifyData (ArgumentNullException)
+			// RSA.VerifyData (ArgumentException)
+			// RSA.VerifyData (CryptographicException)
+			// Encoding.GetBytes (ArgumentNullException)
+			// Encoding.GetBytes (EncoderFallbackException)
+			// Convert.FromHexString (ArgumentNullException)
+			// Convert.FromHexString (FormatException)
+			catch (Exception ex) when
+			(ex is ArgumentNullException || ex is ArgumentException || ex is CryptographicException || ex is EncoderFallbackException
+			|| ex is FormatException)
 			{
 				Cleanup();
 				return;
@@ -461,7 +543,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			else if (signatureValid && verifyDecryptionKey)
 			{
 				byte[] nodeBytes = new byte[64];
-				Array.Clear(nodeBytes, 0, 64);
+				Array.Clear(nodeBytes, 0, nodeBytes.Length);
 				try
 				{
 					statusbarStatus.Content = "Testing account key decryption...";
@@ -483,7 +565,21 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 					statusbarStatus.Content = "Calculating account fingerprint...";
 					accountValidationNode.CalculateFingerprint();
 				}
-				catch (Exception ex)
+				// RSACng.Decrypt (ArgumentNullException)
+				// RSACng.Decrypt (CryptographicException)
+				// Convert.FromHexString (ArgumentNullException)
+				// Convert.FromHexString (FormatException)
+				// Array.Copy (ArgumentNullException)
+				// Array.Copy (RankException)
+				// Array.Copy (ArrayTypeMismatchException)
+				// Array.Copy (InvalidCastException)
+				// Array.Copy (ArgumentOutOfRangeException)
+				// Array.Copy (ArgumentException)
+				// string.Format (ArgumentNullException)
+				// string.Format (FormatException)
+				catch (Exception ex) when
+				(ex is ArgumentNullException || ex is CryptographicException || ex is FormatException || ex is RankException || ex is ArrayTypeMismatchException
+				|| ex is InvalidCastException || ex is ArgumentOutOfRangeException || ex is ArgumentException)
 				{
 					Error = $"Decryption Error: {ex.Message}";
 					btnTestAccount.IsEnabled = true;
@@ -533,7 +629,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
 		private static void OpenLnkFile(string filename)
 		{
-			Process process = new()
+			using Process process = new()
 			{
 				StartInfo = new ProcessStartInfo()
 				{
@@ -802,7 +898,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				if (signatureValid)
 				{
 					byte[] nodeBytes = new byte[64];
-					Array.Clear(nodeBytes, 0, 64);
+					Array.Clear(nodeBytes, 0, nodeBytes.Length);
 					try
 					{
 						statusbarStatus.Content = "Decrypting account key to derive tape key and KAD...";
@@ -812,7 +908,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 						Slip21Node tapeNode = accountNode.GetChildNode(kad.TapeBarcode).GetChildNode(kad.TapeKeyRollovers.ToString(CultureInfo.InvariantCulture));
 						if (enableEncryption)
 						{
-							tapeKey = tapeNode.Right.ToArray();
+							tapeKey = [.. tapeNode.Right];
 						}
 						Slip21ValidationNode tapeValidationNode = new(tapeNode);
 
@@ -839,7 +935,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 									{
 										TapeDrive currentDrive = TapeDrives[0];
 										currentDrive.Handle = Windows.Win32.PInvoke.CreateFile(currentDrive.Path, (uint)(GENERIC_ACCESS_RIGHTS.GENERIC_WRITE | GENERIC_ACCESS_RIGHTS.GENERIC_READ), FILE_SHARE_MODE.FILE_SHARE_READ, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, 0, null);
-										if (TryWrapKey(currentDrive, ref tapeKey, out byte[]? wrappedKey))
+										if (!currentDrive.Handle.IsInvalid && TryWrapKey(currentDrive, ref tapeKey, out byte[]? wrappedKey))
 										{
 											if (tapeKey is not null)
 											{
@@ -862,7 +958,25 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 						statusbarStatus.Content = "Calculating Key Authenticated Data...";
 						tapeValidationNode.CalculateFingerprint(24);
 					}
-					catch (Exception ex)
+					// RSACng.Decrypt (ArgumentNullException)
+					// RSACng.Decrypt (CryptographicException)
+					// Convert.FromHexString (ArgumentNullException)
+					// Convert.FromHexString (FormatException)
+					// Array.Copy (ArgumentNullException)
+					// Array.Copy (RankException)
+					// Array.Copy (ArrayTypeMismatchException)
+					// Array.Copy (InvalidCastException)
+					// Array.Copy (ArgumentOutOfRangeException)
+					// Array.Copy (ArgumentException)
+					// string.Format (ArgumentNullException)
+					// string.Format (FormatException)
+					// string.StartsWith (ArgumentNullException)
+					// string.StartsWith (ArgumentException)
+					// Array.Clear (ArgumentNullException)
+					// Array.Clear (IndexOutOfRangeException)
+					catch (Exception ex) when
+					(ex is ArgumentNullException || ex is CryptographicException || ex is FormatException || ex is RankException || ex is ArrayTypeMismatchException
+					|| ex is InvalidCastException || ex is ArgumentOutOfRangeException || ex is ArgumentException || ex is IndexOutOfRangeException)
 					{
 						Error = $"Decryption Error: {ex.Message}";
 						btnTestAccount.IsEnabled = true;
@@ -901,14 +1015,18 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 		public static bool TryWrapKey(TapeDrive tapeDrive, ref byte[]? key, [NotNullWhen(true)] out byte[]? wrappedKey)
 		{
 			wrappedKey = null;
-			if (tapeDrive is null || tapeDrive.KeyWrapPublicKey is null || tapeDrive.WrappedKeyDescriptors is null || key is null)
+			if (tapeDrive is null || key is null)
 			{
 				return false;
 			}
-			byte[] pubkey = tapeDrive.KeyWrapPublicKey; // RSAES-OAEP-ENCRYPT parameter (n, e)
-														// key: RSAES-OAEP-ENCRYPT parameter M
-			byte[] label = tapeDrive.WrappedKeyDescriptors; // RSAES-OAEP-ENCRYPT parameter L
-			Org.BouncyCastle.Crypto.Encodings.OaepEncoding oaepEncoding = new(new Org.BouncyCastle.Crypto.Engines.RsaEngine(), new Org.BouncyCastle.Crypto.Digests.Sha256Digest(), new Org.BouncyCastle.Crypto.Digests.Sha256Digest(), label);
+			byte[] pubkey = tapeDrive.GetKeyWrapPublicKey();		// RSAES-OAEP-ENCRYPT parameter (n, e)
+																	// key: RSAES-OAEP-ENCRYPT parameter M
+			byte[] label = tapeDrive.GetWrappedKeyDescriptors();	// RSAES-OAEP-ENCRYPT parameter L
+			if (pubkey.Length == 0 || label.Length == 0)
+			{
+				return false;
+			}
+				Org.BouncyCastle.Crypto.Encodings.OaepEncoding oaepEncoding = new(new Org.BouncyCastle.Crypto.Engines.RsaEngine(), new Org.BouncyCastle.Crypto.Digests.Sha256Digest(), new Org.BouncyCastle.Crypto.Digests.Sha256Digest(), label);
 			using RSA RSA = RSA.Create();
 			RSA.ImportRSAPublicKey(pubkey, out int keyLength);
 			RSAParameters pubKeyParamsRSA = RSA.ExportParameters(false);

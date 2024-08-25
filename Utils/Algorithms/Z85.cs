@@ -19,7 +19,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms
             output = new byte[input.Length / 4 * 5];
             for (int i = 0; i < input.Length / 4; i++)
             {
-                frame = input.Slice(i * 4, 4).ToArray();
+                frame = [.. input.Slice(i * 4, 4)];
                 if (BitConverter.IsLittleEndian)
                 {
                     Array.Reverse(frame);
@@ -45,7 +45,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms
             output = new byte[input.Length / 5 * 4];
             for (int i = 0; i < input.Length / 5; i++)
             {
-                frame = input.Slice(i * 5, 5).ToArray();
+                frame = [.. input.Slice(i * 5, 5)];
                 uint segmentValue = 0;
                 for (int j = 0; j < 5; j++)
                 {

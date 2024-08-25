@@ -1,57 +1,65 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Globalization;
 using uk.JohnCook.dotnet.LTOEncryptionManager.SPTI;
-using Windows.Win32.Storage.FileSystem;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 {
 	public class RawMamAttributeValue
 	{
-		public ushort ID;
-		public BitVector32 Byte3;
-		public byte[]? RawData;
+		public ushort ID { get; set; }
+		private BitVector32 _byte3;
+		public BitVector32 Byte3 => _byte3;
+		private byte[]? _rawData;
 
-		private readonly BitVector32.Section Format;
-		private readonly BitVector32.Section Reserved1;
-		private readonly BitVector32.Section ReadOnly;
+		private readonly BitVector32.Section _format;
+		private readonly BitVector32.Section _reserved1;
+		private readonly BitVector32.Section _readOnly;
 
-		public bool IsReadOnly => Byte3[ReadOnly] == 1;
+		public bool IsReadOnly => _byte3[_readOnly] == 1;
 
 		public RawMamAttributeValue()
 		{
-			Byte3 = new(0);
-			Format = BitVector32.CreateSection(1 << 2 - 1);
-			Reserved1 = BitVector32.CreateSection(1 << 5 - 1, Format);
-			ReadOnly = BitVector32.CreateSection(1 << 1 - 1, Reserved1);
+			_byte3 = new(0);
+			_format = BitVector32.CreateSection(1 << 2 - 1);
+			_reserved1 = BitVector32.CreateSection(1 << 5 - 1, _format);
+			_readOnly = BitVector32.CreateSection(1 << 1 - 1, _reserved1);
 		}
 
 		public void SetReadOnly(byte readOnly)
 		{
-			Byte3[ReadOnly] = readOnly;
+			_byte3[_readOnly] = readOnly;
 		}
 
 		public void SetFormat(byte format)
 		{
-			Byte3[Format] = format;
+			_byte3[_format] = format;
 		}
 
 		public void SetAttributeLength(ushort length)
 		{
-			RawData = new byte[length];
+			_rawData = new byte[length];
 		}
 
-		public uint GetFormat() => Byte3[Format] switch
+		public uint Format => _byte3[_format] switch
 		{
 			0b00 => Constants.MAM_FORMAT_BINARY,
 			0b01 => Constants.MAM_FORMAT_ASCII,
 			0b10 => Constants.MAM_FORMAT_TEXT,
 			0b11 => Constants.MAM_FORMAT_RESERVED,
-			_ => throw new NotImplementedException()
+			_ => Constants.MAM_FORMAT_INVALID
 		};
+
+		public byte[]? GetRawData()
+		{
+			return _rawData;
+		}
+
+		public void SetRawData(byte[]? value)
+		{
+			_rawData = value;
+		}
 	}
 
 	public class TapeDriveTape
@@ -82,13 +90,19 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 		public string? PartitionTextLabel { get; set; }
 		public byte? VolumeLocked { get; set; }
 
-		public Collection<RawMamAttributeValue>[] MamRawAttributes { get; set; } = [[], [], [], []];
-		public ulong[] PartitionsCapacity { get; set; } = new ulong[4];
-		public ulong[] PartitionsCapacityRemaining { get; set; } = new ulong[4];
+		public Collection<Collection<RawMamAttributeValue>> MamRawAttributes { get; } = [[], [], [], []];
+		public Collection<ulong> PartitionsCapacity { get; } = [];
+		public Collection<ulong> PartitionsCapacityRemaining { get; } = [];
 	}
+
+	public class ScsciStatusChangedEventArgs(int status) : EventArgs
+	{
+		public int Status { get; init; } = status;
+	}
+
 	public class TapeDriveState
 	{
-		public event EventHandler<int>? ScsiStatusChanged;
+		public event EventHandler<ScsciStatusChangedEventArgs>? ScsiStatusChanged;
 		public event EventHandler<TapeDriveErrorEventArgs>? ErrorMessageChanged;
 		public DateTime? LastExceptionTime { get; set; }
 		public Exception? LastException { get; set; }
@@ -106,11 +120,19 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 			{
 				_scsiStatus = value;
 				LastScsiStatusTime = DateTime.Now;
-				ScsiStatusChanged?.Invoke(this, value);
+				ScsiStatusChanged?.Invoke(this, new(value));
 			}
 		}
 		public DateTime? LastSenseInfoTime { get; set; }
-		public byte[]? LastSenseInfo { get; set; }
+		private byte[]? _lastSenseInfo;
+		public byte[]? GetLastSenseInfo()
+		{
+			return _lastSenseInfo;
+		}
+		public void SetLastSenseInfo(byte[]? value)
+		{
+			_lastSenseInfo = value;
+		}
 
 		public DateTime? LastErrorMessageTime { get; set; }
 		private string _errorMessage = string.Empty;
@@ -187,15 +209,32 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Models
 		/// <summary>
 		/// The device's supported data encryption algorithms
 		/// </summary>
-		public Collection<SPTI.LTO.DATA_ENCRYPTION_ALGORITHM> DataEncryptionAlgorithms { get; set; } = [];
+		internal Collection<SPTI.LTO.DATA_ENCRYPTION_ALGORITHM> DataEncryptionAlgorithms { get; set; } = [];
 		/// <summary>
 		/// The device's key wrapping public key
 		/// </summary>
-		public byte[]? KeyWrapPublicKey { get; set; }
+		private byte[] _keyWrapPublicKey = [];
+		public byte[] GetKeyWrapPublicKey()
+		{
+			return _keyWrapPublicKey;
+		}
+		public void SetKeyWrapPublicKey(byte[] value)
+		{
+			_keyWrapPublicKey = value;
+		}
 		/// <summary>
 		/// The device's wrapped key descriptors
 		/// </summary>
-		public byte[]? WrappedKeyDescriptors { get; set; }
+		private byte[] _wrappedKeyDescriptors = [];
+		public byte[] GetWrappedKeyDescriptors()
+		{
+			return _wrappedKeyDescriptors;
+		}
+		public void SetWrappedKeyDescriptors(byte[] value)
+		{
+			_wrappedKeyDescriptors = value;
+		}
+
 		/// <summary>
 		/// Non-persistent drive state information, including current cartridge information
 		/// </summary>

@@ -16,7 +16,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.ViewModels
         public Collection<string> Bip39Dictionary { get; private set; }
         private Bip39SeedPhrase _newSeedPhrase = new();
         public Bip39SeedPhrase NewSeedPhrase => _newSeedPhrase;
-        public SecureString? Passphrase { private get; set; }
+        public SecureString? Passphrase { get; set; }
         private Slip21Schema _firstLevelLabel;
         public Slip21Schema FirstLevelLabel
         {

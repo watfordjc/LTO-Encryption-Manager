@@ -30,8 +30,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		/// <para>"For Win64, need to ensure all variable length components are 8 bytes align so the pointer fields within the variable length components are 8 bytes align."</para>
 		/// </remarks>
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
-		public struct STOR_ADDR_BTL8
+		internal struct STOR_ADDR_BTL8
 		{
 			[MarshalAs(UnmanagedType.U2)]
 			public ushort Type;
@@ -189,8 +188,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
-		public struct DEVICE_SERVER_KEY_WRAPPING_PUBLIC_KEY
+		internal struct DEVICE_SERVER_KEY_WRAPPING_PUBLIC_KEY
 		{
 			public ushort PageCode; /* Network Byte Order */
 			public ushort PageLength; /* Network Byte Order */
@@ -201,8 +199,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
-		public struct WRAPPED_KEY_DESCRIPTOR
+		internal struct WRAPPED_KEY_DESCRIPTOR
 		{
 			public byte Type;
 			public byte Reserved1;
@@ -273,7 +270,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 					return true;
 				}
 			}
-			catch (Exception ex)
+			// Marshal.AllocHGlobal (OutOfMemoryException)
+			// Marshal.StructureToPtr (ArgumentException)
+			// Marshal.PtrToStructure (ArgumentException)
+			// Marshal.PtrToStructure (MissingMethodException)
+			catch (Exception ex) when
+			(ex is OutOfMemoryException || ex is ArgumentException || ex is MissingMethodException)
 			{
 				hresult = Marshal.GetHRForException(ex);
 				return false;
@@ -434,8 +436,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
-		public struct DATA_ENCRYPTION_CAPABILITIES
+		internal struct DATA_ENCRYPTION_CAPABILITIES
 		{
 			public ushort PageCode; /* Network Byte Order */
 			public ushort PageLength; /* Network Byte Order */
@@ -478,8 +479,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
-		public struct DATA_ENCRYPTION_ALGORITHM
+		internal struct DATA_ENCRYPTION_ALGORITHM
 		{
 			public byte AlgorithmIndex;
 			public byte Reserved3;
@@ -630,8 +630,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
-		public struct KEY_HEADER
+		internal struct KEY_HEADER
 		{
 			public ushort PageCode; /* Network Byte Order */
 			public ushort PageLength; /* Network Byte Order */
@@ -763,8 +762,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-		[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Names of structs are from scsi.h.")]
-		public struct PLAIN_KEY_DESCRIPTOR
+		internal struct PLAIN_KEY_DESCRIPTOR
 		{
 			public byte Type;
 			[MarshalAs(UnmanagedType.U1)]
@@ -863,7 +861,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			return (ushort)(keyField != null ? keyFieldLength : 0);
 		}
 
-		public static bool TryProcessKad(bool clearKey, ushort keyAssociatedDataLength, byte[]? keyAssociatedData, DATA_ENCRYPTION_ALGORITHM encryptionAlgorithm, out ushort kadFieldLength, out Collection<PLAIN_KEY_DESCRIPTOR>? kadField)
+		private static bool TryProcessKad(bool clearKey, ushort keyAssociatedDataLength, byte[]? keyAssociatedData, DATA_ENCRYPTION_ALGORITHM encryptionAlgorithm, out ushort kadFieldLength, out Collection<PLAIN_KEY_DESCRIPTOR>? kadField)
 		{
 			kadField = null;
 			kadFieldLength = 0;
@@ -999,7 +997,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			{
 				return;
 			}
-			if (wrappedKey is null || tapeDrive.WrappedKeyDescriptors is null)
+			byte[]? wrappedKeyDescriptors = tapeDrive.GetWrappedKeyDescriptors();
+			if (wrappedKey is null || wrappedKeyDescriptors.Length == 0)
 			{
 				return;
 			}
@@ -1008,8 +1007,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 			uint length = CreateSecurityProtocolOutSrb(ref sptwb_ex, Constants.SECURITY_PROTOCOL_TAPE, Constants.SPOUT_TAPE_SET_DATA_ENCRYPTION);
 			if (kad is not null && SPTI.LTO.TryProcessKad(false, (ushort)kad.Length, Encoding.ASCII.GetBytes(kad), tapeDrive.DataEncryptionAlgorithms[0], out ushort kadFieldLength, out Collection<LTO.PLAIN_KEY_DESCRIPTOR>? kadField))
 			{
-				byte[]? wrappedKeyDescriptors = tapeDrive.WrappedKeyDescriptors;
-				ushort keyFieldLength = SPTI.LTO.ProcessKey(Constants.SPIN_TAPE_KEY_FORMAT_WRAPPED, Constants.SPIN_TAPE_PUBKEY_TYPE_RSA2048, wrappedKey.Length, ref wrappedKey, (ushort)tapeDrive.WrappedKeyDescriptors.Length, ref wrappedKeyDescriptors, out byte[]? keyField);
+				ushort keyFieldLength = SPTI.LTO.ProcessKey(Constants.SPIN_TAPE_KEY_FORMAT_WRAPPED, Constants.SPIN_TAPE_PUBKEY_TYPE_RSA2048, wrappedKey.Length, ref wrappedKey, (ushort)wrappedKeyDescriptors.Length, ref wrappedKeyDescriptors, out byte[]? keyField);
 				ushort allocationLength = (ushort)(20 + keyFieldLength + kadFieldLength);
 				SPTI.LTO.SetDataEncryption(ref sptwb_ex, allocationLength, tapeDrive.DataEncryptionAlgorithms[0].AlgorithmIndex, false, Constants.SPIN_TAPE_KEY_FORMAT_WRAPPED, keyFieldLength, keyField, kadFieldLength, kadField);
 				bool ok = TrySendSrb(tapeDrive, ref sptwb_ex, length, out uint returnedData, out int hresult);
@@ -1287,7 +1285,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 							Exponent = realExponent
 						};
 						RSA.ImportParameters(rsaParams);
-						tapeDrive.KeyWrapPublicKey = RSA.ExportRSAPublicKey();
+						tapeDrive.SetKeyWrapPublicKey(RSA.ExportRSAPublicKey());
 
 						// AES key wrapping (RFC 3447) uses RSAES-OAEP-ENCRYPT
 						// L (the label parameter in RSAES-OAEP-ENCRYPT) = wrapped key descriptors in LTO
@@ -1331,7 +1329,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 						descriptorWriter.Write(keyLengthKeyDescriptor.Length);
 						descriptorWriter.Write(keyLengthKeyDescriptor.Descriptor);
 						descriptorWriter.Flush();
-						tapeDrive.WrappedKeyDescriptors = memoryStream.ToArray();
+						tapeDrive.SetWrappedKeyDescriptors(memoryStream.ToArray());
 						descriptorWriter.Close();
 
 						//Trace.WriteLine(Convert.ToHexString(tapeDrive.WrappedKeyDescriptors));

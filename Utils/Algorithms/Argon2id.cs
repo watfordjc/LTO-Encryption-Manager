@@ -1,13 +1,9 @@
 ﻿using CryptHash.Net.Hash.HashResults;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms
 {
-    public static class Argon2id
+	public static class Argon2id
     {
         public static Argon2idHashResult GetHash(CryptHash.Net.Hash.Argon2id argon2id, byte[] message, byte[] salt, int iterations, int memKibiBytes, int parallelism, int outputLength, byte[]? associatedData = null, byte[]? knownSecret = null)
         {

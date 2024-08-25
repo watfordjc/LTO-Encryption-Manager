@@ -117,8 +117,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing">
-    <value>17, 17</value>
+  <data name="tpm_cert_found" xml:space="preserve">
+    <value>OK: TPM-backed certificate exists</value>
+  </data>
+  <data name="tpm_cert_not_found" xml:space="preserve">
+    <value>Error: TPM-backed user certificate (CN=LTO Encryption Manager) not found</value>
+  </data>
+  <data name="cert_key_error" xml:space="preserve">
+    <value>Certificate/Key error</value>
+  </data>
+  <data name="recovery_seed_created" xml:space="preserve">
+    <value>Success. Write down the new BIP39 recovery seed and store it securely, then derive the account node.</value>
+  </data>
+  <data name="tpm_cert_no_pubkey" xml:space="preserve">
+    <value>Error: TPM-backed user certificate (CN=LTO Encryption Manager) does not have a public key</value>
+  </data>
+  <data name="status_calculating" xml:space="preserve">
+    <value>Calculating...</value>
+  </data>
+  <data name="status_signing_node" xml:space="preserve">
+    <value>Signing SLIP21 node data...</value>
+  </data>
+  <data name="status_loading_content" xml:space="preserve">
+    <value>Loading window content, which may take a few seconds...</value>
+  </data>
+  <data name="error_bip39_missing_word" xml:space="preserve">
+    <value>At least one word is blank or invalid.</value>
+  </data>
+  <data name="bip39_validated" xml:space="preserve">
+    <value>Validated.</value>
   </data>
 </root>

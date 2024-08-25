@@ -19,7 +19,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
             using HMACSHA512 hmac = new(key);
             // Clear array
             Array.Clear(key, 0, key.Length);
-            byte[] hashResult = hmac.ComputeHash(seedBytes.ToArray());
+            byte[] hashResult = hmac.ComputeHash([.. seedBytes]);
             hmac.Clear();
             return new Slip21Node(hashResult, globalKeyRolloverCount);
         }
