@@ -32,7 +32,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				byte[]? input = testVector.InputEncoding switch
 				{
 					"UTF-8" => Encoding.UTF8.GetBytes(testVector.InputDecoded),
-					"HEX" => testVector.InputDecoded.Length > 0 ? Hexadecimal.ToByteArray(testVector.InputDecoded) : [],
+					"HEX" => testVector.InputDecoded.Length > 0 ? Utils.Encodings.FromHexString(testVector.InputDecoded) : [],
 					_ => null
 				};
 				Assert.IsNotNull(input);
@@ -54,7 +54,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				string? input = testVector.InputEncoding switch
 				{
 					"UTF-8" => Encoding.UTF8.GetString(inputRaw),
-					"HEX" => testVector.InputDecoded.Length > 0 ? Hexadecimal.ToHexString(inputRaw).ToUpperInvariant() : string.Empty,
+					"HEX" => testVector.InputDecoded.Length > 0 ? Utils.Encodings.ToHexString(inputRaw) : string.Empty,
 					_ => null
 				};
 				Assert.IsNotNull(input);

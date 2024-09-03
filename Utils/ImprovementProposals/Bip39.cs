@@ -357,8 +357,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
             Array.Clear(saltChars, 0, saltChars.Length);
             // Initialise a PBKDF2 instance
             using Rfc2898DeriveBytes pbkdf2Instance = new(passwordBytes, salt, 2048, HashAlgorithmName.SHA512);
-            // Clear arrays
-            Array.Clear(passwordBytes, 0, passwordBytes.Length);
+			// Clear arrays
+			Array.Clear(passwordBytes, 0, passwordBytes.Length);
             Array.Clear(salt, 0, salt.Length);
 			// Return the first 64 bytes from PBKDF2 (the binary seed)
 			return pbkdf2Instance.GetBytes(64);

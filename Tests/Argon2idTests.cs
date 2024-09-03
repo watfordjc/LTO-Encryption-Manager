@@ -1,7 +1,6 @@
 ﻿using CryptHash.Net.Hash;
 using CryptHash.Net.Hash.HashResults;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -34,15 +33,15 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
                 semaphore.Wait();
                 Argon2idHashResult hashResult = Utils.Algorithms.Argon2id.GetHash(
                     argon2id: argon2id,
-                    message: Convert.FromHexString(testVector.Message),
-                    salt: Convert.FromHexString(testVector.Salt),
+                    message: Utils.Encodings.FromHexString(testVector.Message),
+                    salt: Utils.Encodings.FromHexString(testVector.Salt),
                     iterations: testVector.Iterations,
                     memKibiBytes: testVector.MemoryKibiBytes,
                     parallelism: testVector.Parallelism,
                     outputLength: testVector.OutputLength,
-                    associatedData: Convert.FromHexString(testVector.AssociatedData),
-                    knownSecret: Convert.FromHexString(testVector.Secret));
-                Assert.AreEqual(testVector.Output, Convert.ToHexString(hashResult.HashBytes).ToUpperInvariant());
+                    associatedData: Utils.Encodings.FromHexString(testVector.AssociatedData),
+                    knownSecret: Utils.Encodings.FromHexString(testVector.Secret));
+                Assert.AreEqual(testVector.Output, Utils.Encodings.ToHexString(hashResult.HashBytes));
                 semaphore.Release();
             });
         }

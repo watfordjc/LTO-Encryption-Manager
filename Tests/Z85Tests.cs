@@ -28,8 +28,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
             Assert.IsNotNull(testVectors);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
-                byte[] unencoded = Convert.FromHexString(testVector.DecodedHex);
-                Assert.IsTrue(Z85.TryGetEncodedBytes(unencoded, out byte[]? encoded));
+                byte[] unencoded = Utils.Encodings.FromHexString(testVector.DecodedHex);
+                Assert.IsTrue(Utils.Encodings.TryGetToZ85Encoded(unencoded, out byte[]? encoded));
                 Assert.IsNotNull(encoded);
                 Assert.AreEqual(testVector.EncodedBytes, Encoding.UTF8.GetString(encoded));
             });
@@ -45,7 +45,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
                 byte[] encoded = Encoding.UTF8.GetBytes(testVector.EncodedBytes);
                 Assert.IsTrue(Z85.TryGetDecodedBytes(encoded, out byte[]? decoded));
                 Assert.IsNotNull(decoded);
-                string decodedHex = Convert.ToHexString(decoded).ToUpperInvariant();
+                string decodedHex = Utils.Encodings.ToHexString(decoded);
                 Assert.AreEqual(testVector.DecodedHex, decodedHex);
             });
         }

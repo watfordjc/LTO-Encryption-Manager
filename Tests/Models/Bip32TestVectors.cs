@@ -16,9 +16,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.Models
 	{
 		public string CurveName => this[0];
 		public string PublicKeyPrefix => this[1];
-		public uint? PublicKeyPrefixValue => Bip32.GetHostUInt32FromNetworkBytes(Convert.FromHexString(PublicKeyPrefix));
+		public uint? PublicKeyPrefixValue => BitConverter.ToUInt32(Utils.Encodings.FromNetworkByteOrderHexString(PublicKeyPrefix));
 		public string PrivateKeyPrefix => this[2];
-		public uint? PrivateKeyPrefixValue => Bip32.GetHostUInt32FromNetworkBytes(Convert.FromHexString(PrivateKeyPrefix));
+		public uint? PrivateKeyPrefixValue => BitConverter.ToUInt32(Utils.Encodings.FromNetworkByteOrderHexString(PrivateKeyPrefix));
 		public string MnemonicBinarySeed => this[3];
 		public string ParentPrivateKey => this[4];
 		public string ParentDerivationPath => this[5];

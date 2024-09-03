@@ -146,7 +146,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 			if (serialisePrivSuccess && serialisePubSuccess)
 			{
 				KeyIdentifier = keyIdentifier;
-				Fingerprint = GetHostUInt32FromNetworkBytes(Hexadecimal.ToByteArray(KeyIdentifier?[..8]));
+				Fingerprint = KeyIdentifier is null ? null : BitConverter.ToUInt32(Utils.Encodings.FromNetworkByteOrderHexString(KeyIdentifier[..8]));
 				PrivateKeySerialised = privKeySerialised;
 				PublicKeySerialised = pubKeySerialised;
 				IsInitialised = true;
@@ -251,7 +251,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 				if (serialisePrivSuccess && serialisePubSuccess)
 				{
 					KeyIdentifier = keyIdentifier;
-					Fingerprint = GetHostUInt32FromNetworkBytes(Hexadecimal.ToByteArray(KeyIdentifier?[..8]));
+					Fingerprint = KeyIdentifier is null ? null : BitConverter.ToUInt32(Utils.Encodings.FromNetworkByteOrderHexString(KeyIdentifier[..8]));
 					PrivateKeySerialised = privKeySerialised;
 					PublicKeySerialised = pubKeySerialised;
 				}
@@ -288,7 +288,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 					if (serialisePubSuccess)
 					{
 						KeyIdentifier = keyIdentifier;
-						Fingerprint = GetHostUInt32FromNetworkBytes(Hexadecimal.ToByteArray(KeyIdentifier?[..8]));
+						Fingerprint = KeyIdentifier is null ? null : BitConverter.ToUInt32(Utils.Encodings.FromNetworkByteOrderHexString(KeyIdentifier[..8]));
 						PublicKeySerialised = pubKeySerialised;
 					}
 					else

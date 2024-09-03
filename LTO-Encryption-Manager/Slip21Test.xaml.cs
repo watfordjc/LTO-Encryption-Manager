@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Security;
 using System.Windows;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
@@ -7,10 +6,10 @@ using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+	/// <summary>
+	/// Interaction logic for MainWindow.xaml
+	/// </summary>
+	public partial class MainWindow : Window
     {
         public MainWindow()
         {
@@ -44,7 +43,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             {
                 throw new ArgumentException("Not a valid mnemonic seed.");
             }
-            MnemonicHexText.Text = Convert.ToHexString(entropyBytes.AsSpan()).ToUpperInvariant();
+            MnemonicHexText.Text = Utils.Encodings.ToHexString(entropyBytes);
             Array.Clear(entropyBytes, 0, entropyBytes.Length);
 
             // Turn BIP-0039 word array into BIP-0039 master seed
@@ -58,27 +57,27 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
             testPassphrase.Clear();
             testPassphrase.Dispose();
             Array.Clear(mnemonicTextWords, 0, mnemonicTextWords.Length);
-            SeedHex.Text = Convert.ToHexString(seedBytes.AsSpan()).ToUpperInvariant();
+            SeedHex.Text = Utils.Encodings.ToHexString(seedBytes);
 
             // SLIP-0021 master node
             Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(seedBytes, "0");
             Array.Clear(seedBytes, 0, seedBytes.Length);
-            MasterDerivationHex.Text = Convert.ToHexString(masterNode.Left).ToUpperInvariant();
-            MasterKeyHex.Text = Convert.ToHexString(masterNode.Right).ToUpperInvariant();
+            MasterDerivationHex.Text = Utils.Encodings.ToHexString(masterNode.Left);
+            MasterKeyHex.Text = Utils.Encodings.ToHexString(masterNode.Right);
 
             // First SLIP-0021 documentation test node: m/"SLIP-0021"
             Slip21Node slip21Node = masterNode.GetChildNode("SLIP-0021");
             masterNode.Clear();
-            Slip21KeyHex.Text = Convert.ToHexString(slip21Node.Right).ToUpperInvariant();
+            Slip21KeyHex.Text = Utils.Encodings.ToHexString(slip21Node.Right);
 
             // Second test node: m/"SLIP-0021"/"Master encryption key"
             Slip21Node masterEncryptionNode = slip21Node.GetChildNode("Master encryption key");
-            Slip21MasterEncryptionKeyHex.Text = Convert.ToHexString(masterEncryptionNode.Right).ToUpperInvariant();
+            Slip21MasterEncryptionKeyHex.Text = Utils.Encodings.ToHexString(masterEncryptionNode.Right);
             masterEncryptionNode.Clear();
 
             // Third test node: m/"SLIP-0021"/"Authentication key"
             Slip21Node masterAuthNode = slip21Node.GetChildNode("Authentication key");
-            Slip21AuthenticationKeyHex.Text = Convert.ToHexString(masterAuthNode.Right).ToUpperInvariant();
+            Slip21AuthenticationKeyHex.Text = Utils.Encodings.ToHexString(masterAuthNode.Right);
             masterAuthNode.Clear();
             slip21Node.Clear();
         }

@@ -156,7 +156,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 				byte[] entropyBytes = tpm.GetRandom(32);
 				progressBar.PerformStep();
 				//Array.Clear(SeedBytes, 0, SeedBytes.Length);
-				//byte[] entropyBytes = Convert.FromHexString("f585c11aec520db57dd353c69554b21a89b20fb0650966fa0a9d6f74fd989d8f");
+				//byte[] entropyBytes = Utils.Encodings.FromHexString("f585c11aec520db57dd353c69554b21a89b20fb0650966fa0a9d6f74fd989d8f");
 				string seedMnemonic = Bip39.GetMnemonicFromEntropy(BitConverter.ToString(entropyBytes).Replace("-", "", StringComparison.InvariantCulture).ToUpperInvariant());
 				Array.Clear(entropyBytes, 0, entropyBytes.Length);
 				string[] seedMnemonicSplit = seedMnemonic.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -284,7 +284,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 			string? encryptedLeftHex = null;
 			try
 			{
-				encryptedLeftHex = Convert.ToHexString(encryptedLeft);
+				encryptedLeftHex = Utils.Encodings.ToHexString(encryptedLeft);
 			}
 			// Convert.ToHexString (ArgumentNullException)
 			// Convert.ToHexString (ArgumentOutOfRangeException)
@@ -345,7 +345,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 					try
 					{
 						string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-						string globalFingerprintHex = Convert.ToHexString(Encoding.UTF8.GetBytes(slip21NodeEncrypted.GlobalFingerprint));
+						string globalFingerprintHex = Utils.Encodings.ToHexString(Encoding.UTF8.GetBytes(slip21NodeEncrypted.GlobalFingerprint));
 						thisAppDataFolder = Path.Combine(appDataFolder, "John Cook UK", "LTO-Encryption-Manager", "Accounts", globalFingerprintHex);
 						if (!Directory.Exists(thisAppDataFolder))
 						{
@@ -386,7 +386,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 					try
 					{
 						nodeDataSigned = rsaCngKey.SignData(Encoding.UTF8.GetBytes(slip21NodeEncrypted.SignablePart), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-						slip21NodeEncrypted.RSASignature = Convert.ToHexString(nodeDataSigned);
+						slip21NodeEncrypted.RSASignature = Utils.Encodings.ToHexString(nodeDataSigned);
 						statusLabel.Text = $"Signature length: {slip21NodeEncrypted.RSASignature.Length} bytes";
 					}
 					// RSA.SignData (ArgumentNullException)
@@ -411,7 +411,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 					try
 					{
 						ProgressBarStart();
-						string accountFingerprintHex = Convert.ToHexString(Encoding.UTF8.GetBytes(slip21NodeEncrypted.AccountFingerprint));
+						string accountFingerprintHex = Utils.Encodings.ToHexString(Encoding.UTF8.GetBytes(slip21NodeEncrypted.AccountFingerprint));
 						using StreamWriter file = new(Path.Combine(thisAppDataFolder, $"{accountFingerprintHex}.blob"), false, Encoding.UTF8, 4096);
 						StringBuilder nodeBackupData = new();
 						nodeBackupData.Append(slip21NodeEncrypted.SignablePart).Append('\x001E').Append(slip21NodeEncrypted.RSASignature);

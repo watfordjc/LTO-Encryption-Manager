@@ -304,7 +304,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			// Calculate the RIPEMD160 digest
 			ripeMD160.DoFinal(tempKeyIdentifier, 0);
 			// Return the key identifier
-			return Hexadecimal.ToHexString(tempKeyIdentifier).ToUpperInvariant();
+			return Encodings.ToHexString(tempKeyIdentifier);
 		}
 
 		/// <summary>

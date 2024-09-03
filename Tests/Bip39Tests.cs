@@ -42,7 +42,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
               {
                   string[] mnemonic = testVector.MnemonicSeed.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                   byte[] entropyBytes = Bip39.GetEntropyBytesFromSeedWords(ref mnemonic);
-                  string entropyHex = Convert.ToHexString(entropyBytes).ToUpperInvariant();
+                  string entropyHex = Utils.Encodings.ToHexString(entropyBytes);
                   Assert.AreEqual(testVector.Entropy, entropyHex);
               });
         }
@@ -62,7 +62,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
                 }
                 testPassphrase.MakeReadOnly();
                 byte[] binarySeed = Bip39.GetBinarySeedFromSeedWords(ref mnemonic, testPassphrase);
-                string binarySeedHex = Convert.ToHexString(binarySeed).ToUpperInvariant();
+                string binarySeedHex = Utils.Encodings.ToHexString(binarySeed);
                 Assert.AreEqual(testVector.MnemonicBinarySeed, binarySeedHex);
             });
         }

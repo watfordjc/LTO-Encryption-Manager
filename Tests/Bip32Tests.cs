@@ -54,7 +54,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				{
 					semaphore.Wait();
 				}
-				Bip32Node? masterNode = Bip32.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed), testVector.PublicKeyPrefixValue, testVector.PrivateKeyPrefixValue, testVector.CurveName);
+				Bip32Node? masterNode = Bip32.GetMasterNodeFromBinarySeed(Utils.Encodings.FromHexString(testVector.MnemonicBinarySeed), testVector.PublicKeyPrefixValue, testVector.PrivateKeyPrefixValue, testVector.CurveName);
 				Assert.IsNotNull(masterNode);
 				Assert.IsTrue(masterNode.IsMasterNode);
 				Assert.IsTrue(masterNode.IsHardenedNode);
@@ -65,7 +65,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				Assert.AreEqual(masterNode.Depth, 0);
 				Assert.IsNotNull(masterNode.KeyIdentifier);
 				Assert.IsNotNull(masterNode.Fingerprint);
-				Assert.AreEqual(Bip32.GetHostUInt32FromNetworkBytes(Hexadecimal.ToByteArray(masterNode.KeyIdentifier[..8])), masterNode.Fingerprint);
+				Assert.AreEqual(BitConverter.ToUInt32(Utils.Encodings.FromNetworkByteOrderHexString(masterNode.KeyIdentifier[..8])), masterNode.Fingerprint);
 				Assert.IsNotNull(masterNode.PrivateKeySerialised);
 				Assert.AreEqual(testVector.PrivateKey, new(masterNode.PrivateKeySerialised));
 				Assert.IsNotNull(masterNode.PublicKeySerialised);
@@ -101,7 +101,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				Assert.AreEqual(masterNode.Depth, 0);
 				Assert.IsNotNull(masterNode.KeyIdentifier);
 				Assert.IsNotNull(masterNode.Fingerprint);
-				Assert.AreEqual(Bip32.GetHostUInt32FromNetworkBytes(Hexadecimal.ToByteArray(masterNode.KeyIdentifier[..8])), masterNode.Fingerprint);
+				Assert.AreEqual(BitConverter.ToUInt32(Utils.Encodings.FromNetworkByteOrderHexString(masterNode.KeyIdentifier[..8])), masterNode.Fingerprint);
 				Assert.IsNotNull(masterNode.PrivateKeySerialised);
 				Assert.AreEqual(testVector.PrivateKey, new(masterNode.PrivateKeySerialised));
 				Assert.IsNotNull(masterNode.PublicKeySerialised);
@@ -144,7 +144,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				Assert.IsNotNull(childNode.KeyIdentifier);
 				Assert.IsNotNull(childNode.Fingerprint);
 				Assert.AreEqual(parentNode.Fingerprint, childNode.ParentFingerprint);
-				Assert.AreEqual(Bip32.GetHostUInt32FromNetworkBytes(Hexadecimal.ToByteArray(childNode.KeyIdentifier[..8])), childNode.Fingerprint);
+				Assert.AreEqual(BitConverter.ToUInt32(Utils.Encodings.FromNetworkByteOrderHexString(childNode.KeyIdentifier[..8])), childNode.Fingerprint);
 				Assert.IsNotNull(childNode.PrivateKeySerialised);
 				Assert.AreEqual(testVector.PrivateKey, new(childNode.PrivateKeySerialised));
 				Assert.IsNotNull(childNode.PublicKeySerialised);
