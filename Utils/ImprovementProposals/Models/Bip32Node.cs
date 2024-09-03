@@ -160,14 +160,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 		public Bip32Node(string serialisedKey, string? nodeDerivationPath = null)
 		{
 			// Deserialise the key
-			byte[] deserialisedKey = Base58.GetBase256FromBase58String(Encoding.UTF8.GetBytes(serialisedKey).AsSpan());
+			byte[] deserialisedKey = Encodings.GetBase256FromBase58String(Encoding.UTF8.GetBytes(serialisedKey).AsSpan());
 			// If deserialisation fails, return early
 			if (deserialisedKey == null)
 			{
 				Clear();
 				throw new ArgumentNullException(nameof(serialisedKey));
 			}
-			else if (!Base58Check.VerifyChecksum(deserialisedKey))
+			else if (!Encodings.VerifyBase58CheckChecksum(deserialisedKey))
 			{
 				Clear();
 				throw new ArgumentException("Base58Check checksum check failed.", nameof(serialisedKey));
@@ -418,8 +418,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 
 			// The serialised key can now be encoded using Base58Check
 			byte[] zeroLengthByteArray = [];
-			_ = Base58Check.TryEncode(zeroLengthByteArray, [.. serialisedKeyList], out byte[]? serialisedKeyBytes);
-			serialisedKeyString = Base58.TryGetBase58StringFromRawBase58(serialisedKeyBytes);
+			_ = Encodings.TryGetToBase58CheckEncoded(zeroLengthByteArray, [.. serialisedKeyList], out byte[]? serialisedKeyBytes);
+			serialisedKeyString = Encodings.GetBase58StringFromRawBase58(serialisedKeyBytes);
 
 			// We return true if the out variables are not null
 			return serialisedKeyString is not null;

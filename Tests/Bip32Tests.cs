@@ -1,5 +1,4 @@
-﻿using CryptHash.Net.Encoding;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Org.BouncyCastle.Crypto.Parameters;
 using System;
 using System.Collections.Generic;

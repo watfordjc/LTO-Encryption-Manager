@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 {
@@ -148,7 +145,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
                             Array.Reverse(accountIdCrc32Bytes);
                         }
                         // Conver the CRC32 to Z85-encoding
-                        if (Algorithms.Z85.TryGetEncodedBytes(accountIdCrc32Bytes, out byte[]? accountIdZ85))
+                        if (Encodings.TryGetToZ85Encoded(accountIdCrc32Bytes, out byte[]? accountIdZ85))
                         {
                             _ = sb.Append(Encoding.ASCII.GetString(accountIdZ85)); // Append the Account Identifier hash (Z85-encoded CRC32)
                         }

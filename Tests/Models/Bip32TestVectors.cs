@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json.Serialization;
-using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.Models
 {

@@ -438,7 +438,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				}
 				try
 				{
-					signatureValid = currentRsaKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Convert.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+					signatureValid = currentRsaKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Utils.Encodings.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 				}
 				// RSA.VerifyData (ArgumentNullException)
 				// RSA.VerifyData (ArgumentException)

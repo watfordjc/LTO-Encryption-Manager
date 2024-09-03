@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 {
@@ -43,7 +42,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 byte[] encoded = Encoding.UTF8.GetBytes(testVector.EncodedBytes);
-                Assert.IsTrue(Z85.TryGetDecodedBytes(encoded, out byte[]? decoded));
+                Assert.IsTrue(Utils.Encodings.TryGetFromZ85Encoded(encoded, out byte[]? decoded));
                 Assert.IsNotNull(decoded);
                 string decodedHex = Utils.Encodings.ToHexString(decoded);
                 Assert.AreEqual(testVector.DecodedHex, decodedHex);

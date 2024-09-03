@@ -15,7 +15,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
         /// <summary>
         /// The right 32 bytes of the node (the symmetric key)
         /// </summary>
-        public readonly ReadOnlySpan<byte> Right { get { return nodeBytes.AsSpan()[32..64]; } }
+        public readonly ReadOnlySpan<byte> Right { get { return nodeBytes.AsSpan()[32..]; } }
         private readonly byte[] nodeBytes;
         public readonly string DerivationPath { get; init; }
         public readonly string GlobalKeyRolloverCount { get; init; }

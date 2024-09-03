@@ -1,5 +1,4 @@
-﻿using CryptHash.Net.Encoding;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -7,7 +6,6 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 {
@@ -36,9 +34,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 					_ => null
 				};
 				Assert.IsNotNull(input);
-				bool success = Base58.TryGetRawBase58FromBase256(input, out byte[]? outputRaw);
+				bool success = Utils.Encodings.TryGetRawBase58FromBase256(input, out byte[]? outputRaw);
 				Assert.IsTrue(success);
-				string output = Base58.TryGetBase58StringFromRawBase58(outputRaw);
+				string output = Utils.Encodings.GetBase58StringFromRawBase58(outputRaw);
 				Assert.AreEqual(testVector.OutputEncoded, output, false, CultureInfo.InvariantCulture);
 			});
 		}
@@ -50,7 +48,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 			Assert.IsNotNull(testVectors);
 			_ = Parallel.ForEach(testVectors, testVector =>
 			{
-				byte[] inputRaw = Base58.GetBase256FromBase58String(Encoding.UTF8.GetBytes(testVector.OutputEncoded));
+				byte[] inputRaw = Utils.Encodings.GetBase256FromBase58String(Encoding.UTF8.GetBytes(testVector.OutputEncoded));
 				string? input = testVector.InputEncoding switch
 				{
 					"UTF-8" => Encoding.UTF8.GetString(inputRaw),
