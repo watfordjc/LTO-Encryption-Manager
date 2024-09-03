@@ -1,0 +1,37 @@
+﻿using System;
+using System.Security.Cryptography;
+using System.Text;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
+
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
+{
+	public static class Bip85
+	{
+		/// <summary>
+		/// Get up to 64 bytes of determinstic entropy from a <see cref="Bip32Node"/> that has a BIP-0085 derivation path
+		/// </summary>
+		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>
+		/// <param name="requestedBytes">The number of bytes of entropy required (range: 1-64).</param>
+		/// <returns>The requested number of bytes of deterministic entropy.</returns>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="node"/> does not have a BIP-0085 derivation path.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="requestedBytes"/> is outside of the permitted range (1-64 bytes).</exception>
+		public static ReadOnlySpan<byte> GetEntropy(Bip32Node node, int requestedBytes)
+		{
+			ArgumentNullException.ThrowIfNull(node);
+			if (!node.DerivationPath.StartsWith("m/83696968H/", StringComparison.Ordinal))
+			{
+				throw new ArgumentException("Node must have a BIP-0085 derivation path", nameof(node));
+			}
+			else if (requestedBytes <= 0)
+			{
+				throw new ArgumentOutOfRangeException($"Parameter {nameof(requestedBytes)} value of {requestedBytes} is not at least 1.");
+			}
+			else if (requestedBytes > HMACSHA512.HashSizeInBytes)
+			{
+				throw new ArgumentOutOfRangeException($"Parameter {nameof(requestedBytes)} value of {requestedBytes} exceeds maximum of {HMACSHA512.HashSizeInBytes}.");
+			}
+			byte[] hmacKey = Encoding.UTF8.GetBytes("bip-entropy-from-k");
+			return HMACSHA512.HashData(hmacKey, node.Left).AsSpan(0, requestedBytes);
+		}
+	}
+}

@@ -1,4 +1,4 @@
-using Org.BouncyCastle.Crypto.Parameters;
+﻿using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 		/// <summary>
 		/// The left 32 bytes of this node (the private key)
 		/// </summary>
-		private ReadOnlySpan<byte> Left { get { return NodeBytes.AsSpan()[..32]; } }
+		public ReadOnlySpan<byte> Left { get { return NodeBytes.AsSpan()[..32]; } }
 		/// <summary>
 		/// The right 32 bytes of this node (the chain code)
 		/// </summary>
