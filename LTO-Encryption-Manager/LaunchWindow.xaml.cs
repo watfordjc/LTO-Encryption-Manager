@@ -1043,7 +1043,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				modulus = new byte[pubKeyParamsRSA.Modulus.Length + 1];
 				Array.Copy(pubKeyParamsRSA.Modulus, 0, modulus, 1, pubKeyParamsRSA.Modulus.Length);
 			}
-			Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters pubKeyParams = new(false, new(modulus, 0, modulus.Length), new(pubKeyParamsRSA.Exponent, 0, pubKeyParamsRSA.Exponent.Length));
+			Org.BouncyCastle.Crypto.Parameters.RsaKeyParameters pubKeyParams = new(false, new(modulus, 0, modulus.Length, true), new(pubKeyParamsRSA.Exponent, 0, pubKeyParamsRSA.Exponent.Length, true));
 			oaepEncoding.Init(true, pubKeyParams);
 			wrappedKey = oaepEncoding.ProcessBlock(key, 0, key.Length);
 			return true;

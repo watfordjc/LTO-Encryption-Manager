@@ -1,10 +1,8 @@
-﻿using CryptHash.Net.Encoding;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using System;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
@@ -241,7 +239,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		{
 			ArgumentNullException.ThrowIfNull(domainParams);
 			// The master key is the left half of the hash, convert for sanity checks
-			BigInteger d = new(1, rawPrivateKey);
+			BigInteger d = new(1, rawPrivateKey, true);
 			if (d.CompareTo(BigInteger.Zero) == 0)
 			{
 				throw new ArgumentOutOfRangeException(nameof(rawPrivateKey), "Private key is 0.");
@@ -347,7 +345,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			byte[] hashResult = hmac.ComputeHash([.. seedBytes]);
 
 			// The master key is the left half of the hash, convert for sanity checks
-			BigInteger d = new(1, hashResult[..32]);
+			BigInteger d = new(1, hashResult[..32], true);
 			// BIP-0032: for curve secp256k1, if left == 0 or >= n, the master key is invalid
 			if (curveName == "secp256k1" && (d.CompareTo(BigInteger.Zero) == 0 || d.CompareTo(domainParams.N) >= 0))
 			{
@@ -359,7 +357,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 				while (d.CompareTo(BigInteger.Zero) == 0 || d.CompareTo(domainParams.N) >= 0)
 				{
 					hashResult = hmac.ComputeHash(hashResult[..32]);
-					d = new(1, hashResult[..32]);
+					d = new(1, hashResult[..32], true);
 				}
 			}
 			hmac.Clear();

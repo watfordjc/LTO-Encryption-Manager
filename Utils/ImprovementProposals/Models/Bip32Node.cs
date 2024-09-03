@@ -1,5 +1,3 @@
-﻿using CryptHash.Net.Encoding;
-using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using System;
@@ -10,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms;
 using static uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Bip32;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models
