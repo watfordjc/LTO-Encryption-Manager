@@ -1,4 +1,4 @@
-using Org.BouncyCastle.Asn1.X9;
+﻿using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
@@ -340,9 +340,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 
 			// BIP-0032/SLIP-0010 defines the key for the master node and HMAC-SHA512 as algorithm
 			byte[] hmacKey = Encoding.UTF8.GetBytes(curveString);
-			using HMACSHA512 hmac = new(hmacKey);
 			// Compute the hash
-			byte[] hashResult = hmac.ComputeHash([.. seedBytes]);
+			byte[] hashResult = HMACSHA512.HashData(hmacKey, seedBytes);
 
 			// The master key is the left half of the hash, convert for sanity checks
 			BigInteger d = new(1, hashResult[..32], true);
@@ -356,11 +355,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			{
 				while (d.CompareTo(BigInteger.Zero) == 0 || d.CompareTo(domainParams.N) >= 0)
 				{
-					hashResult = hmac.ComputeHash(hashResult[..32]);
+					hashResult = HMACSHA512.HashData(hmacKey, hashResult[..32]);
 					d = new(1, hashResult[..32], true);
 				}
 			}
-			hmac.Clear();
 
 			return new(hashResult, domainParams, versionPrefixPublic, versionPrefixPrivate, null, null, null, null);
 		}

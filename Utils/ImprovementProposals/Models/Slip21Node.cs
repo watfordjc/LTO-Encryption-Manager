@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
-using uk.JohnCook.dotnet.LTOEncryptionManager;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Properties;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models
@@ -43,10 +42,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
         /// <returns>The child <see cref="Slip21Node"/>.</returns>
         public Slip21Node GetChildNode(string label)
         {
-            using HMACSHA512 hmac = new([.. Left]);
             string derivationPath = string.Concat(DerivationPath, '/', '"', label, '"');
-            byte[] hashResult = hmac.ComputeHash(Encoding.ASCII.GetBytes('\0' + label));
-            hmac.Clear();
+            byte[] hashResult = HMACSHA512.HashData(Left, Encoding.ASCII.GetBytes('\0' + label));
             return new Slip21Node(hashResult, GlobalKeyRolloverCount, derivationPath);
         }
 

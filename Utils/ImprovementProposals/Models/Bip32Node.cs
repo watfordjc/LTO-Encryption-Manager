@@ -312,7 +312,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 			}
 			byte[] nodeBytes = new byte[HMACSHA512.HashSizeInBytes];
 			List<byte> data = [];
-			using HMACSHA512 hmacSha512 = new([.. parentNode.Right]);
 			byte[] hashResult;
 			bool useHardenedDerivation = childNumber >= 0x8000_0000;
 			// Hardened = HMACSHA512(parent chain code, 0x00 || parent private key || index)
@@ -321,14 +320,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 				data.Add(0x00);
 				data.AddRange(parentNode.Left);
 				data.AddRange(GetNetworkBytesFromHostUInt32(childNumber));
-				hashResult = hmacSha512.ComputeHash([.. data]);
+				hashResult = HMACSHA512.HashData([.. parentNode.Right], [.. data]);
 			}
 			// Normal = HMACSHA512(parent chain code, parent public key || index)
 			else
 			{
 				data.AddRange(GetCompressedKey(parentNode.PublicKey));
 				data.AddRange(GetNetworkBytesFromHostUInt32(childNumber));
-				hashResult = hmacSha512.ComputeHash([.. data]);
+				hashResult = HMACSHA512.HashData([.. parentNode.Right], [.. data]);
 			}
 			// The child's private key is the left side + parent private key (mod n)
 			BigInteger privateKey = parentNode.PrivateKey.D.Add(new(1, hashResult[..32])).Mod(parentNode.PrivateKey.Parameters.N);

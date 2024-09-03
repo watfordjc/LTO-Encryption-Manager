@@ -16,11 +16,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
         {
             // SLIP-0021 defines the key for the master node and HMAC-SHA512 as algorithm
             byte[] key = Encoding.UTF8.GetBytes("Symmetric key seed");
-            using HMACSHA512 hmac = new(key);
-            // Clear array
-            Array.Clear(key, 0, key.Length);
-            byte[] hashResult = hmac.ComputeHash([.. seedBytes]);
-            hmac.Clear();
+            byte[] hashResult = HMACSHA512.HashData(key, seedBytes);
             return new Slip21Node(hashResult, globalKeyRolloverCount);
         }
     }
