@@ -272,12 +272,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			// Encoding.GetString (ArgumentException)
 			// Encoding.GetString (ArgumentNullException)
 			// Encoding.GetString (DecoderFallbackException)
-			// Convert.FromHexString (ArgumentNullException)
-			// Convert.FromHexString (FormatException)
+			// Utils.Encodings.FromHexString (ArgumentException)
+			// Utils.Encodings.FromHexString (ArgumentOutOfRangeException)
 			catch (Exception ex) when
 			(ex is ArgumentException || ex is PlatformNotSupportedException || ex is ArgumentNullException || ex is ArgumentOutOfRangeException
 			|| ex is UnauthorizedAccessException || ex is PathTooLongException || ex is IOException || ex is DirectoryNotFoundException
-			|| ex is DecoderFallbackException || ex is FormatException)
+			|| ex is DecoderFallbackException)
 			{
 				exception = ex;
 				return false;
@@ -334,8 +334,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			// Environment.GetFolderPath (PlatformNotSupportedException)
 			// Path.Combine (ArgumentException)
 			// Path.Combine (ArgumentNullException)
-			// Convert.ToHexString (ArgumentNullException)
-			// Convert.ToHexString (ArgumentOutOfRangeException)
 			// Encoding.GetBytes (ArgumentNullException)
 			// Encoding.GetBytes (EncoderFallbackException)
 			// Directory.GetFiles (ArgumentException)
@@ -348,12 +346,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			// Encoding.GetString (ArgumentException)
 			// Encoding.GetString (ArgumentNullException)
 			// Encoding.GetString (DecoderFallbackException)
-			// Convert.FromHexString (ArgumentNullException)
-			// Convert.FromHexString (FormatException)
+			// Utils.Encodings.FromHexString (ArgumentException)
+			// Utils.Encodings.FromHexString (ArgumentOutOfRangeException)
 			catch (Exception ex) when
 			(ex is ArgumentException || ex is PlatformNotSupportedException || ex is ArgumentNullException || ex is ArgumentOutOfRangeException
 			|| ex is EncoderFallbackException || ex is UnauthorizedAccessException || ex is DirectoryNotFoundException || ex is PathTooLongException
-			|| ex is IOException || ex is DecoderFallbackException || ex is FormatException)
+			|| ex is IOException || ex is DecoderFallbackException)
 			{
 				exception = ex;
 				return false;
@@ -395,15 +393,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			}
 			// Environment.GetFolderPath (ArgumentException)
 			// Environment.GetFolderPath (PlatformNotSupportedException)
-			// Convert.ToHexString (ArgumentNullException)
-			// Convert.ToHexString (ArgumentOutOfRangeException)
 			// Encoding.GetBytes (ArgumentNullException)
 			// Encoding.GetBytes (EncoderFallbackException)
 			// Path.Combine (ArgumentException)
 			// Path.Combine (ArgumentNullException)
 			catch (Exception ex) when
-			(ex is ArgumentException || ex is PlatformNotSupportedException || ex is ArgumentNullException || ex is ArgumentOutOfRangeException
-			|| ex is EncoderFallbackException)
+			(ex is ArgumentException || ex is PlatformNotSupportedException || ex is ArgumentNullException || ex is EncoderFallbackException)
 			{
 				Error = $"Account listing error: {ex.Message}";
 			}
@@ -445,11 +440,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				// RSA.VerifyData (CryptographicException)
 				// Encoding.GetBytes (ArgumentNullException)
 				// Encoding.GetBytes (EncoderFallbackException)
-				// Convert.FromHexString (ArgumentNullException)
-				// Convert.FromHexString (FormatException)
+				// Utils.Encodings.FromHexString (ArgumentException)
+				// Utils.Encodings.FromHexString (ArgumentOutOfRangeException)
 				catch (Exception ex) when
-				(ex is ArgumentNullException || ex is ArgumentException || ex is CryptographicException || ex is EncoderFallbackException
-				|| ex is FormatException)
+				(ex is ArgumentNullException || ex is ArgumentException || ex is CryptographicException || ex is EncoderFallbackException || ex is ArgumentOutOfRangeException)
 				{
 					continue;
 				}
@@ -524,11 +518,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			// RSA.VerifyData (CryptographicException)
 			// Encoding.GetBytes (ArgumentNullException)
 			// Encoding.GetBytes (EncoderFallbackException)
-			// Convert.FromHexString (ArgumentNullException)
-			// Convert.FromHexString (FormatException)
+			// Utils.Encodings.FromHexString (ArgumentException)
+			// Utils.Encodings.FromHexString (ArgumentOutOfRangeException)
 			catch (Exception ex) when
-			(ex is ArgumentNullException || ex is ArgumentException || ex is CryptographicException || ex is EncoderFallbackException
-			|| ex is FormatException)
+			(ex is ArgumentNullException || ex is ArgumentException || ex is CryptographicException || ex is EncoderFallbackException || ex is ArgumentOutOfRangeException)
 			{
 				Cleanup();
 				return;
@@ -566,8 +559,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				}
 				// RSACng.Decrypt (ArgumentNullException)
 				// RSACng.Decrypt (CryptographicException)
-				// Convert.FromHexString (ArgumentNullException)
-				// Convert.FromHexString (FormatException)
 				// Array.Copy (ArgumentNullException)
 				// Array.Copy (RankException)
 				// Array.Copy (ArrayTypeMismatchException)
@@ -576,6 +567,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				// Array.Copy (ArgumentException)
 				// string.Format (ArgumentNullException)
 				// string.Format (FormatException)
+				// Utils.Encodings.FromHexString (ArgumentException)
+				// Utils.Encodings.FromHexString (ArgumentOutOfRangeException)
 				catch (Exception ex) when
 				(ex is ArgumentNullException || ex is CryptographicException || ex is FormatException || ex is RankException || ex is ArrayTypeMismatchException
 				|| ex is InvalidCastException || ex is ArgumentOutOfRangeException || ex is ArgumentException)
@@ -959,8 +952,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 					}
 					// RSACng.Decrypt (ArgumentNullException)
 					// RSACng.Decrypt (CryptographicException)
-					// Convert.FromHexString (ArgumentNullException)
-					// Convert.FromHexString (FormatException)
+					// Utils.Encodings.FromHexString (ArgumentException)
+					// Utils.Encodings.FromHexString (ArgumentOutOfRangeException)
 					// Array.Copy (ArgumentNullException)
 					// Array.Copy (RankException)
 					// Array.Copy (ArrayTypeMismatchException)

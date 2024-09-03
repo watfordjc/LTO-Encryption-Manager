@@ -439,8 +439,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 					}
 					// Environment.GetFolderPath (ArgumentException)
 					// Environment.GetFolderPath (PlatformNotSupportedException)
-					// Convert.ToHexString (ArgumentNullException)
-					// Convert.ToHexString (ArgumentOutOfRangeException)
 					// Encoding.GetBytes (ArgumentNullException)
 					// Encoding.GetBytes (EncoderFallbackException)
 					// Path.Combine (ArgumentException)
@@ -453,7 +451,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 					// Directory.CreateDirectory (DirectoryNotFoundException)
 					// Directory.CreateDirectory (NotSupportedException)
 					catch (Exception ex) when
-					(ex is ArgumentException || ex is PlatformNotSupportedException || ex is ArgumentNullException || ex is ArgumentOutOfRangeException
+					(ex is ArgumentException || ex is PlatformNotSupportedException || ex is ArgumentNullException
 					|| ex is EncoderFallbackException || ex is IOException || ex is UnauthorizedAccessException || ex is PathTooLongException
 					|| ex is DirectoryNotFoundException || ex is NotSupportedException)
 					{
@@ -478,11 +476,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 					// RSA.SignData (CryptographicException)
 					// Encoding.GetBytes (ArgumentNullException)
 					// Encoding.GetBytes (EncoderFallbackException)
-					// Convert.ToHexString (ArgumentNullException)
-					// Convert.ToHexString (ArgumentOutOfRangeException)
 					catch (Exception ex) when
-					(ex is ArgumentNullException || ex is ArgumentException || ex is CryptographicException || ex is EncoderFallbackException
-					|| ex is ArgumentOutOfRangeException)
+					(ex is ArgumentNullException || ex is ArgumentException || ex is CryptographicException || ex is EncoderFallbackException)
 					{
 						statusLabel.Text = $"Account data signing error: {ex.Message}";
 					}
@@ -503,8 +498,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 						DialogResult = DialogResult.OK;
 						Dispose();
 					}
-					// Convert.ToHexString (ArgumentNullException)
-					// Convert.ToHexString (ArgumentOutOfRangeException)
 					// Encoding.GetBytes (ArgumentNullException)
 					// Encoding.GetBytes (EncoderFallbackException)
 					// StreamWriter.StreamWriter (ArgumentException)
