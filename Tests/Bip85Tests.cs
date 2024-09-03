@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 {
@@ -21,6 +22,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 		{
 			using FileStream openStream = File.OpenRead(@"data/bip0085-entropy-from-k-vectors.json");
 			Models.Bip85EntropyFromKTestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Bip85EntropyFromKTestVectorsRoot>(openStream).ConfigureAwait(false);
+			openStream.Close();
+			return jsonRoot?.Vectors;
+		}
+		public static async Task<Collection<Models.Bip85DrngEntropyTestVector>?> GetDrngEntropyTestVectorsAsync()
+		{
+			using FileStream openStream = File.OpenRead(@"data/bip0085-drng-entropy-shake256-vectors.json");
+			Models.Bip85DrngEntropyTestVectorsRoot? jsonRoot = await JsonSerializer.DeserializeAsync<Models.Bip85DrngEntropyTestVectorsRoot>(openStream).ConfigureAwait(false);
 			openStream.Close();
 			return jsonRoot?.Vectors;
 		}
@@ -82,6 +90,74 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				Assert.AreEqual(testVector.PrivateKeyHex, new(Utils.Encodings.ToHexString([.. derivationNode.Left])));
 				ReadOnlySpan<byte> entropyFromK = Bip85.GetEntropy(derivationNode, 64);
 				Assert.AreEqual(testVector.EntropyHex, Utils.Encodings.ToHexString([.. entropyFromK]));
+				if (Debugger.IsAttached)
+				{
+					semaphore.Release();
+				}
+			});
+		}
+
+		[TestMethod]
+		public async Task GetDrngEntropyTest()
+		{
+			IEnumerable<Models.Bip85DrngEntropyTestVector>? testVectors = await GetDrngEntropyTestVectorsAsync().ConfigureAwait(false);
+			Assert.IsNotNull(testVectors);
+			using SemaphoreSlim semaphore = new(1);
+			_ = Parallel.ForEach(testVectors, testVector =>
+			{
+				if (Debugger.IsAttached)
+				{
+					semaphore.Wait();
+				}
+				Bip32Node rootNode = GetBip32RootNode(testVector.MasterNodePrivateKey);
+				Bip32Node? derivationNode = GetBip32NodeFromDerivationPath(rootNode, testVector.DerivationPath);
+				Assert.IsNotNull(derivationNode);
+				Assert.IsFalse(derivationNode.IsMasterNode);
+				Assert.AreEqual(testVector.DerivationPath, derivationNode.DerivationPath);
+				Assert.IsNotNull(derivationNode.PrivateKeySerialised);
+				Assert.AreEqual(testVector.PrivateKeyHex, new(Utils.Encodings.ToHexString([.. derivationNode.Left])));
+				ReadOnlySpan<byte> entropyFromK = Bip85.GetEntropy(derivationNode, 64);
+				Assert.AreEqual(testVector.EntropyHex, Utils.Encodings.ToHexString([.. entropyFromK]));
+				ReadOnlySpan<byte> drngEntropy = Bip85.GetShake256Entropy(derivationNode, testVector.RequestedEntropyBytes);
+				Assert.AreEqual(testVector.DrngEntropyHex, Utils.Encodings.ToHexString([.. drngEntropy]));
+				if (Debugger.IsAttached)
+				{
+					semaphore.Release();
+				}
+			});
+		}
+
+		[TestMethod]
+		public async Task GetDrngEntropyStreamTest()
+		{
+			IEnumerable<Models.Bip85DrngEntropyTestVector>? testVectors = await GetDrngEntropyTestVectorsAsync().ConfigureAwait(false);
+			Assert.IsNotNull(testVectors);
+			using SemaphoreSlim semaphore = new(1);
+			_ = Parallel.ForEach(testVectors, testVector =>
+			{
+				if (Debugger.IsAttached)
+				{
+					semaphore.Wait();
+				}
+				Bip32Node rootNode = GetBip32RootNode(testVector.MasterNodePrivateKey);
+				Bip32Node? derivationNode = GetBip32NodeFromDerivationPath(rootNode, testVector.DerivationPath);
+				Assert.IsNotNull(derivationNode);
+				Assert.IsFalse(derivationNode.IsMasterNode);
+				Assert.AreEqual(testVector.DerivationPath, derivationNode.DerivationPath);
+				Assert.IsNotNull(derivationNode.PrivateKeySerialised);
+				Assert.AreEqual(testVector.PrivateKeyHex, new(Utils.Encodings.ToHexString([.. derivationNode.Left])));
+				ReadOnlySpan<byte> entropyFromK = Bip85.GetEntropy(derivationNode, 64);
+				Assert.AreEqual(testVector.EntropyHex, Utils.Encodings.ToHexString([.. entropyFromK]));
+
+				using Shake256Stream shake256Stream = new(derivationNode);
+				byte[] drngEntropy = new byte[80];
+				// Read 10 bytes into drngEntropy[0..]
+				shake256Stream.Read(drngEntropy, 0, 10);
+				// Read 40 bytes into drngEntropy[10..]
+				shake256Stream.Read(drngEntropy, 10, 40);
+				// Read 30 bytes into drngEntropy[50..]
+				shake256Stream.Read(drngEntropy, 50, 30);
+				Assert.AreEqual(testVector.DrngEntropyHex, Utils.Encodings.ToHexString(drngEntropy));
 				if (Debugger.IsAttached)
 				{
 					semaphore.Release();
