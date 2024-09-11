@@ -30,13 +30,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				byte[]? input = testVector.InputEncoding switch
 				{
 					"UTF-8" => Encoding.UTF8.GetBytes(testVector.InputDecoded),
-					"HEX" => testVector.InputDecoded.Length > 0 ? Utils.Encodings.FromHexString(testVector.InputDecoded) : [],
+					"HEX" => testVector.InputDecoded.Length > 0 ? Utils.ByteEncoding.FromHexString(testVector.InputDecoded) : [],
 					_ => null
 				};
 				Assert.IsNotNull(input);
-				bool success = Utils.Encodings.TryGetRawBase58FromBase256(input, out byte[]? outputRaw);
+				bool success = Utils.ByteEncoding.TryGetRawBase58FromBase256(input, out byte[]? outputRaw);
 				Assert.IsTrue(success);
-				string output = Utils.Encodings.GetBase58StringFromRawBase58(outputRaw);
+				string output = Utils.ByteEncoding.GetBase58StringFromRawBase58(outputRaw);
 				Assert.AreEqual(testVector.OutputEncoded, output, false, CultureInfo.InvariantCulture);
 			});
 		}
@@ -48,11 +48,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 			Assert.IsNotNull(testVectors);
 			_ = Parallel.ForEach(testVectors, testVector =>
 			{
-				byte[] inputRaw = Utils.Encodings.GetBase256FromBase58String(Encoding.UTF8.GetBytes(testVector.OutputEncoded));
+				byte[] inputRaw = Utils.ByteEncoding.GetBase256FromBase58String(Encoding.UTF8.GetBytes(testVector.OutputEncoded));
 				string? input = testVector.InputEncoding switch
 				{
 					"UTF-8" => Encoding.UTF8.GetString(inputRaw),
-					"HEX" => testVector.InputDecoded.Length > 0 ? Utils.Encodings.ToHexString(inputRaw) : string.Empty,
+					"HEX" => testVector.InputDecoded.Length > 0 ? Utils.ByteEncoding.ToHexString(inputRaw) : string.Empty,
 					_ => null
 				};
 				Assert.IsNotNull(input);

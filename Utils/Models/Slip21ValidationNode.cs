@@ -54,7 +54,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
         {
             if (validationNodeMessage?.Length > 0 && validationNodeSalt?.Length > 0)
             {
-                if (Encodings.TryGetToZ85Encoded(validationNodeMessage, out byte[]? password))
+                if (ByteEncoding.TryGetToZ85Encoded(validationNodeMessage, out byte[]? password))
                 {
                     CalculateFingerprint(password, validationNodeSalt, argon2idOutputLength);
                 }
@@ -75,7 +75,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
             Array.Clear(message, 0, message.Length);
             Array.Clear(salt, 0, salt.Length);
             //Trace.WriteLine(BitConverter.ToString(argon2IdHashResult.HashBytes));
-            if (Encodings.TryGetToZ85Encoded(argon2IdHashResult.HashBytes, out byte[]? z85Hash))
+            if (ByteEncoding.TryGetToZ85Encoded(argon2IdHashResult.HashBytes, out byte[]? z85Hash))
             {
                 //Trace.WriteLine(DerivationPath);
                 //Trace.WriteLine(Encoding.UTF8.GetString(z85Hash));

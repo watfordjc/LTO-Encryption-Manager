@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 {
-    public static partial class Encodings
+    public static partial class ByteEncoding
 	{
         /// <summary>
         /// Tries to encode a version and some data into Base58Check-encoding. All inputs are base256.
@@ -38,7 +38,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
             // Add the checksum
             checksummedData.AddRange(GetBase58CheckChecksum([.. data]));
 
-            return Encodings.TryGetRawBase58FromBase256([.. checksummedData], out versionedData);
+            return ByteEncoding.TryGetRawBase58FromBase256([.. checksummedData], out versionedData);
         }
 
         /// <summary>

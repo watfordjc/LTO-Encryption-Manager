@@ -30,7 +30,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
             {
                 string[] mnemonic = testVector.MnemonicSeed.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 byte[] binarySeed = Bip39.GetBinarySeedFromSeedWords(ref mnemonic, null);
-                string binarySeedHex = Utils.Encodings.ToHexString(binarySeed);
+                string binarySeedHex = Utils.ByteEncoding.ToHexString(binarySeed);
                 Assert.AreEqual(testVector.MnemonicBinarySeed, binarySeedHex);
             });
         }
@@ -43,7 +43,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
             _ = Parallel.ForEach(testVectors, testVector =>
             {
                 Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed), "0");
-                string masterNodePrivateKey = Utils.Encodings.ToHexString(masterNode.Right);
+                string masterNodePrivateKey = Utils.ByteEncoding.ToHexString(masterNode.Right);
                 Assert.AreEqual(testVector.MasterNodeKey, masterNodePrivateKey);
             });
         }
@@ -57,7 +57,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
             {
                 Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed), "0");
                 Slip21Node childNode = masterNode.GetChildNode("SLIP-0021");
-                string slip21NodePrivateKey = Utils.Encodings.ToHexString(childNode.Right);
+                string slip21NodePrivateKey = Utils.ByteEncoding.ToHexString(childNode.Right);
                 Assert.AreEqual(testVector.Slip21NodeKey, slip21NodePrivateKey);
             });
         }
@@ -71,7 +71,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
             {
                 Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed), "0");
                 Slip21Node grandchildNode = masterNode.GetChildNode("SLIP-0021").GetChildNode("Master encryption key");
-                string masterEncryptionKey = Utils.Encodings.ToHexString(grandchildNode.Right);
+                string masterEncryptionKey = Utils.ByteEncoding.ToHexString(grandchildNode.Right);
                 Assert.AreEqual(testVector.Slip21NodeMasterEncryptionKey, masterEncryptionKey);
             });
         }
@@ -85,7 +85,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
             {
                 Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Convert.FromHexString(testVector.MnemonicBinarySeed), "0");
                 Slip21Node grandchildNode = masterNode.GetChildNode("SLIP-0021").GetChildNode("Authentication key");
-                string authenticationKey = Utils.Encodings.ToHexString(grandchildNode.Right);
+                string authenticationKey = Utils.ByteEncoding.ToHexString(grandchildNode.Right);
                 Assert.AreEqual(testVector.Slip21NodeAuthenticationKey, authenticationKey);
             });
         }

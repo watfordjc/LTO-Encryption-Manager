@@ -371,7 +371,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 			string? encryptedLeftHex = null;
 			try
 			{
-				encryptedLeftHex = Utils.Encodings.ToHexString(encryptedLeft);
+				encryptedLeftHex = Utils.ByteEncoding.ToHexString(encryptedLeft);
 			}
 			// Convert.ToHexString (ArgumentNullException)
 			// Convert.ToHexString (ArgumentOutOfRangeException)
@@ -430,7 +430,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 					try
 					{
 						string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-						string globalFingerprintHex = Utils.Encodings.ToHexString(Encoding.UTF8.GetBytes(slip21NodeEncrypted.GlobalFingerprint));
+						string globalFingerprintHex = Utils.ByteEncoding.ToHexString(Encoding.UTF8.GetBytes(slip21NodeEncrypted.GlobalFingerprint));
 						thisAppDataFolder = Path.Combine(appDataFolder, "John Cook UK", "LTO-Encryption-Manager", "Accounts", globalFingerprintHex);
 						if (!Directory.Exists(thisAppDataFolder))
 						{
@@ -468,7 +468,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 					try
 					{
 						nodeDataSigned = rsaCngKey.SignData(Encoding.UTF8.GetBytes(slip21NodeEncrypted.SignablePart), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-						slip21NodeEncrypted.RSASignature = Utils.Encodings.ToHexString(nodeDataSigned);
+						slip21NodeEncrypted.RSASignature = Utils.ByteEncoding.ToHexString(nodeDataSigned);
 						statusLabel.Text = $"Signature length: {slip21NodeEncrypted.RSASignature.Length} bytes";
 					}
 					// RSA.SignData (ArgumentNullException)
@@ -489,7 +489,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows
 
 					try
 					{
-						string accountFingerprintHex = Utils.Encodings.ToHexString(Encoding.UTF8.GetBytes(slip21NodeEncrypted.AccountFingerprint));
+						string accountFingerprintHex = Utils.ByteEncoding.ToHexString(Encoding.UTF8.GetBytes(slip21NodeEncrypted.AccountFingerprint));
 						using StreamWriter file = new(Path.Combine(thisAppDataFolder, $"{accountFingerprintHex}.blob"), false, Encoding.UTF8, 4096);
 						StringBuilder nodeBackupData = new();
 						nodeBackupData.Append(slip21NodeEncrypted.SignablePart).Append('\x001E').Append(slip21NodeEncrypted.RSASignature);

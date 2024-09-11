@@ -143,7 +143,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 			if (serialisePrivSuccess && serialisePubSuccess)
 			{
 				KeyIdentifier = keyIdentifier;
-				Fingerprint = KeyIdentifier is null ? null : BitConverter.ToUInt32(Utils.Encodings.FromNetworkByteOrderHexString(KeyIdentifier[..8]));
+				Fingerprint = KeyIdentifier is null ? null : BitConverter.ToUInt32(Utils.ByteEncoding.FromNetworkByteOrderHexString(KeyIdentifier[..8]));
 				PrivateKeySerialised = privKeySerialised;
 				PublicKeySerialised = pubKeySerialised;
 				IsInitialised = true;
@@ -157,14 +157,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 		public Bip32Node(string serialisedKey, string? nodeDerivationPath = null)
 		{
 			// Deserialise the key
-			byte[] deserialisedKey = Encodings.GetBase256FromBase58String(Encoding.UTF8.GetBytes(serialisedKey).AsSpan());
+			byte[] deserialisedKey = ByteEncoding.GetBase256FromBase58String(Encoding.UTF8.GetBytes(serialisedKey).AsSpan());
 			// If deserialisation fails, return early
 			if (deserialisedKey == null)
 			{
 				Clear();
 				throw new ArgumentNullException(nameof(serialisedKey));
 			}
-			else if (!Encodings.VerifyBase58CheckChecksum(deserialisedKey))
+			else if (!ByteEncoding.VerifyBase58CheckChecksum(deserialisedKey))
 			{
 				Clear();
 				throw new ArgumentException("Base58Check checksum check failed.", nameof(serialisedKey));
@@ -248,7 +248,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 				if (serialisePrivSuccess && serialisePubSuccess)
 				{
 					KeyIdentifier = keyIdentifier;
-					Fingerprint = KeyIdentifier is null ? null : BitConverter.ToUInt32(Utils.Encodings.FromNetworkByteOrderHexString(KeyIdentifier[..8]));
+					Fingerprint = KeyIdentifier is null ? null : BitConverter.ToUInt32(Utils.ByteEncoding.FromNetworkByteOrderHexString(KeyIdentifier[..8]));
 					PrivateKeySerialised = privKeySerialised;
 					PublicKeySerialised = pubKeySerialised;
 				}
@@ -285,7 +285,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 					if (serialisePubSuccess)
 					{
 						KeyIdentifier = keyIdentifier;
-						Fingerprint = KeyIdentifier is null ? null : BitConverter.ToUInt32(Utils.Encodings.FromNetworkByteOrderHexString(KeyIdentifier[..8]));
+						Fingerprint = KeyIdentifier is null ? null : BitConverter.ToUInt32(Utils.ByteEncoding.FromNetworkByteOrderHexString(KeyIdentifier[..8]));
 						PublicKeySerialised = pubKeySerialised;
 					}
 					else
@@ -414,8 +414,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 
 			// The serialised key can now be encoded using Base58Check
 			byte[] zeroLengthByteArray = [];
-			_ = Encodings.TryGetToBase58CheckEncoded(zeroLengthByteArray, [.. serialisedKeyList], out byte[]? serialisedKeyBytes);
-			serialisedKeyString = Encodings.GetBase58StringFromRawBase58(serialisedKeyBytes);
+			_ = ByteEncoding.TryGetToBase58CheckEncoded(zeroLengthByteArray, [.. serialisedKeyList], out byte[]? serialisedKeyBytes);
+			serialisedKeyString = ByteEncoding.GetBase58StringFromRawBase58(serialisedKeyBytes);
 
 			// We return true if the out variables are not null
 			return serialisedKeyString is not null;

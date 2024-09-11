@@ -254,7 +254,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 					if (Directory.Exists(dir))
 					{
 						DirectoryInfo dirInfo = new(dir);
-						globalFingerprints.Add(Encoding.UTF8.GetString(Utils.Encodings.FromHexString(dirInfo.Name)));
+						globalFingerprints.Add(Encoding.UTF8.GetString(Utils.ByteEncoding.FromHexString(dirInfo.Name)));
 					}
 				}
 			}
@@ -316,7 +316,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			try
 			{
 				string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-				string accountDirectoriesBase = Path.Combine(appDataFolder, "John Cook UK", "LTO-Encryption-Manager", "Accounts", Utils.Encodings.ToHexString(Encoding.UTF8.GetBytes(globalFingerprint)));
+				string accountDirectoriesBase = Path.Combine(appDataFolder, "John Cook UK", "LTO-Encryption-Manager", "Accounts", Utils.ByteEncoding.ToHexString(Encoding.UTF8.GetBytes(globalFingerprint)));
 				string[] accountFingerprintFiles = Directory.GetFiles(accountDirectoriesBase, "*.blob", SearchOption.TopDirectoryOnly);
 				accountFingerprints.Clear();
 				foreach (string file in accountFingerprintFiles)
@@ -324,7 +324,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 					if (File.Exists(file))
 					{
 						FileInfo fileInfo = new(file);
-						accountFingerprints.Add(Encoding.UTF8.GetString(Utils.Encodings.FromHexString(fileInfo.Name.Split('.')[0])));
+						accountFingerprints.Add(Encoding.UTF8.GetString(Utils.ByteEncoding.FromHexString(fileInfo.Name.Split('.')[0])));
 					}
 				}
 				OnAccountEnumerationCompleted();
@@ -384,8 +384,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			try
 			{
 				string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-				string fileName = Utils.Encodings.ToHexString(Encoding.UTF8.GetBytes(accountFingerprint)) + ".blob";
-				string thisAppDataFile = Path.Combine(appDataFolder, "John Cook UK", "LTO-Encryption-Manager", "Accounts", Utils.Encodings.ToHexString(Encoding.UTF8.GetBytes(globalFingerprint)), fileName);
+				string fileName = Utils.ByteEncoding.ToHexString(Encoding.UTF8.GetBytes(accountFingerprint)) + ".blob";
+				string thisAppDataFile = Path.Combine(appDataFolder, "John Cook UK", "LTO-Encryption-Manager", "Accounts", Utils.ByteEncoding.ToHexString(Encoding.UTF8.GetBytes(globalFingerprint)), fileName);
 				btnTestAccount.IsEnabled = File.Exists(thisAppDataFile);
 				CurrentAccountDataFile = thisAppDataFile;
 				Error = string.Empty;
@@ -433,7 +433,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				}
 				try
 				{
-					signatureValid = currentRsaKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Utils.Encodings.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+					signatureValid = currentRsaKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Utils.ByteEncoding.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 				}
 				// RSA.VerifyData (ArgumentNullException)
 				// RSA.VerifyData (ArgumentException)
@@ -465,7 +465,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				Error = "Account data validation warning: Account file needs upgrading";
 				btnTestAccount.IsEnabled = true;
 				AsnEncodedData asnEncodedData = new("1.2.840.113549.1.1.1", currentRsaKey.ExportRSAPublicKey());
-				tbDriveKAD.Text = Utils.Encodings.ToHexString(asnEncodedData.RawData);
+				tbDriveKAD.Text = Utils.ByteEncoding.ToHexString(asnEncodedData.RawData);
 				return;
 			}
 
@@ -511,7 +511,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 
 			try
 			{
-				signatureValid = rsaPublicKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Utils.Encodings.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+				signatureValid = rsaPublicKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Utils.ByteEncoding.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 			}
 			// RSA.VerifyData (ArgumentNullException)
 			// RSA.VerifyData (ArgumentException)
@@ -539,7 +539,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 				try
 				{
 					statusbarStatus.Content = "Testing account key decryption...";
-					byte[] nodeLeft = rsaCngKey.Decrypt(Utils.Encodings.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
+					byte[] nodeLeft = rsaCngKey.Decrypt(Utils.ByteEncoding.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
 					Array.Copy(nodeLeft, 0, nodeBytes, 0, 32);
 					Slip21Node accountNode = new(nodeBytes, nodeDataSplit[2], nodeDataSplit[1]);
 					Slip21ValidationNode accountValidationNode = new(accountNode);
@@ -886,7 +886,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 			}
 			else
 			{
-				bool signatureValid = rsaPublicKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Utils.Encodings.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+				bool signatureValid = rsaPublicKey.VerifyData(Encoding.UTF8.GetBytes(currentAccountSlip21Node.SignablePart), Utils.ByteEncoding.FromHexString(currentAccountSlip21Node.RSASignature), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 				if (signatureValid)
 				{
 					byte[] nodeBytes = new byte[64];
@@ -894,7 +894,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager
 					try
 					{
 						statusbarStatus.Content = "Decrypting account key to derive tape key and KAD...";
-						byte[] nodeLeft = rsaCngKey.Decrypt(Utils.Encodings.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
+						byte[] nodeLeft = rsaCngKey.Decrypt(Utils.ByteEncoding.FromHexString(currentAccountSlip21Node.EncryptedLeftHex), RSAEncryptionPadding.Pkcs1);
 						Array.Copy(nodeLeft, 0, nodeBytes, 0, 32);
 						Slip21Node accountNode = new(nodeBytes, currentAccountSlip21Node.GlobalKeyRolloverCount.ToString(CultureInfo.InvariantCulture), currentAccountSlip21Node.DerivationPath);
 						Slip21Node tapeNode = accountNode.GetChildNode(kad.TapeBarcode).GetChildNode(kad.TapeKeyRollovers.ToString(CultureInfo.InvariantCulture));

@@ -33,15 +33,15 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
                 semaphore.Wait();
                 Argon2idHashResult hashResult = Utils.Algorithms.Argon2id.GetHash(
                     argon2id: argon2id,
-                    message: Utils.Encodings.FromHexString(testVector.Message),
-                    salt: Utils.Encodings.FromHexString(testVector.Salt),
+                    message: Utils.ByteEncoding.FromHexString(testVector.Message),
+                    salt: Utils.ByteEncoding.FromHexString(testVector.Salt),
                     iterations: testVector.Iterations,
                     memKibiBytes: testVector.MemoryKibiBytes,
                     parallelism: testVector.Parallelism,
                     outputLength: testVector.OutputLength,
-                    associatedData: Utils.Encodings.FromHexString(testVector.AssociatedData),
-                    knownSecret: Utils.Encodings.FromHexString(testVector.Secret));
-                Assert.AreEqual(testVector.Output, Utils.Encodings.ToHexString(hashResult.HashBytes));
+                    associatedData: Utils.ByteEncoding.FromHexString(testVector.AssociatedData),
+                    knownSecret: Utils.ByteEncoding.FromHexString(testVector.Secret));
+                Assert.AreEqual(testVector.Output, Utils.ByteEncoding.ToHexString(hashResult.HashBytes));
                 semaphore.Release();
             });
         }

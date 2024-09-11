@@ -32,7 +32,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
             {
                 string[] mnemonic = testVector.MnemonicSeed.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 byte[] binarySeed = Bip39.GetBinarySeedFromSeedWords(ref mnemonic, null);
-                string binarySeedHex = Utils.Encodings.ToHexString(binarySeed);
+                string binarySeedHex = Utils.ByteEncoding.ToHexString(binarySeed);
                 Assert.AreEqual(testVector.MnemonicBinarySeed, binarySeedHex);
             });
         }
@@ -44,8 +44,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
             Assert.IsNotNull(testVectors);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
-                Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Utils.Encodings.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
-                string masterNodePrivateKey = Utils.Encodings.ToHexString(masterNode.Right);
+                Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Utils.ByteEncoding.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
+                string masterNodePrivateKey = Utils.ByteEncoding.ToHexString(masterNode.Right);
                 Assert.AreEqual(testVector.MasterNodeKey, masterNodePrivateKey);
             });
         }
@@ -58,7 +58,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 			using SemaphoreSlim semaphore = new(1);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
-                Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Utils.Encodings.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
+                Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Utils.ByteEncoding.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
                 Slip21Node globalNode = masterNode.GetChildNode(testVector.Slip0021Schema).GetChildNode(testVector.GlobalKeyRolloverCount);
 				Slip21ValidationNode validationNode = new(globalNode);
                 validationNode.FingerprintingCompleted += (object? sender, FingerprintingCompletedEventArgs e) =>
@@ -83,7 +83,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 			using SemaphoreSlim semaphore = new(1);
             _ = Parallel.ForEach(testVectors, testVector =>
 			{
-				Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Utils.Encodings.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
+				Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Utils.ByteEncoding.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
                 Slip21Node accountNode = masterNode.GetChildNode(testVector.Slip0021Schema).GetChildNode(testVector.GlobalKeyRolloverCount).GetChildNode(testVector.AccountId).GetChildNode(testVector.AccountKeyRolloverCount);
 				Slip21ValidationNode validationNode = new(accountNode);
                 validationNode.FingerprintingCompleted += (object? sender, FingerprintingCompletedEventArgs e) =>
@@ -108,7 +108,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
             using SemaphoreSlim semaphore = new(1);
             _ = Parallel.ForEach(testVectors, testVector =>
             {
-                Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Utils.Encodings.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
+                Slip21Node masterNode = Slip21.GetMasterNodeFromBinarySeed(Utils.ByteEncoding.FromHexString(testVector.MnemonicBinarySeed), testVector.GlobalKeyRolloverCount);
                 Slip21Node tapeNode = masterNode.GetChildNode(testVector.Slip0021Schema).GetChildNode(testVector.GlobalKeyRolloverCount).GetChildNode(testVector.AccountId).GetChildNode(testVector.AccountKeyRolloverCount).GetChildNode(testVector.TapeLabel).GetChildNode(testVector.TapeKeyRolloverCount);
 				Slip21ValidationNode validationNode = new(tapeNode);
                 validationNode.FingerprintingCompleted += (object? sender, FingerprintingCompletedEventArgs e) =>

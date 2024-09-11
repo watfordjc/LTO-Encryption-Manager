@@ -12,7 +12,7 @@ using System.Text;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 {
-    public static partial class Encodings
+    public static partial class ByteEncoding
 	{
         // Base58 digits, from [0] to [57]
         private const string base58EncoderAlphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";

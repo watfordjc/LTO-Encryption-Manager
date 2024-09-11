@@ -87,9 +87,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				Assert.IsFalse(derivationNode.IsMasterNode);
 				Assert.AreEqual(testVector.DerivationPath, derivationNode.DerivationPath);
 				Assert.IsNotNull(derivationNode.PrivateKeySerialised);
-				Assert.AreEqual(testVector.PrivateKeyHex, new(Utils.Encodings.ToHexString([.. derivationNode.Left])));
+				Assert.AreEqual(testVector.PrivateKeyHex, new(Utils.ByteEncoding.ToHexString([.. derivationNode.Left])));
 				ReadOnlySpan<byte> entropyFromK = Bip85.GetEntropy(derivationNode, 64);
-				Assert.AreEqual(testVector.EntropyHex, Utils.Encodings.ToHexString([.. entropyFromK]));
+				Assert.AreEqual(testVector.EntropyHex, Utils.ByteEncoding.ToHexString([.. entropyFromK]));
 				if (Debugger.IsAttached)
 				{
 					semaphore.Release();
@@ -115,11 +115,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				Assert.IsFalse(derivationNode.IsMasterNode);
 				Assert.AreEqual(testVector.DerivationPath, derivationNode.DerivationPath);
 				Assert.IsNotNull(derivationNode.PrivateKeySerialised);
-				Assert.AreEqual(testVector.PrivateKeyHex, new(Utils.Encodings.ToHexString([.. derivationNode.Left])));
+				Assert.AreEqual(testVector.PrivateKeyHex, new(Utils.ByteEncoding.ToHexString([.. derivationNode.Left])));
 				ReadOnlySpan<byte> entropyFromK = Bip85.GetEntropy(derivationNode, 64);
-				Assert.AreEqual(testVector.EntropyHex, Utils.Encodings.ToHexString([.. entropyFromK]));
+				Assert.AreEqual(testVector.EntropyHex, Utils.ByteEncoding.ToHexString([.. entropyFromK]));
 				ReadOnlySpan<byte> drngEntropy = Bip85.GetShake256Entropy(derivationNode, testVector.RequestedEntropyBytes);
-				Assert.AreEqual(testVector.DrngEntropyHex, Utils.Encodings.ToHexString([.. drngEntropy]));
+				Assert.AreEqual(testVector.DrngEntropyHex, Utils.ByteEncoding.ToHexString([.. drngEntropy]));
 				if (Debugger.IsAttached)
 				{
 					semaphore.Release();
@@ -145,9 +145,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				Assert.IsFalse(derivationNode.IsMasterNode);
 				Assert.AreEqual(testVector.DerivationPath, derivationNode.DerivationPath);
 				Assert.IsNotNull(derivationNode.PrivateKeySerialised);
-				Assert.AreEqual(testVector.PrivateKeyHex, new(Utils.Encodings.ToHexString([.. derivationNode.Left])));
+				Assert.AreEqual(testVector.PrivateKeyHex, new(Utils.ByteEncoding.ToHexString([.. derivationNode.Left])));
 				ReadOnlySpan<byte> entropyFromK = Bip85.GetEntropy(derivationNode, 64);
-				Assert.AreEqual(testVector.EntropyHex, Utils.Encodings.ToHexString([.. entropyFromK]));
+				Assert.AreEqual(testVector.EntropyHex, Utils.ByteEncoding.ToHexString([.. entropyFromK]));
 
 				using Shake256Stream shake256Stream = new(derivationNode);
 				byte[] drngEntropy = new byte[80];
@@ -157,7 +157,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
 				shake256Stream.Read(drngEntropy, 10, 40);
 				// Read 30 bytes into drngEntropy[50..]
 				shake256Stream.Read(drngEntropy, 50, 30);
-				Assert.AreEqual(testVector.DrngEntropyHex, Utils.Encodings.ToHexString(drngEntropy));
+				Assert.AreEqual(testVector.DrngEntropyHex, Utils.ByteEncoding.ToHexString(drngEntropy));
 				if (Debugger.IsAttached)
 				{
 					semaphore.Release();

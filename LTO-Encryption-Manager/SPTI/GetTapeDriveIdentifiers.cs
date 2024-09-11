@@ -1105,7 +1105,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 					page.Descriptors.Add(descriptor);
 					if (page.Descriptors.Count == 1)
 					{
-						tapeDrive.LogicalUnitIdentifier = Utils.Encodings.ToHexString(descriptor.Identifier);
+						tapeDrive.LogicalUnitIdentifier = Utils.ByteEncoding.ToHexString(descriptor.Identifier);
 						break; // Only need LUN, which is always the first descriptor
 					}
 				}
@@ -1298,7 +1298,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.SPTI
 						ushort lunByteLength = (ushort)(tapeDrive.LogicalUnitIdentifier.Length / 2);
 						lunKeyDescriptor.Length = ReverseByteOrder(lunByteLength);
 						lunKeyDescriptor.Descriptor = new byte[lunByteLength];
-						lunKeyDescriptor.Descriptor = Utils.Encodings.FromHexString(tapeDrive.LogicalUnitIdentifier);
+						lunKeyDescriptor.Descriptor = Utils.ByteEncoding.FromHexString(tapeDrive.LogicalUnitIdentifier);
 
 						// Key descriptor type 0x4 - wrapped key length (256 bytes)
 						WRAPPED_KEY_DESCRIPTOR keyLengthKeyDescriptor = new()

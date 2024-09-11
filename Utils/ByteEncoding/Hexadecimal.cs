@@ -4,7 +4,7 @@ using System.Text;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 {
-	public static partial class Encodings
+	public static partial class ByteEncoding
 	{
 		/// <summary>
 		/// An array of 256 strings containing the hex digit values (as strings) for the byte values 0x00 through 0xFF.
