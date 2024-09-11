@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.SLIPTests
 {
     [TestClass]
     public class Slip21Tests

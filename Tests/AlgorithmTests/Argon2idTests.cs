@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.AlgorithmTests
 {
     [TestClass]
     public class Argon2idTests
@@ -22,7 +22,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
         }
 
         [TestMethod]
-		public async Task GetHashTest()
+        public async Task GetHashTest()
         {
             IEnumerable<Models.Argon2idTestVector>? testVectors = await GetTestVectorsAsync().ConfigureAwait(false);
             Assert.IsNotNull(testVectors);

@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.ByteEncodingTests
 {
 	[TestClass]
 	public class Base58Tests

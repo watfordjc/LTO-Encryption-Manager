@@ -13,7 +13,7 @@ using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models;
 
-namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests
+namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.BIPTests
 {
 	[TestClass]
 	public class Bip85Tests
