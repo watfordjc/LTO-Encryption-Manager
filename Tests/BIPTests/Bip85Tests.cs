@@ -149,7 +149,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.BIPTests
 				ReadOnlySpan<byte> entropyFromK = Bip85.GetEntropy(derivationNode, 64);
 				Assert.AreEqual(testVector.EntropyHex, Utils.ByteEncoding.ToHexString([.. entropyFromK]));
 
-				using Shake256Stream shake256Stream = new(derivationNode);
+				using Shake256DRNG shake256DRNG = new(derivationNode);
+				using Shake256Stream shake256Stream = new(shake256DRNG);
 				byte[] drngEntropy = new byte[80];
 				// Read 10 bytes into drngEntropy[0..]
 				shake256Stream.Read(drngEntropy, 0, 10);
