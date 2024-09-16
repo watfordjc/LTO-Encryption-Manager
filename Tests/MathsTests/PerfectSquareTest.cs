@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
@@ -16,28 +17,35 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 		{
 			int testCount = 10;
 
-			_ = Parallel.For(1, testCount + 1, testNumber => {
+			_ = Parallel.For(1, testCount + 1, testNumber =>
+			{
 				Assert.IsFalse(testNumber == 0);
 
 				// Base cases - negative numbers, 0, 1, and max values of signed and unsigned value types
 				if (testNumber == 1)
 				{
-					Assert.AreEqual((false, null), BigIntegerExtensions.IsPerfectSquare(-2));
-					Assert.AreEqual((false, null), BigIntegerExtensions.IsPerfectSquare(-1));
-					Assert.AreEqual((true, 0), BigIntegerExtensions.IsPerfectSquare(0));
-					Assert.AreEqual((true, 1), BigIntegerExtensions.IsPerfectSquare(1));
-					Assert.AreEqual((false, null), BigIntegerExtensions.IsPerfectSquare(sbyte.MaxValue));
-					Assert.AreEqual((false, null), BigIntegerExtensions.IsPerfectSquare(byte.MaxValue));
-					Assert.AreEqual((true, 16), BigIntegerExtensions.IsPerfectSquare((ushort)byte.MaxValue + 1));
-					Assert.AreEqual((false, null), BigIntegerExtensions.IsPerfectSquare(short.MaxValue));
-					Assert.AreEqual((false, null), BigIntegerExtensions.IsPerfectSquare(ushort.MaxValue));
-					Assert.AreEqual((true, (ushort)byte.MaxValue + 1), BigIntegerExtensions.IsPerfectSquare((uint)ushort.MaxValue + 1));
-					Assert.AreEqual((false, null), BigIntegerExtensions.IsPerfectSquare(int.MaxValue));
-					Assert.AreEqual((false, null), BigIntegerExtensions.IsPerfectSquare(uint.MaxValue));
-					Assert.AreEqual((true, (uint)ushort.MaxValue + 1), BigIntegerExtensions.IsPerfectSquare((ulong)uint.MaxValue + 1));
-					Assert.AreEqual((false, null), BigIntegerExtensions.IsPerfectSquare(long.MaxValue));
-					Assert.AreEqual((false, null), BigIntegerExtensions.IsPerfectSquare(ulong.MaxValue));
-					Assert.AreEqual((true, (ulong)uint.MaxValue + 1), BigIntegerExtensions.IsPerfectSquare(new BigInteger(ulong.MaxValue) + 1));
+					Dictionary<BigInteger, bool> squareNumberDictionary = [];
+					squareNumberDictionary.Add(-2, false);
+					squareNumberDictionary.Add(-1, false);
+					squareNumberDictionary.Add(0, true);
+					squareNumberDictionary.Add(1, true);
+					squareNumberDictionary.Add(sbyte.MaxValue, false);
+					squareNumberDictionary.Add(byte.MaxValue, false);
+					squareNumberDictionary.Add((ushort)byte.MaxValue + 1, true);
+					squareNumberDictionary.Add(short.MaxValue, false);
+					squareNumberDictionary.Add(ushort.MaxValue, false);
+					squareNumberDictionary.Add((uint)ushort.MaxValue + 1, true);
+					squareNumberDictionary.Add(int.MaxValue, false);
+					squareNumberDictionary.Add(uint.MaxValue, false);
+					squareNumberDictionary.Add((ulong)uint.MaxValue + 1, true);
+					squareNumberDictionary.Add(long.MaxValue, false);
+					squareNumberDictionary.Add(ulong.MaxValue, false);
+					squareNumberDictionary.Add(new BigInteger(ulong.MaxValue) + 1, true);
+
+					foreach (KeyValuePair<BigInteger, bool> dictionaryEntry in squareNumberDictionary)
+					{
+						Assert.AreEqual(dictionaryEntry.Value, dictionaryEntry.Key.IsPerfectSquare());
+					}
 					Trace.WriteLine($"Test {testNumber}/{testCount} completed successfully.");
 				}
 
@@ -46,7 +54,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 				{
 					for (int i = 2; i < 15; i++)
 					{
-						Assert.AreEqual((true, i), BigIntegerExtensions.IsPerfectSquare(i * i));
+						Assert.IsTrue(BigIntegerExtensions.IsPerfectSquare(i * i));
 						//(bool perfectSquare, BigInteger? root) = BigIntegerExtensions.IsPerfectSquare(i);
 						//Trace.WriteLine($"{i} {string.Format(CultureInfo.InvariantCulture, "{0}", perfectSquare ? "is" : "is not")} a perfect square{string.Format(CultureInfo.InvariantCulture, perfectSquare ? ": {0}^2" : string.Empty, root)}.");
 					}
@@ -62,7 +70,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 						Span<byte> nBytes = new byte[byteMaxLength];
 						RandomNumberGenerator.Fill(nBytes);
 						BigInteger n = new(nBytes, true, true);
-						Assert.AreEqual((true, n), BigIntegerExtensions.IsPerfectSquare(n * n));
+						Assert.IsTrue((n * n).IsPerfectSquare());
 					}
 					Trace.WriteLine($"Test {testNumber}/{testCount} completed successfully.");
 				}
@@ -76,7 +84,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 						Span<byte> nBytes = new byte[ushortMaxLength];
 						RandomNumberGenerator.Fill(nBytes);
 						BigInteger n = new(nBytes, true, true);
-						Assert.AreEqual((true, n), BigIntegerExtensions.IsPerfectSquare(n * n));
+						Assert.IsTrue((n * n).IsPerfectSquare());
 					}
 					Trace.WriteLine($"Test {testNumber}/{testCount} completed successfully.");
 				}
@@ -90,7 +98,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 						Span<byte> nBytes = new byte[uintMaxLength];
 						RandomNumberGenerator.Fill(nBytes);
 						BigInteger n = new(nBytes, true, true);
-						Assert.AreEqual((true, n), BigIntegerExtensions.IsPerfectSquare(n * n));
+						Assert.IsTrue((n * n).IsPerfectSquare());
 					}
 					Trace.WriteLine($"Test {testNumber}/{testCount} completed successfully.");
 				}
@@ -104,7 +112,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 						Span<byte> nBytes = new byte[ulongMaxLength];
 						RandomNumberGenerator.Fill(nBytes);
 						BigInteger n = new(nBytes, true, true);
-						Assert.AreEqual((true, n), BigIntegerExtensions.IsPerfectSquare(n * n));
+						Assert.IsTrue((n * n).IsPerfectSquare());
 					}
 					Trace.WriteLine($"Test {testNumber}/{testCount} completed successfully.");
 				}
@@ -118,7 +126,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 						Span<byte> nBytes = new byte[maxLength512Bits];
 						RandomNumberGenerator.Fill(nBytes);
 						BigInteger n = new(nBytes, true, true);
-						Assert.AreEqual((true, n), BigIntegerExtensions.IsPerfectSquare(n * n));
+						Assert.IsTrue((n * n).IsPerfectSquare());
 					}
 					Trace.WriteLine($"Test {testNumber}/{testCount} completed successfully.");
 				}
@@ -132,7 +140,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 						Span<byte> nBytes = new byte[maxLength1024Bits];
 						RandomNumberGenerator.Fill(nBytes);
 						BigInteger n = new(nBytes, true, true);
-						Assert.AreEqual((true, n), BigIntegerExtensions.IsPerfectSquare(n * n));
+						Assert.IsTrue((n * n).IsPerfectSquare());
 					}
 					Trace.WriteLine($"Test {testNumber}/{testCount} completed successfully.");
 				}
@@ -146,7 +154,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 						Span<byte> nBytes = new byte[maxLength2048Bits];
 						RandomNumberGenerator.Fill(nBytes);
 						BigInteger n = new(nBytes, true, true);
-						Assert.AreEqual((true, n), BigIntegerExtensions.IsPerfectSquare(n * n));
+						Assert.IsTrue((n * n).IsPerfectSquare());
 					}
 					Trace.WriteLine($"Test {testNumber}/{testCount} completed successfully.");
 				}
@@ -167,9 +175,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 						}
 						BigInteger bigIntegerA = new(nBytesA, true, true);
 						BigInteger bigIntegerB = new(nBytesB, true, true);
-						Assert.AreEqual((true, bigIntegerA), BigIntegerExtensions.IsPerfectSquare(bigIntegerA * bigIntegerA));
-						Assert.AreEqual((true, bigIntegerB), BigIntegerExtensions.IsPerfectSquare(bigIntegerB * bigIntegerB));
-						Assert.AreEqual((false, null), BigIntegerExtensions.IsPerfectSquare(bigIntegerA * bigIntegerB));
+						Assert.IsTrue((bigIntegerA * bigIntegerA).IsPerfectSquare());
+						Assert.IsTrue((bigIntegerB * bigIntegerB).IsPerfectSquare());
+						Assert.IsFalse((bigIntegerA * bigIntegerB).IsPerfectSquare());
 					}
 					Trace.WriteLine($"Test {testNumber}/{testCount} completed successfully.");
 				}

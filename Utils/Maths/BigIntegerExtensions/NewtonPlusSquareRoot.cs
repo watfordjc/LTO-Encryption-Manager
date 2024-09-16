@@ -6,50 +6,50 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Maths
 	public static partial class BigIntegerExtensions
 	{
 		/// <summary>
-		/// Calculates the integer square root of a number using the 'NewtonPlus' method.
+		/// Calculates the integer square root of a <paramref name="number"/> using the 'NewtonPlus' method.
 		/// </summary>
-		/// <param name="x">The number to calculate the square root of.</param>
+		/// <param name="number">The number to calculate the square root of.</param>
 		/// <returns>The integer square root.</returns>
 		/// <remarks>
 		/// <para>License information: 'NewtonPlus' square root function by Ryan Scott White. MIT License. See project/solution LICENSE file.</para>
 		/// </remarks>
-		public static BigInteger NewtonPlusSquareRoot(BigInteger x)
+		private static BigInteger NewtonPlusSquareRoot(this BigInteger number)
 		{
-			if (x < 144838757784765629)    // 1.448e17 = ~1<<57
+			if (number < 144838757784765629)    // 1.448e17 = ~1<<57
 			{
-				uint vInt = (uint)Math.Sqrt((ulong)x);
-				if ((x >= 4503599761588224) && ((ulong)vInt * vInt > (ulong)x))  // 4.5e15 =  ~1<<52
+				uint vInt = (uint)Math.Sqrt((ulong)number);
+				if ((number >= 4503599761588224) && ((ulong)vInt * vInt > (ulong)number))  // 4.5e15 =  ~1<<52
 				{
 					vInt--;
 				}
 				return vInt;
 			}
 
-			double xAsDub = (double)x;
+			double xAsDub = (double)number;
 			if (xAsDub < 8.5e37)   //  long.max*long.max
 			{
 				ulong vInt = (ulong)Math.Sqrt(xAsDub);
-				BigInteger v = (vInt + ((ulong)(x / vInt))) >> 1;
-				return (v * v <= x) ? v : v - 1;
+				BigInteger v = (vInt + ((ulong)(number / vInt))) >> 1;
+				return (v * v <= number) ? v : v - 1;
 			}
 
 			if (xAsDub < 4.3322e127)
 			{
 				BigInteger v = (BigInteger)Math.Sqrt(xAsDub);
-				v = (v + (x / v)) >> 1;
+				v = (v + (number / v)) >> 1;
 				if (xAsDub > 2e63)
 				{
-					v = (v + (x / v)) >> 1;
+					v = (v + (number / v)) >> 1;
 				}
-				return (v * v <= x) ? v : v - 1;
+				return (v * v <= number) ? v : v - 1;
 			}
 
-			int xLen = (int)x.GetBitLength();
+			int xLen = (int)number.GetBitLength();
 			int wantedPrecision = (xLen + 1) / 2;
 			int xLenMod = xLen + (xLen & 1) + 1;
 
 			//////// Do the first Sqrt on hardware ////////
-			long tempX = (long)(x >> (xLenMod - 63));
+			long tempX = (long)(number >> (xLenMod - 63));
 			double tempSqrt1 = Math.Sqrt(tempX);
 			ulong valLong = (ulong)BitConverter.DoubleToInt64Bits(tempSqrt1) & 0x1fffffffffffffL;
 			if (valLong == 0)
@@ -58,11 +58,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Maths
 			}
 
 			////////  Classic Newton Iterations ////////
-			BigInteger val = ((BigInteger)valLong << 52) + (x >> xLenMod - (3 * 53)) / valLong;
+			BigInteger val = ((BigInteger)valLong << 52) + (number >> xLenMod - (3 * 53)) / valLong;
 			int size = 106;
 			for (; size < 256; size <<= 1)
 			{
-				val = (val << (size - 1)) + (x >> xLenMod - (3 * size)) / val;
+				val = (val << (size - 1)) + (number >> xLenMod - (3 * size)) / val;
 			}
 
 			if (xAsDub > 4e254) // 4e254 = 1<<845.76973610139
@@ -79,7 +79,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Maths
 					////////  Newton Plus Iterations  ////////
 					int shiftX = xLenMod - (3 * size);
 					BigInteger valSqrd = (val * val) << (size - 1);
-					BigInteger valSU = (x >> shiftX) - valSqrd;
+					BigInteger valSU = (number >> shiftX) - valSqrd;
 					val = (val << size) + (valSU / val);
 					size *= 2;
 				} while (size < wantedPrecision);
@@ -97,7 +97,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Maths
 
 
 			////////  Detect a round-ups  ////////
-			if ((saveDroppedDigits == 0) && (val * val > x))
+			if ((saveDroppedDigits == 0) && (val * val > number))
 			{
 				val--;
 			}

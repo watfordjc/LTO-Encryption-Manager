@@ -4,31 +4,28 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Maths
 {
 	public static partial class BigIntegerExtensions
 	{
+
 		/// <summary>
-		/// Determine if a BigInteger is a perfect square.
+		/// Calculates whether a <paramref name="number"/> is a perfect square.
 		/// </summary>
 		/// <param name="number">The number to check.</param>
-		/// <returns>(<c>true</c>, <see cref="BigInteger"/> <c>squareRoot</c>) if number is a perfect square, (<c>false</c>, <c>null</c>) if it is not.</returns>
-		public static (bool, BigInteger?) IsPerfectSquare(BigInteger number)
+		/// <returns><see langword="true"/> if <paramref name="number"/> is a perfect square; otherwise <see langword="false"/>.</returns>
+		public static bool IsPerfectSquare(this BigInteger number)
 		{
 			// Negative numbers cannot be perfect squares
 			if (number < 0)
 			{
-				return (false, null);
+				return false;
 			}
 
 			// 0 and 1 are perfect squares
-			if (number == 0)
+			if (number == 0 || number == 1)
 			{
-				return (true, 0);
-			}
-			else if (number == 1)
-			{
-				return (true, 1);
+				return true;
 			}
 
 			// Calculate the square 'root'
-			BigInteger root = NewtonPlusSquareRoot(number);
+			BigInteger root = SquareRoot(number);
 			// Square the calculated 'root'
 			BigInteger rootSquared = root * root;
 			// Compare the calculated 'rootSquared' result with 'number'
@@ -36,7 +33,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Maths
 			// If the first result for 'rootSquared' is equal to 'number', assume the calculated square root is the square root
 			if (sign == 0)
 			{
-				return (true, root);
+				return true;
 			}
 			// If the first result for 'rootSquared' is less than 'number', increase 'root' until its square is not less than 'number'
 			else if (sign < 0)
@@ -60,7 +57,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Maths
 			}
 
 			// Assume the final result for 'rootSquared' is the square root if it is equal to 'number', otherwise assume 'number' is not a perfect square
-			return rootSquared == number ? (true, root) : (false, null);
+			return rootSquared == number;
 		}
 	}
 }
