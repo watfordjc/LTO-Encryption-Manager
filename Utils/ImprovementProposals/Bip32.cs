@@ -9,41 +9,62 @@ using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 {
+	/// <summary>
+	/// Provides static methods and <see langword="enum"/>s for working with BIP-0032.
+	/// </summary>
 	public static class Bip32
 	{
 		/// <summary>
 		/// BIP-0032 version bytes for public keys.
 		/// </summary>
 		/// <remarks>
-		/// <para>Note: The hex values are converted to host byte order (Little Endian on Windows) when they become <c>uint</c>.</para>
+		/// <para>Note: The hex values are converted to host byte order (Little Endian on Windows) when they become <see cref="uint"/>.</para>
 		/// </remarks>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "BIP-0032 version prefixes are unsigned 32-bit integers")]
 		public enum PublicKeyVersionPrefix : uint
 		{
-			None = 0x0000_0000,						// "1111"
-			BitcoinMainnetPublic = 0x0488_b21e,		// "xpub"
-			BitcoinTestnetPublic = 0x0435_87cf		// "tpub"
+			/// <summary>
+			/// The BIP32 public key version prefix "1111" (None).
+			/// </summary>
+			None = 0x0000_0000,
+			/// <summary>
+			/// The BIP32 public key version prefix "xpub".
+			/// </summary>
+			BitcoinMainnetPublic = 0x0488_b21e,
+			/// <summary>
+			/// The BIP32 public key version prefix "tpub".
+			/// </summary>
+			BitcoinTestnetPublic = 0x0435_87cf
 		}
 
 		/// <summary>
 		/// BIP-0032 version bytes for private keys.
 		/// </summary>
 		/// <remarks>
-		/// <para>Note: The hex values are converted to host byte order (Little Endian on Windows) when they become <c>uint</c>.</para>
+		/// <para>Note: The hex values are converted to host byte order (Little Endian on Windows) when they become <see cref="uint"/>.</para>
 		/// </remarks>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "BIP-0032 version prefixes are unsigned 32-bit integers")]
 		public enum PrivateKeyVersionPrefix : uint
 		{
-			None = 0x0000_0000,                     // "1111"
-			BitcoinMainnetPrivate = 0x0488_ade4,	// "xprv"
-			BitcoinTestnetPrivate = 0x0042_80fa		// "tprv"
+			/// <summary>
+			/// The BIP32 private key version prefix "1111" (None).
+			/// </summary>
+			None = 0x0000_0000,
+			/// <summary>
+			/// The BIP32 private key version prefix "xprv".
+			/// </summary>
+			BitcoinMainnetPrivate = 0x0488_ade4,
+			/// <summary>
+			/// The BIP32 private key version prefix "tprv".
+			/// </summary>
+			BitcoinTestnetPrivate = 0x0042_80fa
 		}
 
 		/// <summary>
-		/// Gets the equivalent <see  cref="PublicKeyVersionPrefix"/> for a given <see  cref="PrivateKeyVersionPrefix"/>.
+		/// Gets the <see cref="PublicKeyVersionPrefix"/> for a given <see cref="PrivateKeyVersionPrefix"/>.
 		/// </summary>
 		/// <param name="privateVersionPrefix">The version prefix for a private key.</param>
-		/// <returns>The equivalent public key version prefix.</returns>
+		/// <returns>The equivalent version prefix for a public key.</returns>
 		public static PublicKeyVersionPrefix? GetPublicVersionPrefix(PrivateKeyVersionPrefix? privateVersionPrefix)
 		{
 			return privateVersionPrefix switch
@@ -55,10 +76,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		}
 
 		/// <summary>
-		/// Gets the equivalent <see  cref="PrivateKeyVersionPrefix"/> for a given <see  cref="PublicKeyVersionPrefix"/>.
+		/// Gets the <see cref="PrivateKeyVersionPrefix"/> for a given <see cref="PublicKeyVersionPrefix"/>.
 		/// </summary>
 		/// <param name="publicVersionPrefix">The version prefix for a public key.</param>
-		/// <returns>The equivalent private key version prefix.</returns>
+		/// <returns>The equivalent version prefix for a private key.</returns>
 		public static PrivateKeyVersionPrefix? GetPrivateVersionPrefix(PublicKeyVersionPrefix? publicVersionPrefix)
 		{
 			return publicVersionPrefix switch
@@ -69,6 +90,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			};
 		}
 
+		/// <summary>
+		/// Creates a <see cref="uint"/> in host byte order from a byte array in network byte order.
+		/// </summary>
+		/// <param name="networkBytes">A big endian byte array containing a <see cref="uint"/> value.</param>
+		/// <returns>The <paramref name="networkBytes"/> as a host byte order <see cref="uint"/>.</returns>
 		public static uint GetHostUInt32FromNetworkBytes(byte[] networkBytes)
 		{
 			if (!BitConverter.IsLittleEndian)
@@ -83,6 +109,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			}
 		}
 
+		/// <summary>
+		/// Creates a byte array in network byte order from a <see cref="uint"/> in host byte order.
+		/// </summary>
+		/// <param name="hostUInt32">A <see cref="uint"/> in host byte order.</param>
+		/// <returns>A big endian byte array containing a <see cref="uint"/> value.</returns>
 		public static byte[] GetNetworkBytesFromHostUInt32(uint hostUInt32)
 		{
 			if (!BitConverter.IsLittleEndian)
@@ -101,7 +132,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		/// Gets the <see cref="PrivateKeyVersionPrefix"/> for a given BIP-0032 private key prefix.
 		/// </summary>
 		/// <param name="versionPrefix">A BIP-0032 private key prefix.</param>
-		/// <returns><see cref="PrivateKeyVersionPrefix"/>, or <c>null</c>.</returns>
+		/// <returns>The <see cref="PrivateKeyVersionPrefix"/> if <paramref name="versionPrefix"/> is known; otherwise, <see langword="null"/>.</returns>
 		public static PrivateKeyVersionPrefix? GetPrivateVersionPrefix(uint versionPrefix)
 		{
 			if (Enum.IsDefined(typeof(PrivateKeyVersionPrefix), versionPrefix))
@@ -118,7 +149,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		/// Gets the <see cref="PublicKeyVersionPrefix"/> for a given BIP-0032 public key prefix.
 		/// </summary>
 		/// <param name="versionPrefix">A BIP-0032 public key prefix.</param>
-		/// <returns><see cref="PublicKeyVersionPrefix"/>, or <c>null</c>.</returns>
+		/// <returns>The <see cref="PublicKeyVersionPrefix"/> if <paramref name="versionPrefix"/> is known; otherwise, <see langword="null"/>.</returns>
 		public static PublicKeyVersionPrefix? GetPublicVersionPrefix(uint versionPrefix)
 		{
 			if (Enum.IsDefined(typeof(PublicKeyVersionPrefix), versionPrefix))
@@ -135,7 +166,8 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		/// Gets the <see cref="Type"/> for a given BIP-0032 public/private key prefix.
 		/// </summary>
 		/// <param name="versionPrefix">A BIP-0032 public/private key prefix.</param>
-		/// <returns><see cref="PrivateKeyVersionPrefix"/>, <see cref="PublicKeyVersionPrefix"/>, or <c>null</c>.</returns>
+		/// <returns><see cref="PrivateKeyVersionPrefix"/> or <see cref="PublicKeyVersionPrefix"/> if <paramref name="versionPrefix"/> is known;
+		///   otherwise, <see langword="null"/>.</returns>
 		public static Type? GetVersionPrefixType(uint? versionPrefix)
 		{
 			if (versionPrefix is null)
@@ -157,10 +189,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		}
 
 		/// <summary>
-		/// Gets a curve name for a given <see  cref="PrivateKeyVersionPrefix"/>.
+		/// Gets a curve name for a given <see cref="PrivateKeyVersionPrefix"/>.
 		/// </summary>
 		/// <param name="versionPrefix">A BIP-0032 version prefix for private keys.</param>
-		/// <returns>The curve's well-known name, or <c>null</c> if not found.</returns>
+		/// <returns>The curve's well-known name, if it is known; otherwise, <see langword="null"/>.</returns>
 		public static string? GetCurveName(PrivateKeyVersionPrefix? versionPrefix)
 		{
 			return versionPrefix switch
@@ -172,10 +204,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		}
 
 		/// <summary>
-		/// Gets a curve name for a given <see  cref="PublicKeyVersionPrefix"/>.
+		/// Gets a curve name for a given <see cref="PublicKeyVersionPrefix"/>.
 		/// </summary>
 		/// <param name="versionPrefix">A BIP-0032 version prefix for public keys.</param>
-		/// <returns>The curve's well-known name, or <c>null</c> if not found.</returns>
+		/// <returns>The curve's well-known name, if it is known; otherwise, <see langword="null"/>.</returns>
 		public static string? GetCurveName(PublicKeyVersionPrefix? versionPrefix)
 		{
 			return versionPrefix switch
@@ -190,7 +222,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		/// Gets a curve name for a given BIP-0032 version prefix.
 		/// </summary>
 		/// <param name="versionPrefix">A BIP-0032 version prefix for public/private keys.</param>
-		/// <returns>The curve's well-known name, or <c>null</c> if not found.</returns>
+		/// <returns>The curve's well-known name, if it is known; otherwise, <see langword="null"/>.</returns>
 		public static string? GetCurveName(uint versionPrefix)
 		{
 			Type? type = GetVersionPrefixType(versionPrefix);
@@ -234,7 +266,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			return new(curveParams.Curve, curveParams.G, curveParams.N, curveParams.H, curveParams.GetSeed());
 		}
 
-
+		/// <summary>
+		/// Calculates the <see cref="ECPrivateKeyParameters"/> for an elliptic curve keypair.
+		/// </summary>
+		/// <param name="domainParams">The domain parameters for the curve.</param>
+		/// <param name="rawPrivateKey">A byte array containing the private key.</param>
+		/// <returns>The parameters for the private key.</returns>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if the private key is not on the curve.</exception>
 		public static ECPrivateKeyParameters CalculateECPrivateKey(ECDomainParameters domainParams, byte[] rawPrivateKey)
 		{
 			ArgumentNullException.ThrowIfNull(domainParams);
@@ -252,6 +290,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			return new(d, new(domainParams.Curve, domainParams.G, domainParams.N, domainParams.H, domainParams.GetSeed()));
 		}
 
+		/// <summary>
+		/// Calculates the <see cref="ECPublicKeyParameters"/> for an elliptic curve keypair.
+		/// </summary>
+		/// <param name="domainParams">The domain parameters for the curve.</param>
+		/// <param name="privateKey">A byte array containing the private key.</param>
+		/// <returns>The parameters for the public key.</returns>
 		public static ECPublicKeyParameters CalculateECPublicKey(ECDomainParameters domainParams, ECPrivateKeyParameters privateKey)
 		{
 			ArgumentNullException.ThrowIfNull(privateKey);
@@ -263,6 +307,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			return new(privateKey.AlgorithmName, q, domainParams);
 		}
 
+		/// <summary>
+		/// Compresses an elliptic curve private key as specified in BIP-0032.
+		/// </summary>
+		/// <param name="keyParams">The parameters for the private key.</param>
+		/// <returns>The compressed representation of the private key.</returns>
 		public static byte[] GetCompressedKey(ECPrivateKeyParameters keyParams)
 		{
 			ArgumentNullException.ThrowIfNull(keyParams);
@@ -275,6 +324,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			return compressedKey;
 		}
 
+		/// <summary>
+		/// Compresses an elliptic curve public key using SEC1 compression.
+		/// </summary>
+		/// <param name="keyParams">The parameters of the public key.</param>
+		/// <returns>The compressed representation of the public key.</returns>
 		public static byte[] GetCompressedKey(ECPublicKeyParameters keyParams)
 		{
 			ArgumentNullException.ThrowIfNull(keyParams);
@@ -291,6 +345,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			return compressedKey;
 		}
 
+		/// <summary>
+		/// Calculates the public key identifier from the SEC1-compressed representation of a public key.
+		/// </summary>
+		/// <param name="compressedPublicKey">The compressed representation of a public key.</param>
+		/// <returns>The public key identifier (hexadecimal string).</returns>
 		public static string CalculateKeyIdentifier(byte[] compressedPublicKey)
 		{
 			// The key identifier for this node is RIPEMD160(SHA256(serialize_point(K)))
@@ -306,13 +365,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		}
 
 		/// <summary>
-		/// Derive a BIP-0032 master node (m) from a binary master secret.
+		/// Derive a master <see cref="Bip32Node"/> (m) from a binary master secret.
 		/// </summary>
 		/// <param name="seedBytes">The binary master secret (e.g. a BIP-0039 binary seed).</param>
 		/// <param name="versionPrefixPublic">The prefix for public keys.</param>
 		/// <param name="versionPrefixPrivate">The prefix for private keys.</param>
 		/// <param name="curveName">The string representation of the curve name (e.g. secp256k1).</param>
-		/// <returns>A master <see  cref="Bip32Node"/> (m).</returns>
+		/// <returns>A master <see cref="Bip32Node"/> (m).</returns>
 		public static Bip32Node? GetMasterNodeFromBinarySeed(in ReadOnlySpan<byte> seedBytes, uint? versionPrefixPublic, uint? versionPrefixPrivate, string curveName = "secp256k1")
 		{
 			// Convert the curveName to a BIP-0032/SLIP-0010 HMAC key, and fail if curveName is invalid/unknown
@@ -364,10 +423,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		}
 
 		/// <summary>
-		/// Derive a BIP-0032 master node (m) from a serialised private key.
+		/// Derive a master <see cref="Bip32Node"/> (m) from a serialised private key.
 		/// </summary>
 		/// <param name="serialisedPrivateKey">A serialised private key.</param>
-		/// <returns>A master <see  cref="Bip32Node"/> (m).</returns>
+		/// <returns>A master <see cref="Bip32Node"/> (m).</returns>
 		public static Bip32Node GetMasterNodeFromSerialisedPrivateKey(in string serialisedPrivateKey)
 		{
 			return new(serialisedPrivateKey);

@@ -10,24 +10,53 @@ using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Properties;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 {
+    /// <summary>
+    /// Event arguments for <see cref="Slip21ValidationNode.FingerprintingStarted"/>.
+    /// </summary>
+    /// <param name="hasStarted">Used to indicate whether fingerprinting has started.</param>
     public class FingerprintingStartedEventArgs(bool hasStarted) : EventArgs
     {
+        /// <summary>
+        /// Indicates whether fingerprinting has started.
+        /// </summary>
 		public bool HasStarted { get; init; } = hasStarted;
 	}
 
+	/// <summary>
+	/// Event arguments for <see cref="Slip21ValidationNode.FingerprintingCompleted"/>.
+	/// </summary>
+	/// <param name="hasCompleted">Used to indicate whether fingerprinting has completed.</param>
 	public class FingerprintingCompletedEventArgs(bool hasCompleted) : EventArgs
     {
+        /// <summary>
+        /// Indicates whether fingerprinting has completed.
+        /// </summary>
 		public bool HasCompleted { get; init; } = hasCompleted;
 	}
 
+    /// <summary>
+    /// A SLIP-0021 validation node.
+    /// </summary>
     public class Slip21ValidationNode
     {
+        /// <summary>
+        /// An event fired when fingerprinting of this node has started.
+        /// </summary>
         public event EventHandler<FingerprintingStartedEventArgs>? FingerprintingStarted;
+        /// <summary>
+        /// An event fired when fingerprinting of this node has completed.
+        /// </summary>
         public event EventHandler<FingerprintingCompletedEventArgs>? FingerprintingCompleted;
         private readonly byte[]? validationNodeMessage;
         private readonly byte[]? validationNodeSalt;
+        /// <summary>
+        /// The derivation path of this validation node.
+        /// </summary>
         public string DerivationPath { get; init; }
         private string? _fingerprint;
+        /// <summary>
+        /// The calculated fingerprint of this node.
+        /// </summary>
         public string? Fingerprint
         {
             get => _fingerprint;
@@ -38,6 +67,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
             }
         }
 
+        /// <summary>
+        /// Creates a <see cref="Slip21ValidationNode"/> from a <see cref="Slip21Node"/>.
+        /// </summary>
+        /// <param name="nodeToValidate">The <see cref="Slip21Node"/> to create a validation node for.</param>
         public Slip21ValidationNode(Slip21Node nodeToValidate)
         {
             Slip21Node validationNode = nodeToValidate.GetChildNode(Resources.slip21_schema_validation).GetChildNode(nodeToValidate.GlobalKeyRolloverCount.ToString(CultureInfo.InvariantCulture));
@@ -50,6 +83,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
             validationNode.Clear();
         }
 
+		/// <summary>
+		/// Calculates the fingerprint for this <see cref="Slip21ValidationNode"/> object.
+		/// </summary>
+		/// <param name="argon2idOutputLength">The desired length of the <see cref="Fingerprint"/>, in bytes.</param>
         public void CalculateFingerprint(int argon2idOutputLength = 32)
         {
             if (validationNodeMessage?.Length > 0 && validationNodeSalt?.Length > 0)
@@ -61,6 +98,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
             }
         }
 
+		/// <summary>
+		/// Calculates the fingerprint for this <see cref="Slip21ValidationNode"/>.
+		/// </summary>
+		/// <param name="message">The message to use with <see cref="Argon2id"/>.</param>
+		/// <param name="salt">The salt to use with <see cref="Argon2id"/>.</param>
+		/// <param name="argon2idOutputLength">The desired length of the <see cref="Fingerprint"/>, in bytes.</param>
         public async void CalculateFingerprint(byte[] message, byte[] salt, int argon2idOutputLength = 32)
         {
             ArgumentNullException.ThrowIfNull(message);

@@ -2,17 +2,20 @@
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.BIP39Dictionaries
 {
-    public static partial class AmericanEnglish
+	/// <summary>
+	/// Provides static methods for working with the BIP-0039 American English dictionary.
+	/// </summary>
+	public static partial class AmericanEnglish
     {
 		/// <summary>
 		/// Tries to get the 0-based index for a given <paramref name="word"/> in the BIP-0039 American English dictionary
 		/// </summary>
 		/// <param name="word">The BIP-0039 word.</param>
-		/// <param name="index">The 0-based index for the BIP-0039 word if found, or <c>null</c>..</param>
-		/// <returns><c>true</c> if the <paramref name="word"/> was found, else <c>false</c>.</returns>
-		public static bool TryGetIntFromWord(string word, [NotNullWhen(true)] out int? value)
+		/// <param name="index">The 0-based index for the BIP-0039 word if found; otherwise, <see langword="null"/>.</param>
+		/// <returns><see langword="true"/> if the <paramref name="word"/> was found; otherwise, <see langword="false"/>.</returns>
+		public static bool TryGetIntFromWord(string word, [NotNullWhen(true)] out int? index)
         {
-            value = word switch
+            index = word switch
             {
                 "abandon" => 0,
                 "ability" => 1,
@@ -2064,7 +2067,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.BIP
                 "zoo" => 2047,
                 _ => null
             };
-            return value is not null;
+            return index is not null;
         }
     }
 }

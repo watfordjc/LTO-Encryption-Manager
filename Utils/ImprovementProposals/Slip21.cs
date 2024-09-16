@@ -5,13 +5,17 @@ using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 {
-    public static class Slip21
+	/// <summary>
+	/// Provides static methods for working with SLIP-0021.
+	/// </summary>
+	public static class Slip21
     {
         /// <summary>
         /// Derive a SLIP-0021 master node (m) from a binary master secret.
         /// </summary>
         /// <param name="seedBytes">The binary master secret (e.g. a BIP-0039 binary seed).</param>
-        /// <returns>A SLIP-0021 master <see cref="Slip0021Node"/> (m).</returns>
+        /// <param name="globalKeyRolloverCount">The global key rollover count, as a string.</param>
+        /// <returns>A master <see cref="Slip21Node"/> (m).</returns>
         public static Slip21Node GetMasterNodeFromBinarySeed(in ReadOnlySpan<byte> seedBytes, string globalKeyRolloverCount)
         {
             // SLIP-0021 defines the key for the master node and HMAC-SHA512 as algorithm

@@ -5,6 +5,9 @@ using System.Text;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 {
+	/// <summary>
+	/// Key Associated Data for an LTO tape.
+	/// </summary>
 	public class KeyAssociatedData
 	{
 		/// <summary>
@@ -62,9 +65,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 		/// <param name="encryptedAccountNode">An instance of <see cref="ImprovementProposals.Models.Slip21NodeEncrypted"/> containing the account details for the account that 'owns' the tape</param>
 		/// <param name="tapeBarcode">The barcode of the tape, including the suffix and excluding the start/stop character (e.g. <c>LTO123L6</c>)</param>
 		/// <param name="tapeKeyRollovers">The number of times the tape's key has been rolled over</param>
-		/// <param name="tapeFingerprint">The optional fingerprint of the tape (default is <c>null</c> as it may not be known at time of instantiation)</param>
+		/// <param name="tapeFingerprint">The optional fingerprint of the tape (default is <see langword="null"/> as it may not be known at time of instantiation)</param>
 		/// <remarks>
-		/// <para>If <paramref name="tapeFingerprint"/> is <c>null</c>, ensure <see cref="TapeFingerprint"/> is set before calling <see cref="GetKAD(string?)"/>.</para>
+		/// <para>If <paramref name="tapeFingerprint"/> is <see langword="null"/>, ensure <see cref="TapeFingerprint"/> is set before calling <see cref="GetKAD(string?)"/>.</para>
 		/// </remarks>
 		public KeyAssociatedData(ImprovementProposals.Models.Slip21NodeEncrypted encryptedAccountNode, string tapeBarcode, uint tapeKeyRollovers, string? tapeFingerprint = null)
 		{
@@ -80,15 +83,20 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 		/// <summary>
 		/// Get the Key-Authenticated Data (KAD) for the tape
 		/// </summary>
-		/// <param name="accountIdMdfHash">The Modular Crypt Format (MCF) hash of the <see cref="AccountId"/>. A value of <c>null</c> (the default) encodes the <see cref="AccountId"/> per <c>uk.johncook.slip-0021.lto-aes256-gcm</c>.</param>
+		/// <param name="accountIdMdfHash">The Modular Crypt Format (MCF) hash of the <see cref="AccountId"/>. A value of <see langword="null"/> (the default) encodes the <see cref="AccountId"/> per <c>uk.johncook.slip-0021.lto-aes256-gcm</c>.</param>
 		/// <returns>
 		/// The Key-Authenticated Data (KAD) for the tape
 		/// </returns>
 		/// <remarks>
 		/// <para>This method <b>does not</b> calculate <see cref="TapeFingerprint"/>.</para>
-		/// <para><c>if (<paramref name="accountIdMdfHash"/> is null)</c>, the <see cref="AccountId"/> is hashed using the method defined in <c>uk.johncook.slip-0021.lto-aes256-gcm</c> (i.e. the Z85-encoded CRC32 of the <see cref="AccountId"/>).</para>
-		/// <para><c>if (<paramref name="accountIdMdfHash"/> is not null &amp;&amp; <paramref name="accountIdMdfHash"/>.StartsWith('$'))</c>, <paramref name="accountIdMdfHash"/> is used as the hash representing the <see cref="AccountId"/>.</para>
-		/// <para><c>if (<paramref name="accountIdMdfHash"/> is not null &amp;&amp; !<paramref name="accountIdMdfHash"/>.StartsWith('$'))</c>, <paramref name="accountIdMdfHash"/> is translated per <c>uk.johncook.slip-0021.lto-aes256-gcm</c> for representing the <see cref="AccountId"/>.</para>
+		/// <para><c>if (<paramref name="accountIdMdfHash"/> <see langword="is"/> <see langword="null"/>)</c>,
+		///   the <see cref="AccountId"/> is hashed using the method defined in <c>uk.johncook.slip-0021.lto-aes256-gcm</c> (i.e. the Z85-encoded CRC32 of the <see cref="AccountId"/>).</para>
+		/// <para><c>if (<paramref name="accountIdMdfHash"/> <see langword="is"/> <see langword="not"/> <see langword="null"/>
+		///   &amp;&amp; <paramref name="accountIdMdfHash"/>.StartsWith('$'))</c>,
+		///   <paramref name="accountIdMdfHash"/> is used as the hash representing the <see cref="AccountId"/>.</para>
+		/// <para><c>if (<paramref name="accountIdMdfHash"/> <see langword="is"/> <see langword="not"/> <see langword="null"/>
+		///   &amp;&amp; !<paramref name="accountIdMdfHash"/>.StartsWith('$'))</c>,
+		///   <paramref name="accountIdMdfHash"/> is translated per <c>uk.johncook.slip-0021.lto-aes256-gcm</c> for representing the <see cref="AccountId"/>.</para>
 		/// </remarks>
 		public string GetKAD(string? accountIdMdfHash = null)
 		{

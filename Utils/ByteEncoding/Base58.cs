@@ -12,6 +12,9 @@ using System.Text;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 {
+    /// <summary>
+    /// Provides static methods and variables for encoding/decoding byte arrays as text (e.g. Z85-encoding).
+    /// </summary>
     public static partial class ByteEncoding
 	{
         // Base58 digits, from [0] to [57]

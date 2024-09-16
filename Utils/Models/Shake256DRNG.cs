@@ -80,7 +80,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 		/// Create a deterministic SHAKE-256 entropy byte stream seeded using BIP85 bip-entropy-from-k and a <see cref="Bip32Node"/> that has a BIP-0085 derivation path.
 		/// </summary>
 		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>
-		/// <exception cref="ArgumentException">Thrown if <paramref name="node"/> does not have the following conditions: <see cref="Bip32Node.IsInitialised"/> is <c>false</c>, <see cref="Bip32Node.IsHardenedNode"/> is <c>false</c>, <see cref="Bip32Node.DerivationPath"/> is not a BIP-0085 derivation path (i.e. does not start with "<c>m/83696968H/</c>").</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="node"/> does not have the following conditions:
+		///   <see cref="Bip32Node.IsInitialised"/> is <see langword="false"/>,
+		///   <see cref="Bip32Node.IsHardenedNode"/> is <see langword="false"/>,
+		///   <see cref="Bip32Node.DerivationPath"/> is not a BIP-0085 derivation path (i.e. does not start with "<c>m/83696968H/</c>").
+		/// </exception>
 		/// <exception cref="PlatformNotSupportedException">Thrown if Shake256 (dotnet) and ShakeDigest (BouncyCastle) are not available.</exception>
 		public Shake256DRNG(Bip32Node node)
 		{
@@ -104,6 +108,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 			Create(inputEntropy);
 		}
 
+		/// <inheritdoc cref="RandomNumberGenerator.GetBytes(byte[])"/>
 		public override void GetBytes(byte[] data)
 		{
 			// Only allow one thread to GetBytes(...) at once
@@ -138,6 +143,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 			}
 		}
 
+		/// <inheritdoc cref="RandomNumberGenerator.GetBytes(byte[], int, int)"/>
 		public override void GetBytes(byte[] data, int offset, int count)
 		{
 			// Only allow one thread to GetBytes(...) at once
@@ -156,6 +162,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 			}
 		}
 
+		/// <remarks><para>Not supported.</para></remarks>
+		/// <param name="data"></param>
+		/// <exception cref="NotImplementedException">Thrown if this method is used.</exception>
 		[DoesNotReturn]
 		public override void GetNonZeroBytes(byte[] data)
 		{
@@ -163,6 +172,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 			//base.GetNonZeroBytes(data);
 		}
 
+
+		/// <remarks><para>Not supported.</para></remarks>
+		/// <param name="data"></param>
+		/// <exception cref="NotImplementedException">Thrown if this method is used.</exception>
 		[DoesNotReturn]
 		public override void GetNonZeroBytes(Span<byte> data)
 		{
@@ -187,6 +200,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 			}
 		}
 
+		/// <inheritdoc cref="RandomNumberGenerator.Dispose(bool)"/>
 		protected override void Dispose(bool disposing)
 		{
 			Reset();

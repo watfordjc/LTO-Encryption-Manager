@@ -5,25 +5,36 @@ using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Properties;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models
 {
+    /// <summary>
+    /// A SLIP-0021 node.
+    /// </summary>
     public readonly ref struct Slip21Node
     {
         /// <summary>
-        /// The left 32 bytes of the node (the derivation key)
+        /// The left 32 bytes of the node (the derivation key).
         /// </summary>
         public readonly ReadOnlySpan<byte> Left { get { return nodeBytes.AsSpan()[..32]; } }
         /// <summary>
-        /// The right 32 bytes of the node (the symmetric key)
+        /// The right 32 bytes of the node (the symmetric key).
         /// </summary>
         public readonly ReadOnlySpan<byte> Right { get { return nodeBytes.AsSpan()[32..]; } }
         private readonly byte[] nodeBytes;
-        public readonly string DerivationPath { get; init; }
-        public readonly string GlobalKeyRolloverCount { get; init; }
-
         /// <summary>
-        /// Instantiate a new SLIP-0021 Node.
+        /// The derivation path of this node.
         /// </summary>
-        /// <param name="nodeBytes">The full 64 bytes of the node (i.e. the first 64 bytes of output from HMAC-SHA512)</param>
-        public Slip21Node(byte[] nodeBytes, string globalKeyRolloverCount, string? label = null)
+        public readonly string DerivationPath { get; init; }
+		/// <summary>
+		/// The global key rollover count value encoded as a string (i.e. "0" = 0).
+		/// </summary>
+		public readonly string GlobalKeyRolloverCount { get; init; }
+
+		/// <summary>
+		/// Instantiate a new SLIP-0021 Node.
+		/// </summary>
+		/// <param name="nodeBytes">The full 64 bytes of the node (i.e. the first 64 bytes of output from HMAC-SHA512)</param>
+		/// <param name="globalKeyRolloverCount">The global key rollover count value encoded as a string (i.e. "0" = 0).</param>
+		/// <param name="label">The ASCII label of this node, or <see langword="null"/> if a root node.</param>
+		public Slip21Node(byte[] nodeBytes, string globalKeyRolloverCount, string? label = null)
         {
             ArgumentNullException.ThrowIfNull(nodeBytes);
             if (nodeBytes.Length != 64)

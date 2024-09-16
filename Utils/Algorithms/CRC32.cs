@@ -41,15 +41,16 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms
                 return tableEntry;
             }).ToArray();
         }
-        #endregion
+		#endregion
 
-        #region Methods
-        /// <summary>
-        /// Calculates the checksum of the byte stream.
-        /// </summary>
-        /// <param name="byteStream">The byte stream to calculate the checksum for.</param>
-        /// <returns>A 32-bit reversed checksum.</returns>
-        public bool TryGet<T>(IEnumerable<T> byteStream, [NotNullWhen(true)] out uint? checksum)
+		#region Methods
+		/// <summary>
+		/// Calculates the checksum of the byte stream.
+		/// </summary>
+		/// <param name="byteStream">The byte stream to calculate the checksum for.</param>
+		/// <param name="checksum">A 32-bit reversed checksum.</param>
+		/// <returns><see langword="true"/> on success; otherwise <see langword="false"/>.</returns>
+		public bool TryGet<T>(IEnumerable<T> byteStream, [NotNullWhen(true)] out uint? checksum)
         {
             try
             {

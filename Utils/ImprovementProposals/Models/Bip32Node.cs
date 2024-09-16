@@ -12,95 +12,111 @@ using static uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models
 {
+	/// <summary>
+	/// Provides static methods and variables for working with BIP-0032.
+	/// </summary>
 	static class Bip32Utils
 	{
-		// A zeroed 32-byte array
+		/// <summary>
+		/// A 32-byte array containing zeros.
+		/// </summary>
 		public static byte[] Zeroed32ByteArray = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
 	}
 
+	/// <summary>
+	/// A BIP-0032 node, such as a master node, parent node, or child node.
+	/// </summary>
 	public class Bip32Node
 	{
 		/// <summary>
-		/// The left 32 bytes of this node (the private key)
+		/// The left 32 bytes of this node (the private key).
 		/// </summary>
 		public ReadOnlySpan<byte> Left { get { return NodeBytes.AsSpan()[..32]; } }
 		/// <summary>
-		/// The right 32 bytes of this node (the chain code)
+		/// The right 32 bytes of this node (the chain code).
 		/// </summary>
 		private ReadOnlySpan<byte> Right { get { return NodeBytes.AsSpan()[32..64]; } }
 		/// <summary>
-		/// The 64 bytes of this node (Left || Right)
+		/// The 64 bytes of this node (Left || Right).
 		/// </summary>
 		private byte[] NodeBytes { get; init; } = [];
 		/// <summary>
-		/// The BIP-0032 version prefix for a public key, as a <see cref="uint"/> (host byte order)
+		/// The BIP-0032 version prefix for a public key, as a <see cref="uint"/> (host byte order).
 		/// </summary>
 		public uint? VersionPrefixPublic { get; init; }
 		/// <summary>
-		/// The BIP-0032 version prefix for a private key, as a <see cref="uint"/> (host byte order)
+		/// The BIP-0032 version prefix for a private key, as a <see cref="uint"/> (host byte order).
 		/// </summary>
 		public uint? VersionPrefixPrivate { get; init; }
 		/// <summary>
-		/// This node's derivation path
+		/// This node's derivation path.
 		/// </summary>
 		public string DerivationPath { get; set; } = string.Empty;
 		/// <summary>
-		/// This node's depth
+		/// This node's depth. A master/root node has a depth of 0.
 		/// </summary>
 		public byte Depth { get; init; }
 		/// <summary>
-		/// This node's parent's fingerprint
+		/// This node's parent's fingerprint if known/applicable; otherwise, <see langword="null"/>.
 		/// </summary>
 		public uint? ParentFingerprint { get; init; }
 		/// <summary>
-		/// This node is child number ChildNumber of its parent node
+		/// If this node is child of a parent node, its child number (index) if known; otherwise, <see langword="null"/>.
 		/// </summary>
 		public uint? ChildNumber { get; init; }
 		/// <summary>
-		/// The string representation of <seealso cref="ChildNumber"/> (hardened nodes have an <code>H</code> suffix)
+		/// The string representation of <seealso cref="ChildNumber"/>.
 		/// </summary>
+		/// <remarks>Note: Hardened nodes have an <c>H</c> suffix.</remarks>
 		public string ChildNumberString => IsMasterNode ? string.Empty : IsHardenedNode ? string.Format(CultureInfo.InvariantCulture, "{0}H", ChildNumber - 0x8000_0000) : ChildNumber?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
 		/// <summary>
-		/// Whether this node was created using hardened derivation
+		/// Whether this node was created using hardened derivation.
 		/// </summary>
 		public bool IsHardenedNode => IsMasterNode || ChildNumber >= 0x8000_0000;
 		/// <summary>
-		/// Whether this node is a master/root node
+		/// Whether this node is a master/root node.
 		/// </summary>
 		public bool IsMasterNode { get; init; }
 		/// <summary>
-		/// This node's public key identifier (hex)
+		/// This node's public key identifier (hex).
 		/// </summary>
 		public string? KeyIdentifier { get; init; }
 		/// <summary>
-		/// This node's fingerprint (hex)
+		/// This node's fingerprint (hex).
 		/// </summary>
 		public uint? Fingerprint { get; init; }
 		/// <summary>
-		/// This node's public key
+		/// This node's public key.
 		/// </summary>
 		private ECPublicKeyParameters? PublicKey { get; init; }
 		/// <summary>
-		/// This node's serialised public key
+		/// This node's serialised public key.
 		/// </summary>
 		public string? PublicKeySerialised { get; init; }
 		/// <summary>
-		/// This node's private key
+		/// This node's private key.
 		/// </summary>
 		private ECPrivateKeyParameters? PrivateKey { get; init; }
 		/// <summary>
-		/// This node's serialised private key
+		/// This node's serialised private key.
 		/// </summary>
 		public string? PrivateKeySerialised { get; init; }
 		/// <summary>
-		/// Whether this node has been initialised successfully
+		/// Whether this node has been initialised successfully.
 		/// </summary>
 		public bool IsInitialised { get; init; }
 
 		/// <summary>
-		/// Instantiate a new SLIP-0021 Node.
+		/// Instantiate a new BIP-0032 node from a byte array containing the node's entropy.
 		/// </summary>
 		/// <param name="nodeBytes">The full 64 bytes of the node (i.e. the first 64 bytes of output from HMAC-SHA512)</param>
+		/// <param name="domainParams">The domain parameters of the curve.</param>
+		/// <param name="versionBytesPublic">The BIP-0032 version prefix for public keys.</param>
+		/// <param name="versionBytesPrivate">The BIP-0032 version prefix for private keys.</param>
+		/// <param name="parentDerivationPath">The derivation path of the parent node if known; <see langword="null"/> if unknown or creating a master/root node (m).</param>
+		/// <param name="parentDepth">The depth of the parent node if known; <see langword="null"/> if unknown or creating a master/root node (m).</param>
+		/// <param name="parentFingerprint">The public key fingerprint of the parent node if known; <see langword="null"/> if unknown or creating a master/root node (m).</param>
+		/// <param name="childNumber">The child number of the parent node, or <see langword="null"/> if creating a master/root node (m).</param>
 		public Bip32Node(byte[] nodeBytes, ECDomainParameters domainParams, uint? versionBytesPublic, uint? versionBytesPrivate, string? parentDerivationPath, byte? parentDepth, uint? parentFingerprint, uint? childNumber)
 		{
 			ArgumentNullException.ThrowIfNull(nodeBytes);
@@ -154,8 +170,17 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 			}
 		}
 
+		/// <summary>
+		/// Instantiate a BIP-0032 node from a serialised key.
+		/// </summary>
+		/// <param name="serialisedKey">The serialised representation of the private/public key.</param>
+		/// <param name="nodeDerivationPath">The node's derivation path, or <see langword="null"/> if not known.</param>
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if the <paramref name="serialisedKey"/> is invalid, or if its BIP-0032 private/public key prefix is not known.</exception>
+		/// <exception cref="CryptographicException">Thrown if an error occurred during node creation whilst (re-)serialising the private and/or public key.</exception>
 		public Bip32Node(string serialisedKey, string? nodeDerivationPath = null)
 		{
+			ArgumentNullException.ThrowIfNull(serialisedKey);
 			// Deserialise the key
 			byte[] deserialisedKey = ByteEncoding.GetBase256FromBase58String(Encoding.UTF8.GetBytes(serialisedKey).AsSpan());
 			// If deserialisation fails, return early
@@ -298,9 +323,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 		}
 
 		/// <summary>
-		/// Get this <see cref="Bip32Node"/>'s child node with label <paramref name="label"/> using derivation key <see cref="Left"/>.
+		/// Derive a child <see cref="Bip32Node"/> from <paramref name="parentNode"/> using index number <paramref name="childNumber"/>.
 		/// </summary>
-		/// <param name="label">The ASCII label for the child node.</param>
+		/// <param name="domainParams">The domain parameters of the curve.</param>
+		/// <param name="parentNode">The parent node.</param>
+		/// <param name="childNumber">The <paramref name="parentNode"/>'s index number for this child node.</param>
 		/// <returns>The child <see cref="Bip32Node"/>.</returns>
 		public static Bip32Node? GetChildNode(ECDomainParameters domainParams, ref Bip32Node parentNode, uint childNumber)
 		{
@@ -339,6 +366,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 			return new Bip32Node(nodeBytes, domainParams, parentNode.VersionPrefixPublic, parentNode.VersionPrefixPrivate, parentNode.DerivationPath, parentNode.Depth, parentNode.Fingerprint, childNumber);
 		}
 
+		/// <summary>
+		/// Tries to calculate a serialised private key from a private key's parameters.
+		/// </summary>
+		/// <param name="privateKey">The parameters of a private key.</param>
+		/// <param name="serialisedPrivateKey">The serialised private key on success; otherwise, <see langword="null"/>.</param>
+		/// <returns><see langword="true"/> on success; otherwise, <see langword="false"/>.</returns>
 		private bool TryCalculateSerialisedPrivateKey(ECPrivateKeyParameters privateKey, [NotNullWhen(true)] out string? serialisedPrivateKey)
 		{
 			bool success = TryCalculateSerialisedKey(privateKey, out serialisedPrivateKey, out _);
@@ -347,6 +380,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 			return success && serialisedPrivateKey is not null;
 		}
 
+		/// <summary>
+		/// Tries to calculate a serialised public key and public key identifer from a public key's parameters.
+		/// </summary>
+		/// <param name="publicKey">The parameters of a public key.</param>
+		/// <param name="keyIdentifier">The public key identifier on success; otherwise, <see langword="null"/>.</param>
+		/// <param name="serialisedPublicKey">The serialised public key on success; otherwise, <see langword="null"/>.</param>
+		/// <returns><see langword="true"/> on success; otherwise, <see langword="false"/>.</returns>
 		private bool TryCalculateSerialisedPublicKey(ECPublicKeyParameters publicKey, [NotNullWhen(true)] out string? keyIdentifier, [NotNullWhen(true)] out string? serialisedPublicKey)
 		{
 			bool success = TryCalculateSerialisedKey(publicKey, out serialisedPublicKey, out keyIdentifier);
@@ -355,6 +395,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 			return success && keyIdentifier is not null && serialisedPublicKey is not null;
 		}
 
+		/// <summary>
+		/// Tries to calculate a serialised private/public key and public key identifier from a private/public key's parameters.
+		/// </summary>
+		/// <param name="key">The parameters of a private key or public key.</param>
+		/// <param name="serialisedKeyString">The serialised private/public key on success; otherwise, <see langword="null"/>.</param>
+		/// <param name="keyIdentifier">The public key identifier on success; otherwise, <see langword="null"/>.</param>
+		/// <returns><see langword="true"/> on success; otherwise, <see langword="false"/>.</returns>
+		/// <exception cref="UnreachableException">Thrown if unreachable code is reached.</exception>
 		private bool TryCalculateSerialisedKey(ECKeyParameters key, [NotNullWhen(true)] out string? serialisedKeyString, out string? keyIdentifier)
 		{
 			// Cast key to private key type if possible
@@ -426,6 +474,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Mod
 		/// </summary>
 		/// <remarks>
 		/// <para>Also clears/zeros <see cref="Left"/> and <see cref="Right"/> as they are <see cref="ReadOnlySpan{T}"/>'s of the internal <see cref="byte"/>[] array.</para>
+		/// <para>Note: Does not clear other calculated values, such as serialised keys.</para>
 		/// </remarks>
 		public void Clear()
 		{

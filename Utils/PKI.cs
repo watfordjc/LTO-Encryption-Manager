@@ -9,28 +9,33 @@ using Windows.Win32.Foundation;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 {
+	/// <summary>
+	/// Contains static utility methods related to Public Key Infrastructure (PKI), including the use of Win32 APIs, that LTO-Encryption-Manager uses
+	///  to create Windows user keypairs and certificates that are used to encrypt/decrypt derivation keys.
+	/// </summary>
 	public static class PKI
 	{
 		// Win32 FALSE = 0
 		static readonly BOOL FALSE = (BOOL)0;
 		// Win32 TRUE = 1
-		static readonly BOOL TRUE = (BOOL)1;
+		//static readonly BOOL TRUE = (BOOL)1;
 
 		/// <summary>
-		/// Try to remove the registration of an OID from the system
+		/// Try to remove the registration of an OID from the system.
 		/// </summary>
 		/// <param name="oidInfo">The OID to unregister.</param>
-		/// <returns><c>true</c> if <see cref="Windows.Win32.PInvoke.CryptUnregisterOIDInfo(in Windows.Win32.Security.Cryptography.CRYPT_OID_INFO)"/> does not return <c>FALSE</c>, else returns <c>false</c>.</returns>
+		/// <returns><see langword="true"/> if <see cref="Windows.Win32.PInvoke.CryptUnregisterOIDInfo(in Windows.Win32.Security.Cryptography.CRYPT_OID_INFO)"/> does not return <see cref="FALSE"/>; otherwise <see langword="false"/>.</returns>
 		static bool TryUnregisterOid(Windows.Win32.Security.Cryptography.CRYPT_OID_INFO oidInfo)
 		{
 			return Windows.Win32.PInvoke.CryptUnregisterOIDInfo(oidInfo) != FALSE;
 		}
 
 		/// <summary>
-		/// Copies a <see cref="string"/> to a <see cref="PCSTR"/>
+		/// Copies a <see cref="string"/> to a <see cref="PCSTR"/>.
 		/// </summary>
 		/// <param name="inputString">The <see cref="string"/> to copy.</param>
 		/// <returns>The <see cref="PCSTR"/> equivalent of <paramref name="inputString"/>.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
 		/// <exception cref="UnreachableException">Thrown if an <see cref="Exception"/> occurs that is not silently handled.</exception>
 		internal static PCSTR? StringToPCSTR(string inputString)
 		{
@@ -78,10 +83,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 		}
 
 		/// <summary>
-		/// Copies a <see cref="string"/> to a <see cref="PCWSTR"/>
+		/// Copies a <see cref="string"/> to a <see cref="PCWSTR"/>.
 		/// </summary>
 		/// <param name="inputString">The <see cref="string"/> to copy.</param>
 		/// <returns>The <see cref="PCWSTR"/> equivalent of <paramref name="inputString"/>.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
 		/// <exception cref="UnreachableException">Thrown if an <see cref="Exception"/> occurs that is not silently handled.</exception>
 		internal static PCWSTR? StringToPCWSTR(string inputString)
 		{
@@ -129,11 +135,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 		}
 
 		/// <summary>
-		/// Searches the system for a registered <see cref="Oid"/>
+		/// Searches the system for a registered <paramref name="oid"/>.
 		/// </summary>
 		/// <param name="oid">The <see cref="Oid"/> to search for.</param>
 		/// <param name="currentOidInfo">The found OID, as a native <see cref="Windows.Win32.Security.Cryptography.CRYPT_OID_INFO"/> struct.</param>
-		/// <returns><c>true</c> if found, <c>false</c> if not found or an error occurred.</returns>
+		/// <returns><see langword="true"/> if <paramref name="oid"/> is registered on the system; <see langword="false"/> if it is not or an error occurred.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
 		/// <exception cref="UnreachableException">Thrown if an <see cref="Exception"/> occurs that is not silently handled.</exception>
 		internal static bool TryGetSystemRegisteredOid(Oid oid, [NotNullWhen(true)] out Windows.Win32.Security.Cryptography.CRYPT_OID_INFO? currentOidInfo)
 		{
@@ -192,11 +199,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 		}
 
 		/// <summary>
-		/// Try to update the system's Friendly Names for a collection of OIDs - does not give confirmation of success/failure
+		/// Try to update the system's Friendly Names for a collection of OIDs.
 		/// </summary>
+		/// <remarks>Note: This method gives no confirmation of success or failure.</remarks>
 		/// <param name="oids">A collection of <see cref="Oid"/>s.</param>
 		/// <param name="forceRefresh">Whether any <see cref="Oid"/>s in the collection already known by the system should have their Friendly Names updated.</param>
-		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <c>null</c>.</exception>
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
 		/// <exception cref="UnreachableException">Thrown if an <see cref="Exception"/> occurs that is not silently handled.</exception>
 		public static void UpdateOidFriendlyNames(OidCollection oids, bool forceRefresh = false)
 		{
@@ -267,11 +275,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 		}
 
 		/// <summary>
-		/// Try to get an RSA key by its name
+		/// Try to get an RSA key by its name.
 		/// </summary>
-		/// <param name="keyName">The name of the key</param>
-		/// <param name="rsaCng">The key if it exists</param>
-		/// <returns>true on success, otherwise false</returns>
+		/// <param name="keyName">The name of the key.</param>
+		/// <returns><see langword="true"/> on success; otherwise <see langword="false"/>.</returns>
+		/// <exception cref="UnreachableException">Thrown if an <see cref="Exception"/> occurs that is not silently handled.</exception>
 		public static RSACng? GetRsaKeyByName(string keyName)
 		{
 			CngProvider tpmCryptoProvider = CngProvider.MicrosoftPlatformCryptoProvider;
@@ -320,6 +328,12 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 			}
 		}
 
+		/// <summary>
+		/// Try to create a TPM-backed RSA key (<see cref="RSACng"/>) with a given <paramref name="keyName"/>.
+		/// </summary>
+		/// <param name="keyName">The name of the key.</param>
+		/// <returns>The successfully created RSA key, or <see langword="null"/> on failure.</returns>
+		/// <exception cref="UnreachableException">Thrown if an <see cref="Exception"/> occurs that is not silently handled.</exception>
 		public static RSACng? CreateRsaKey(string keyName)
 		{
 			string keyCreateDescription = "Encrypting/decrypting account keys, and signing/verifying account records, in LTO Encryption Manager.";
@@ -370,11 +384,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 		}
 
 		/// <summary>
-		/// Try to get a valid certificate where all <paramref name="requiredOids"/> are explicitly specified in extended key usages
+		/// Try to get a valid certificate where all <paramref name="requiredOids"/> are explicitly specified in extended key usages.
 		/// </summary>
-		/// <param name="requiredOids">OIDs for key purposes that a valid certificate must explicitly specify</param>
-		/// <param name="certificate">The first valid certificate found, if any</param>
-		/// <returns>true on success, otherwise false</returns>
+		/// <param name="requiredOids">OIDs for key purposes that a valid certificate must explicitly specify.</param>
+		/// <param name="certificate">The first valid certificate found, if any.</param>
+		/// <returns><see langword="true"/> on success; otherwise <see langword="false"/>.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
+		/// <exception cref="UnreachableException">Thrown if an <see cref="Exception"/> occurs that is not silently handled.</exception>
 		public static bool TryGetValidCertificate(OidCollection requiredOids, [NotNullWhen(true)] out X509Certificate2? certificate)
 		{
 			ArgumentNullException.ThrowIfNull(requiredOids);
@@ -443,9 +459,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
 		/// <summary>
 		/// Get/create a TPM-backed certificate
 		/// </summary>
-		/// <param name="updateSystemOids">Whether system OID database should be updated (true) or not (false)</param>
-		/// <param name="forceRefreshSystemOids">If <paramref name="updateSystemOids"/> is <c>true</c>, whether existing system-registered OIDs should also be updated</param>
-		/// <returns>The retrieved or created certificate, or <c>null</c></returns>
+		/// <param name="updateSystemOids">Whether the system OID database should be updated.</param>
+		/// <param name="forceRefreshSystemOids">If <paramref name="updateSystemOids"/> is <see langword="true"/>, whether existing system-registered OIDs should also be updated.</param>
+		/// <returns>The retrieved or created certificate, or <see langword="null"/> on failure.</returns>
+		/// <exception cref="UnreachableException">Thrown if an <see cref="Exception"/> occurs that is not silently handled.</exception>
 		public static X509Certificate2? GetOrCreateRsaCertificate(bool updateSystemOids = false, bool forceRefreshSystemOids = false)
 		{
 			// Initialise a new collection of Oids that will store the EKU OIDs required in the certificate

@@ -1,15 +1,21 @@
 ﻿using Org.BouncyCastle.Crypto.Digests;
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models;
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 {
+	/// <summary>
+	/// Provides static methods for working with BIP-0085.
+	/// </summary>
 	public static class Bip85
 	{
 		/// <summary>
-		/// Get up to 64 bytes of determinstic entropy from a <see cref="Bip32Node"/> that has a BIP-0085 derivation path
+		/// Get up to 64 bytes of determinstic entropy from a <see cref="Bip32Node"/> that has a BIP-0085 derivation path.
 		/// </summary>
 		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>
 		/// <param name="requestedBytes">The number of bytes of entropy required (range: 1-64).</param>
@@ -36,7 +42,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		}
 
 		/// <summary>
-		/// Get a specified amount of determinstic entropy from a <see cref="Bip32Node"/> that has a BIP-0085 derivation path
+		/// Get a specified amount of deterministic entropy from a <see cref="Bip32Node"/> that has a BIP-0085 derivation path.
 		/// </summary>
 		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>
 		/// <param name="requestedBytes">The number of bytes of entropy required (minimum: 1).</param>
@@ -54,6 +60,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 			{
 				throw new ArgumentOutOfRangeException($"Parameter {nameof(requestedBytes)} value of {requestedBytes} is not at least 1.");
 			}
+			// Get the Shake256 seed bytes using BIP85
 			ReadOnlySpan<byte> inputEntropy = GetEntropy(node, HMACSHA512.HashSizeInBytes);
 			// Use .NET implementation of SHAKE-256 on supported operating systems
 			if (Shake256.IsSupported)
@@ -70,7 +77,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 				// Create a byte array for the output entropy
 				byte[] outputEntropy = new byte[requestedBytes];
 				// Try to get the requested amount of output entropy
-				int outputBytes = shakeDigest.OutputFinal(outputEntropy, 0, requestedBytes);
+				int outputBytes = shakeDigest.OutputFinal(outputEntropy);
 				// Return the output entropy if it is of the requested length
 				return outputBytes == requestedBytes ? outputEntropy : [];
 			}

@@ -10,8 +10,16 @@ using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.BIP39Di
 
 namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 {
+    /// <summary>
+    /// Provides static methods for working with BIP-0039.
+    /// </summary>
     public static class Bip39
     {
+        /// <summary>
+        /// Gets the BIP-0039 word at 0-based <paramref name="index"/> in the American English BIP-0039 dictionary.
+        /// </summary>
+        /// <param name="index">The 0-based index of the word.</param>
+        /// <returns>The BIP-0039 American English word at that index.</returns>
         public static IEnumerable<string> GetWordValue(int index)
         {
             if (AmericanEnglish.TryGetWordFromInt(index, out string? word))
@@ -20,6 +28,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
             }
         }
 
+		/// <summary>
+		/// Clears and fills a string collection with the words in the BIP-0039 American English dictionary.
+		/// </summary>
+		/// <param name="words">A <see cref="Collection{T}"/> of <see cref="string"/>s that will be cleared and filled with the American English BIP-0039 word list.</param>
+		/// <returns>A <see cref="Task"/> which will have a result of <see langword="true"/> on completion.</returns>
 		public static Task<Boolean> GetWordValues(Collection<string> words)
         {
             ArgumentNullException.ThrowIfNull(words);

@@ -15,22 +15,30 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 		/// Gets a value indicating whether the current stream should be able to read from a seeded <see cref="Shake256DRNG"/> instance.
 		/// </summary>
 		public bool ShakeAvailable => Shake256Instance.ShakeAvailable;
+		/// <inheritdoc cref="Stream.CanRead"/>
 		public override bool CanRead => ShakeAvailable && Position <= Length;
 
 		private readonly bool _canSeek;
+		/// <inheritdoc cref="Stream.CanSeek"/>
 		public override bool CanSeek => _canSeek;
-
+		/// <inheritdoc cref="Stream.CanWrite"/>
 		public override bool CanWrite => false;
+		/// <inheritdoc cref="Stream.CanTimeout"/>
 		public override bool CanTimeout => false;
 
 		private long _length = long.MaxValue;
+		/// <inheritdoc cref="Stream.Length"/>
 		public override long Length => _length;
 
 		private long _position;
+		/// <inheritdoc cref="Stream.Position"/>
 		public override long Position { get { return _position; } set { Seek(value, SeekOrigin.Begin); } }
 
 		// Lock object for thread safety
 		private readonly object _lockObject = new();
+		/// <summary>
+		/// The underlying <see cref="Shake256DRNG"/> for the current <see cref="Shake256Stream"/> object.
+		/// </summary>
 		public Shake256DRNG Shake256Instance { get; init; }
 
 		private Shake256Stream()
@@ -39,36 +47,10 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 			Shake256Instance = new(entropy);
 		}
 
-		///// <summary>
-		///// Initialise a deterministic entropy byte stream from a <see cref="Bip32Node"/> that has a BIP-0085 derivation path.
-		///// </summary>
-		///// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>
-		///// <param name="canSeek">Sets the value of <see cref="CanSeek"/>.</param>
-		///// <remarks>
-		///// <para>NB: Setting <paramref name="canSeek"/> to <c>true</c> is not advisable due to security and performance concerns.</para>
-		///// <para>If you do not need to use <see cref="Seek(long, SeekOrigin)"/>, use <seealso cref="Shake256Stream(Bip32Node)"/> instead.</para>
-		///// </remarks>
-		///// <exception cref="ArgumentException">Thrown if <paramref name="node"/> does not have the following conditions: <see cref="Bip32Node.IsInitialised"/> is <c>false</c>, <see cref="Bip32Node.IsHardenedNode"/> is <c>false</c>, <see cref="Bip32Node.DerivationPath"/> is not a BIP-0085 derivation path (i.e. does not start with "<c>m/83696968H/</c>").</exception>
-		///// <exception cref="PlatformNotSupportedException">Thrown if Shake256 (dotnet) and ShakeDigest (BouncyCastle) are not available.</exception>
-		//public Shake256Stream(Shake256DRNG shake256, bool canSeek)
-		//{
-		//	Shake256Instance = shake256;
-		//	_canSeek = canSeek;
-		//	_position = 0;
-		//	_length = long.MaxValue;
-		//	_shakeAvailable = true;
-		//}
-
 		/// <summary>
-		/// Initialise a deterministic entropy byte stream from a <see cref="Bip32Node"/> that has a BIP-0085 derivation path.
+		/// Initialise a deterministic entropy byte stream from a <see cref="Shake256DRNG"/> object.
 		/// </summary>
-		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>
-		/// <exception cref="ArgumentException">
-		/// Thrown if <paramref name="node"/> does not have the following conditions: <see cref="Bip32Node.IsInitialised"/> is <c>false</c>,
-		///  <see cref="Bip32Node.IsHardenedNode"/> is <c>false</c>, <see cref="Bip32Node.DerivationPath"/> is not a BIP-0085 derivation path
-		///   (i.e. does not start with "<c>m/83696968H/</c>").
-		/// </exception>
-		/// <exception cref="PlatformNotSupportedException">Thrown if Shake256 (dotnet) and ShakeDigest (BouncyCastle) are not available.</exception>
+		/// <param name="shake256">A <see cref="Shake256DRNG"/> object.</param>
 		public Shake256Stream(Shake256DRNG shake256)
 		{
 			Shake256Instance = shake256;
@@ -77,6 +59,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 			_length = long.MaxValue;
 		}
 
+		/// <inheritdoc cref="Stream.Read(byte[], int, int)"/>
 		public override int Read(byte[] buffer, int offset, int count)
 		{
 			// Only allow one thread to Read(...) at once
@@ -137,38 +120,19 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 			}
 		}
 
+		/// <remarks>
+		/// <para>Not supported.</para>
+		/// </remarks>
+		/// <exception cref="NotSupportedException">Thrown if used.</exception>
 		[DoesNotReturn]
 		public override long Seek(long offset, SeekOrigin origin)
 		{
 			throw new NotImplementedException();
-			//// Only allow one thread to Seek(...) at once
-			//lock (_lockObject)
-			//{
-			//	long seekPosition = origin switch
-			//	{
-			//		SeekOrigin.Begin => offset,
-			//		SeekOrigin.Current => Position + offset,
-			//		SeekOrigin.End => Length + offset,
-			//		_ => throw new NotSupportedException()
-			//	};
-
-			//	if (seekPosition < Position)
-			//	{
-			//		throw new NotSupportedException();
-			//	}
-			//	else if (seekPosition > Position)
-			//	{
-			//		byte[] buffer = new byte[4096];
-			//		while (Position < seekPosition)
-			//		{
-			//			Read(buffer, 0, (int)Math.Min(buffer.Length, seekPosition - Position));
-			//		}
-			//		Array.Clear(buffer);
-			//	}
-			//	return Position;
-			//}
 		}
 
+		/// <summary>
+		/// Resets the underlying <see cref="Shake256DRNG"/> so that the current <see cref="Shake256Stream"/> is no longer usable.
+		/// </summary>
 		public override void Flush()
 		{
 			// Only allow one thread to Flush(...) at once
@@ -178,6 +142,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 			}
 		}
 
+		/// <inheritdoc cref="Stream.Dispose(bool)"/>
 		public new void Dispose(bool disposing)
 		{
 			Shake256Instance?.Dispose();
@@ -223,20 +188,20 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 			}
 		}
 
-		/// <exception cref="NotSupportedException">Thrown if used.</exception>
 		/// <remarks>
 		/// <para>Not supported. Use <seealso cref="SetStreamLength(long)"/> or <seealso cref="ExtendStreamLength(long)"/> instead.</para>
 		/// </remarks>
+		/// <exception cref="NotSupportedException">Thrown if used.</exception>
 		[DoesNotReturn]
 		public override void SetLength(long value)
 		{
 			throw new NotSupportedException();
 		}
 
-		/// <exception cref="NotSupportedException">Thrown if used.</exception>
 		/// <remarks>
-		/// <para>Not supported. Use <seealso cref="Flush"/> followed by <see cref="SeedShake(Bip32Node)"/> instead.</para>
+		/// <para>Not supported.</para>
 		/// </remarks>
+		/// <exception cref="NotSupportedException">Thrown if used.</exception>
 		[DoesNotReturn]
 		public override void Write(byte[] buffer, int offset, int count)
 		{
