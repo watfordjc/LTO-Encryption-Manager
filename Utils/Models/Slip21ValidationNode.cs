@@ -87,13 +87,13 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 		/// Calculates the fingerprint for this <see cref="Slip21ValidationNode"/> object.
 		/// </summary>
 		/// <param name="argon2idOutputLength">The desired length of the <see cref="Fingerprint"/>, in bytes.</param>
-        public void CalculateFingerprint(int argon2idOutputLength = 32)
+		public void CalculateFingerprint(int argon2idOutputLength = 32)
         {
             if (validationNodeMessage?.Length > 0 && validationNodeSalt?.Length > 0)
             {
-                if (ByteEncoding.TryGetToZ85Encoded(validationNodeMessage, out byte[]? password))
+                if (ByteEncoding.TryGetToZ85Encoded(validationNodeMessage, out char[]? password))
                 {
-                    CalculateFingerprint(password, validationNodeSalt, argon2idOutputLength);
+                    CalculateFingerprint(Encoding.UTF8.GetBytes(password), validationNodeSalt, argon2idOutputLength);
                 }
             }
         }
@@ -104,7 +104,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 		/// <param name="message">The message to use with <see cref="Argon2id"/>.</param>
 		/// <param name="salt">The salt to use with <see cref="Argon2id"/>.</param>
 		/// <param name="argon2idOutputLength">The desired length of the <see cref="Fingerprint"/>, in bytes.</param>
-        public async void CalculateFingerprint(byte[] message, byte[] salt, int argon2idOutputLength = 32)
+		public async void CalculateFingerprint(byte[] message, byte[] salt, int argon2idOutputLength = 32)
         {
             ArgumentNullException.ThrowIfNull(message);
             ArgumentNullException.ThrowIfNull(salt);
@@ -118,11 +118,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
             Array.Clear(message, 0, message.Length);
             Array.Clear(salt, 0, salt.Length);
             //Trace.WriteLine(BitConverter.ToString(argon2IdHashResult.HashBytes));
-            if (ByteEncoding.TryGetToZ85Encoded(argon2IdHashResult.HashBytes, out byte[]? z85Hash))
+            if (ByteEncoding.TryGetToZ85Encoded(argon2IdHashResult.HashBytes, out char[]? z85Hash))
             {
                 //Trace.WriteLine(DerivationPath);
                 //Trace.WriteLine(Encoding.UTF8.GetString(z85Hash));
-                Fingerprint = Encoding.UTF8.GetString(z85Hash);
+                Fingerprint = new string(z85Hash);
             }
         }
     }

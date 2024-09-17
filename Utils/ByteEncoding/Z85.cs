@@ -12,9 +12,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
         /// Tries to encode a byte array using Z85-encoding.
         /// </summary>
         /// <param name="input">The bytes to encode using Z85-encoding.</param>
-        /// <param name="output">On success, a <see cref="byte"/> array containing the Z85-encoded representation of <paramref name="input"/>.</param>
+        /// <param name="output">On success, a <see cref="char"/> array containing the Z85-encoded bytes.</param>
         /// <returns><see langword="true"/> on success; otherwise, <see langword="false"/></returns>
-        public static bool TryGetToZ85Encoded(ReadOnlySpan<byte> input, [NotNullWhen(true)] out byte[]? output)
+        public static bool TryGetToZ85Encoded(ReadOnlySpan<byte> input, [NotNullWhen(true)] out char[]? output)
         {
             if (input == null || input.Length % 4 > 0)
             {
@@ -22,7 +22,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
                 return false;
             }
             byte[] frame;
-            output = new byte[input.Length / 4 * 5];
+            output = new char[input.Length / 4 * 5];
             for (int i = 0; i < input.Length / 4; i++)
             {
                 frame = [.. input.Slice(i * 4, 4)];
@@ -31,29 +31,29 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils
                     Array.Reverse(frame);
                 }
                 uint segmentValue = BitConverter.ToUInt32(frame);
-                output[i * 5 + 0] = (byte)z85EncoderAlphabet[(int)(segmentValue / 85 / 85 / 85 / 85 % 85)];
-                output[i * 5 + 1] = (byte)z85EncoderAlphabet[(int)(segmentValue / 85 / 85 / 85 % 85)];
-                output[i * 5 + 2] = (byte)z85EncoderAlphabet[(int)(segmentValue / 85 / 85 % 85)];
-                output[i * 5 + 3] = (byte)z85EncoderAlphabet[(int)(segmentValue / 85 % 85)];
-                output[i * 5 + 4] = (byte)z85EncoderAlphabet[(int)(segmentValue % 85)];
+                output[i * 5 + 0] = z85EncoderAlphabet[(int)(segmentValue / 85 / 85 / 85 / 85 % 85)];
+                output[i * 5 + 1] = z85EncoderAlphabet[(int)(segmentValue / 85 / 85 / 85 % 85)];
+                output[i * 5 + 2] = z85EncoderAlphabet[(int)(segmentValue / 85 / 85 % 85)];
+                output[i * 5 + 3] = z85EncoderAlphabet[(int)(segmentValue / 85 % 85)];
+                output[i * 5 + 4] = z85EncoderAlphabet[(int)(segmentValue % 85)];
             }
             return true;
         }
 
 		/// <summary>
-		/// Tries to decode a Z85-encoded byte array.
+		/// Tries to decode Z85-encoded data into a byte array.
 		/// </summary>
-		/// <param name="input">A <see cref="byte"/> array containing the Z85-encoded representation of some data.</param>
+		/// <param name="input">A <see cref="char"/> array containing Z85-encoded bytes.</param>
 		/// <param name="output">On success, a Z85-decoded byte array.</param>
 		/// <returns><see langword="true"/> on success; otherwise, <see langword="false"/></returns>
-		public static bool TryGetFromZ85Encoded(ReadOnlySpan<byte> input, [NotNullWhen(true)] out byte[]? output)
+		public static bool TryGetFromZ85Encoded(ReadOnlySpan<char> input, [NotNullWhen(true)] out byte[]? output)
         {
             if (input == null || input.Length % 5 > 0)
             {
                 output = null;
                 return false;
             }
-            byte[] frame;
+            char[] frame;
             output = new byte[input.Length / 5 * 4];
             for (int i = 0; i < input.Length / 5; i++)
             {

@@ -153,9 +153,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models
 							Array.Reverse(accountIdCrc32Bytes);
 						}
 						// Conver the CRC32 to Z85-encoding
-						if (ByteEncoding.TryGetToZ85Encoded(accountIdCrc32Bytes, out byte[]? accountIdZ85))
+						if (ByteEncoding.TryGetToZ85Encoded(accountIdCrc32Bytes, out char[]? accountIdZ85))
 						{
-							_ = sb.Append(Encoding.ASCII.GetString(accountIdZ85)); // Append the Account Identifier hash (Z85-encoded CRC32)
+							_ = sb.Append(accountIdZ85); // Append the Account Identifier hash (Z85-encoded CRC32)
 						}
 					}
 				}
