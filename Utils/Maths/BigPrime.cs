@@ -149,6 +149,39 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Maths
 		/// </remarks>
 		public bool IsPossiblyWeakPrime => IsSmallPrime || IsFermatNumber || IsMersenneNumber;
 
+		bool? _isProbablePrime;
+		/// <summary>
+		/// Indicates whether the value of the <see cref="BigPrime.Value"/> property is probably prime.
+		/// </summary>
+		/// <returns>
+		/// <para><see langword="true"/> if the value of the <see cref="BigPrime.Value"/> property is probably prime or definitely prime.</para>
+		/// <para><see langword="false"/> if it is likely composite or definitely compositie.</para>
+		/// <para><see langword="null"/> if it has not yet been determined.</para>
+		/// </returns>
+		/// <remarks>
+		/// <para>This property returns <see langword="null"/> if <see cref="CompatibilityFlags"/> did not include any primality testing flags when
+		/// the current <see cref="BigPrime"/> object was created and <see cref="CheckPrimality(StandardRSA.Compatibility?, RandomNumberGenerator?, int?)"/>
+		///  has not been called with a <see cref="StandardRSA.Compatibility"/> containing primality testing flags.</para>
+		/// </remarks>
+		public bool? IsProbablePrime
+		{
+			get
+			{
+				if (IsSmallPrime)
+				{
+					return true;
+				}
+				else if (HasFactor == null && _isProbablePrime == null)
+				{
+					return null;
+				}
+				else
+				{
+					return !HasFactor.GetValueOrDefault(false) && _isProbablePrime.GetValueOrDefault(false);
+				}
+			}
+		}
+
 		/// <summary>
 		/// Flags that indicated, at the time the current <see cref="BigPrime"/> object was created, how primality and other tests should be conducted
 		///  on the value of the <see cref="BigPrime.Value"/> property.
