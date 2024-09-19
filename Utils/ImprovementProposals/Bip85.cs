@@ -3,6 +3,7 @@ using Org.BouncyCastle.Crypto.Digests;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms;
@@ -91,12 +92,32 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>
 		/// <param name="keyBitLength">The RSA public modulus key length to generate, in bits.</param>
 		/// <param name="compatibilityFlags">Compatibility flags that adjust how deterministic prime number and asymmetric key generation is performed.</param>
-		/// <returns>An <see cref="RSAParameters"/> instance.</returns>
+		/// <param name="rsaParams">An <see cref="RSAParameters"/> instance.</param>
+		/// <returns><see langword="true"/> on success; otherwise, <see langword="false"/>.</returns>
 		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
-		public static bool TryCreateStandardRSAParameters(Bip32Node node, int keyBitLength, StandardRSA.Compatibility compatibilityFlags, [NotNullWhen(true)] out RSAParameters? rsaParams)
+		/// <exception cref="ArgumentException">Thrown if <paramref name="node"/> does not have a BIP-0085 RSA derivation path.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="node"/>'s <see cref="Bip32Node.DerivationPath"/> is not fully hardened.</exception>
+		public static bool TryCreateStandardRSAParameters(Bip32Node node, StandardRSA.Compatibility compatibilityFlags, [NotNullWhen(true)] out RSAParameters? rsaParams)
 		{
 			// Check required parameters are not null
 			ArgumentNullException.ThrowIfNull(node);
+			// Extract the parts of the derivation path from the node
+			string[] derivationPath = node.DerivationPath.Split('/');
+			// Check the derivation path is for a BIP85 RSA node
+			if (!node.DerivationPath.StartsWith("m/83696968H/828365H/", StringComparison.Ordinal) || derivationPath.Length != 5)
+			{
+				throw new ArgumentException("Node must be a BIP-0085 RSA node.", nameof(node));
+			}
+			// Check all nodes below the root node used hardened derivation
+			for (int i = 1; i < derivationPath.Length; i++)
+			{
+				if (!derivationPath[i].EndsWith('H'))
+				{
+					throw new ArgumentOutOfRangeException(nameof(node), $"{nameof(node.DerivationPath)} must use hardened derivation for all nodes.");
+				}
+			}
+			// Get the key/modulus length in bits from the derivation path
+			int keyBitLength = Int32.Parse(derivationPath[3][..^1], NumberStyles.None, CultureInfo.InvariantCulture);
 			try
 			{
 				// Use a Shake256Stream seeded using our BIP-0032 node that has a BIP-0085 derivation path
@@ -121,12 +142,14 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		/// <param name="compatibilityFlags">Compatibility flags that adjust how deterministic prime number and asymmetric key generation is performed.</param>
 		/// <param name="rsa">An <see cref="RSA"/> instance on success; otherwise, <see langword="null"/>.</param>
 		/// <returns><see langword="true"/> on success; otherwise, <see langword="false"/>.</returns>
-		public static bool TryCreateStandardRSA(Bip32Node node, int keyBitLength, StandardRSA.Compatibility compatibilityFlags, [NotNullWhen(true)] out RSA? rsa)
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="node"/> does not have a BIP-0085 RSA derivation path.</exception>
+		public static bool TryCreateStandardRSA(Bip32Node node, StandardRSA.Compatibility compatibilityFlags, [NotNullWhen(true)] out RSA? rsa)
 		{
 			// Check required parameters are not null
 			ArgumentNullException.ThrowIfNull(node);
 
-			if (TryCreateStandardRSAParameters(node, keyBitLength, compatibilityFlags, out RSAParameters? rsaParams))
+			if (TryCreateStandardRSAParameters(node, compatibilityFlags, out RSAParameters? rsaParams))
 			{
 				try
 				{

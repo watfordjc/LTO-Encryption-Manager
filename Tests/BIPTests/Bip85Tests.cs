@@ -129,6 +129,31 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.BIPTests
 		}
 
 		[TestMethod]
+		public async Task GetRSATest()
+		{
+			IEnumerable<Models.Bip85DrngEntropyTestVector>? testVectors = await GetDrngEntropyTestVectorsAsync().ConfigureAwait(false);
+			Assert.IsNotNull(testVectors);
+			using SemaphoreSlim semaphore = new(1);
+			_ = Parallel.ForEach(testVectors, testVector =>
+			{
+				if (Debugger.IsAttached)
+				{
+					semaphore.Wait();
+				}
+				Bip32Node rootNode = GetBip32RootNode(testVector.MasterNodePrivateKey);
+				Bip32Node? derivationNode = GetBip32NodeFromDerivationPath(rootNode, "m/83696968H/828365H/3072H/0H");
+				Assert.IsNotNull(derivationNode);
+				Assert.IsTrue(Bip85.TryCreateStandardRSA(derivationNode, Utils.Algorithms.StandardRSA.Compatibility.BIP85, out RSA? rsaKey));
+				Assert.IsNotNull(rsaKey);
+				Assert.AreEqual(3072, rsaKey.KeySize);
+				if (Debugger.IsAttached)
+				{
+					semaphore.Release();
+				}
+			});
+		}
+
+		[TestMethod]
 		public async Task GetDrngEntropyStreamTest()
 		{
 			IEnumerable<Models.Bip85DrngEntropyTestVector>? testVectors = await GetDrngEntropyTestVectorsAsync().ConfigureAwait(false);

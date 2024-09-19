@@ -14,7 +14,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms
 		public static byte[] PadBigEndianArrayWithLeadingZeros(BigInteger bigInteger, int requiredByteLength)
 		{
 			// If no leading 0x00 bytes are needed, just use BigInteger.ToByteArray()
-			if (bigInteger.GetByteCount() == requiredByteLength)
+			if (bigInteger.GetByteCount(true) == requiredByteLength)
 			{
 				// Return the BigInteger as a big endian unsigned byte array
 				return bigInteger.ToByteArray(true, true);
