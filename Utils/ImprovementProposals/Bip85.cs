@@ -220,6 +220,46 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		}
 
 		/// <summary>
+		/// Generates a password (Base64 alphabet) using BIP85 deterministic PWD BASE64 generation.
+		/// </summary>
+		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 PWD BASE64 derivation path.</param>
+		/// <returns>A deterministic password using the Base64 alphabet.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="node"/> does not have a BIP-0085 HEX derivation path.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="node"/>'s <see cref="Bip32Node.DerivationPath"/> is not fully hardened, or the <c>pwd_len</c>
+		///   node has a <see cref="Bip32Node.ChildNumberString"/> outside the range of 20H to 86H.</exception>
+		public static string GetPwdBase64(Bip32Node node)
+		{
+			// Check required parameters are not null
+			ArgumentNullException.ThrowIfNull(node);
+			// Extract the parts of the derivation path from the node
+			string[] derivationPath = node.DerivationPath.Split('/');
+			// Check the derivation path is for a BIP85 PWD BASE64 node
+			if (!node.DerivationPath.StartsWith("m/83696968H/707764H/", StringComparison.Ordinal) || derivationPath.Length != 5)
+			{
+				throw new ArgumentException("Node must be a BIP-0085 PWD BASE64 node.", nameof(node));
+			}
+			// Check all nodes below the root node used hardened derivation
+			for (int i = 1; i < derivationPath.Length; i++)
+			{
+				if (!derivationPath[i].EndsWith('H'))
+				{
+					throw new ArgumentOutOfRangeException(nameof(node), $"{nameof(node.DerivationPath)} must use hardened derivation for all nodes.");
+				}
+			}
+			// Get the number of bytes from the derivation path
+			int pwdLength = Int32.Parse(derivationPath[3][..^1], NumberStyles.None, CultureInfo.InvariantCulture);
+			if (pwdLength < 20 || pwdLength > 86)
+			{
+				throw new ArgumentOutOfRangeException(nameof(node), $"{nameof(node.DerivationPath)} has a pwd_len value of {pwdLength}H which is outside the range of 20H-86H.");
+			}
+			// Get the entropy bytes and convert to base64
+			string base64 = Convert.ToBase64String(GetEntropy(node, 64), Base64FormattingOptions.None);
+			// Return the expected length of characters
+			return base64[..pwdLength];
+		}
+
+		/// <summary>
 		/// Generates an <see cref="RSAParameters"/> instance, if possible, using BIP85 deterministic RSA key generation.
 		/// </summary>
 		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>

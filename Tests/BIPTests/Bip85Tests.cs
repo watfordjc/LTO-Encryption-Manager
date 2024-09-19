@@ -184,6 +184,15 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.BIPTests
 		}
 
 		[TestMethod]
+		public void GetPwdBase64Test()
+		{
+			Bip32Node rootNode = GetBip32RootNode("xprv9s21ZrQH143K2LBWUUQRFXhucrQqBpKdRRxNVq2zBqsx8HVqFk2uYo8kmbaLLHRdqtQpUm98uKfu3vca1LqdGhUtyoFnCNkfmXRyPXLjbKb");
+			Bip32Node? derivationNode = GetBip32NodeFromDerivationPath(rootNode, "m/83696968H/707764H/21H/0H");
+			Assert.IsNotNull(derivationNode);
+			Assert.AreEqual("dKLoepugzdVJvdL56ogNV", Bip85.GetPwdBase64(derivationNode));
+		}
+
+		[TestMethod]
 		public void GetHextest()
 		{
 			Bip32Node rootNode = GetBip32RootNode("xprv9s21ZrQH143K2LBWUUQRFXhucrQqBpKdRRxNVq2zBqsx8HVqFk2uYo8kmbaLLHRdqtQpUm98uKfu3vca1LqdGhUtyoFnCNkfmXRyPXLjbKb");
