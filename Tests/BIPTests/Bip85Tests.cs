@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using uk.JohnCook.dotnet.LTOEncryptionManager.Utils;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals.Models;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Models;
@@ -126,6 +127,48 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.BIPTests
 					semaphore.Release();
 				}
 			});
+		}
+
+		[TestMethod]
+		public void GetBip39EntropyTest()
+		{
+			Bip32Node rootNode = GetBip32RootNode("xprv9s21ZrQH143K2LBWUUQRFXhucrQqBpKdRRxNVq2zBqsx8HVqFk2uYo8kmbaLLHRdqtQpUm98uKfu3vca1LqdGhUtyoFnCNkfmXRyPXLjbKb");
+
+			Bip32Node? derivationNode = GetBip32NodeFromDerivationPath(rootNode, "m/83696968H/39H/0H/12H/0H");
+			Assert.IsNotNull(derivationNode);
+			string entropyResult = ByteEncoding.ToHexString(Bip85.GetBip39Entropy(derivationNode));
+			Assert.AreEqual("6250b68daf746d12a24d58b4787a714b".ToUpperInvariant(), entropyResult);
+
+			derivationNode = GetBip32NodeFromDerivationPath(rootNode, "m/83696968H/39H/0H/18H/0H");
+			Assert.IsNotNull(derivationNode);
+			entropyResult = ByteEncoding.ToHexString(Bip85.GetBip39Entropy(derivationNode));
+			Assert.AreEqual("938033ed8b12698449d4bbca3c853c66b293ea1b1ce9d9dc".ToUpperInvariant(), entropyResult);
+
+			derivationNode = GetBip32NodeFromDerivationPath(rootNode, "m/83696968H/39H/0H/24H/0H");
+			Assert.IsNotNull(derivationNode);
+			entropyResult = ByteEncoding.ToHexString(Bip85.GetBip39Entropy(derivationNode));
+			Assert.AreEqual("ae131e2312cdc61331542efe0d1077bac5ea803adf24b313a4f0e48e9c51f37f".ToUpperInvariant(), entropyResult);
+		}
+
+		[TestMethod]
+		public void GetBip39SeedPhraseTest()
+		{
+			Bip32Node rootNode = GetBip32RootNode("xprv9s21ZrQH143K2LBWUUQRFXhucrQqBpKdRRxNVq2zBqsx8HVqFk2uYo8kmbaLLHRdqtQpUm98uKfu3vca1LqdGhUtyoFnCNkfmXRyPXLjbKb");
+
+			Bip32Node? derivationNode = GetBip32NodeFromDerivationPath(rootNode, "m/83696968H/39H/0H/12H/0H");
+			Assert.IsNotNull(derivationNode);
+			string seedPhraseResult = Bip85.GetBip39Words(derivationNode);
+			Assert.AreEqual("girl mad pet galaxy egg matter matrix prison refuse sense ordinary nose", seedPhraseResult);
+
+			derivationNode = GetBip32NodeFromDerivationPath(rootNode, "m/83696968H/39H/0H/18H/0H");
+			Assert.IsNotNull(derivationNode);
+			seedPhraseResult = Bip85.GetBip39Words(derivationNode);
+			Assert.AreEqual("near account window bike charge season chef number sketch tomorrow excuse sniff circle vital hockey outdoor supply token", seedPhraseResult);
+
+			derivationNode = GetBip32NodeFromDerivationPath(rootNode, "m/83696968H/39H/0H/24H/0H");
+			Assert.IsNotNull(derivationNode);
+			seedPhraseResult = Bip85.GetBip39Words(derivationNode);
+			Assert.AreEqual("puppy ocean match cereal symbol another shed magic wrap hammer bulb intact gadget divorce twin tonight reason outdoor destroy simple truth cigar social volcano", seedPhraseResult);
 		}
 
 		[TestMethod]

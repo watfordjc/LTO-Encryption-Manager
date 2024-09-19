@@ -1,6 +1,6 @@
-﻿using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Digests;
+﻿using Org.BouncyCastle.Crypto.Digests;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -87,10 +87,77 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		}
 
 		/// <summary>
+		/// Generates BIP39 entropy using BIP85 deterministic BIP39 generation.
+		/// </summary>
+		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 BIP39 derivation path.</param>
+		/// <returns>A <see cref="ReadOnlySpan{T}"/> of <see cref="byte"/> containing the derived BIP39 entropy.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="node"/> does not have a BIP-0085 BIP39 derivation path.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="node"/>'s <see cref="Bip32Node.DerivationPath"/> is not fully hardened, or the <c>words</c>
+		///   node has a <see cref="Bip32Node.ChildNumberString"/> that is not 6H/12H/18H/24H/30H/36H/42H/48H.</exception>
+		public static ReadOnlySpan<byte> GetBip39Entropy(Bip32Node node)
+		{
+			// Check required parameters are not null
+			ArgumentNullException.ThrowIfNull(node);
+			// Extract the parts of the derivation path from the node
+			string[] derivationPath = node.DerivationPath.Split('/');
+			// Check the derivation path is for a BIP85 HEX node
+			if (!node.DerivationPath.StartsWith("m/83696968H/39H/0H/", StringComparison.Ordinal) || derivationPath.Length != 6)
+			{
+				throw new ArgumentException("Node must be a BIP-0085 BIP39 node using the American English dictionary.", nameof(node));
+			}
+			// Check all nodes below the root node used hardened derivation
+			for (int i = 1; i < derivationPath.Length; i++)
+			{
+				if (!derivationPath[i].EndsWith('H'))
+				{
+					throw new ArgumentOutOfRangeException(nameof(node), $"{nameof(node.DerivationPath)} must use hardened derivation for all nodes.");
+				}
+			}
+			// Get the number of words from the derivation path
+			int numWords = Int32.Parse(derivationPath[4][..^1], NumberStyles.None, CultureInfo.InvariantCulture);
+			int entropyByteLength = numWords switch
+			{
+				6 => 8,
+				12 => 16,
+				18 => 24,
+				24 => 32,
+				30 => 40,
+				36 => 48,
+				42 => 56,
+				48 => 64,
+				_ => 0
+			};
+			if (entropyByteLength == 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(node), $"{nameof(node.DerivationPath)} must have a words node with {nameof(Bip32Node.ChildNumberString)} that is 6H/12H/18H/24H/30H/36H/42H/48H - value was {derivationPath[4]}.");
+			}
+			return GetEntropy(node, entropyByteLength);
+		}
+
+		/// <summary>
+		/// Generates a <see cref="string"/> using BIP85 deterministic BIP39 generation.
+		/// </summary>
+		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 BIP39 derivation path.</param>
+		/// <returns>A deterministic string of hexadecimal characters.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="node"/> does not have a BIP-0085 BIP39 derivation path.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="node"/>'s <see cref="Bip32Node.DerivationPath"/> is not fully hardened, or the <c>words</c>
+		///   node has a <see cref="Bip32Node.ChildNumberString"/> that is not 6H/12H/18H/24H/30H/36H/42H/48H.</exception>
+		public static string GetBip39Words(Bip32Node node)
+		{
+			// Check required parameters are not null
+			ArgumentNullException.ThrowIfNull(node);
+			// Derive the entropy bytes
+			ReadOnlySpan<byte> entropyBytes = GetBip39Entropy(node);
+			// Convert the entropy into a BIP39 seed phrase and return it
+			return Bip39.GetMnemonicFromEntropy(ByteEncoding.ToHexString(entropyBytes));
+		}
+
+		/// <summary>
 		/// Generates an <see cref="RSAParameters"/> instance, if possible, using BIP85 deterministic RSA key generation.
 		/// </summary>
 		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>
-		/// <param name="keyBitLength">The RSA public modulus key length to generate, in bits.</param>
 		/// <param name="compatibilityFlags">Compatibility flags that adjust how deterministic prime number and asymmetric key generation is performed.</param>
 		/// <param name="rsaParams">An <see cref="RSAParameters"/> instance.</param>
 		/// <returns><see langword="true"/> on success; otherwise, <see langword="false"/>.</returns>
@@ -138,7 +205,6 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		/// Generates an <see cref="RSA"/> instance, if possible, using BIP85 deterministic RSA key generation.
 		/// </summary>
 		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>
-		/// <param name="keyBitLength">The RSA public modulus key length to generate, in bits.</param>
 		/// <param name="compatibilityFlags">Compatibility flags that adjust how deterministic prime number and asymmetric key generation is performed.</param>
 		/// <param name="rsa">An <see cref="RSA"/> instance on success; otherwise, <see langword="null"/>.</param>
 		/// <returns><see langword="true"/> on success; otherwise, <see langword="false"/>.</returns>
