@@ -27,6 +27,7 @@
     <None Remove="data\bip0032-master-node-vectors.json" />
     <None Remove="data\bip0085-drng-entropy-shake256-vectors.json" />
     <None Remove="data\bip0085-entropy-from-k-vectors.json" />
+    <None Remove="data\rsa-test-vectors.json" />
     <None Remove="data\slip0021-lto-aes-vectors.json" />
     <None Remove="data\slip0021-vectors.json" />
     <None Remove="data\argon2id-vectors.json" />
@@ -62,6 +63,9 @@
     <Content Include="data\bip0085-drng-entropy-shake256-vectors.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+	<Content Include="data\rsa-test-vectors.json">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
     <Content Include="data\slip0021-lto-aes-vectors.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

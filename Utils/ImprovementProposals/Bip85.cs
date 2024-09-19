@@ -1,6 +1,8 @@
-﻿using Org.BouncyCastle.Crypto.Digests;
+﻿using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Digests;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Algorithms;
@@ -80,6 +82,67 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 				int outputBytes = shakeDigest.OutputFinal(outputEntropy);
 				// Return the output entropy if it is of the requested length
 				return outputBytes == requestedBytes ? outputEntropy : [];
+			}
+		}
+
+		/// <summary>
+		/// Generates an <see cref="RSAParameters"/> instance, if possible, using BIP85 deterministic RSA key generation.
+		/// </summary>
+		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>
+		/// <param name="keyBitLength">The RSA public modulus key length to generate, in bits.</param>
+		/// <param name="compatibilityFlags">Compatibility flags that adjust how deterministic prime number and asymmetric key generation is performed.</param>
+		/// <returns>An <see cref="RSAParameters"/> instance.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
+		public static bool TryCreateStandardRSAParameters(Bip32Node node, int keyBitLength, StandardRSA.Compatibility compatibilityFlags, [NotNullWhen(true)] out RSAParameters? rsaParams)
+		{
+			// Check required parameters are not null
+			ArgumentNullException.ThrowIfNull(node);
+			try
+			{
+				// Use a Shake256Stream seeded using our BIP-0032 node that has a BIP-0085 derivation path
+				using Shake256DRNG shake256DRNG = new(node);
+				// Create and return an RSAParameters using shake256DRNG as the RNG
+				rsaParams = StandardRSA.CreateStandardRSAParameters(keyBitLength, compatibilityFlags, shake256DRNG);
+				return true;
+			}
+			catch (Exception ex) when
+			(ex is ArgumentException || ex is UnreachableException)
+			{
+				rsaParams = null;
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Generates an <see cref="RSA"/> instance, if possible, using BIP85 deterministic RSA key generation.
+		/// </summary>
+		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>
+		/// <param name="keyBitLength">The RSA public modulus key length to generate, in bits.</param>
+		/// <param name="compatibilityFlags">Compatibility flags that adjust how deterministic prime number and asymmetric key generation is performed.</param>
+		/// <param name="rsa">An <see cref="RSA"/> instance on success; otherwise, <see langword="null"/>.</param>
+		/// <returns><see langword="true"/> on success; otherwise, <see langword="false"/>.</returns>
+		public static bool TryCreateStandardRSA(Bip32Node node, int keyBitLength, StandardRSA.Compatibility compatibilityFlags, [NotNullWhen(true)] out RSA? rsa)
+		{
+			// Check required parameters are not null
+			ArgumentNullException.ThrowIfNull(node);
+
+			if (TryCreateStandardRSAParameters(node, keyBitLength, compatibilityFlags, out RSAParameters? rsaParams))
+			{
+				try
+				{
+					rsa = RSA.Create(rsaParams.Value);
+					return true;
+				}
+				catch (CryptographicException)
+				{
+					rsa = null;
+					return false;
+				}
+			}
+			else
+			{
+				rsa = null;
+				return false;
 			}
 		}
 	}

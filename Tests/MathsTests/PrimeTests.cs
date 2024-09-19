@@ -75,5 +75,59 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 			}
 			return primes;
 		}
+
+		/// <summary>
+		/// A test to check <see cref="BigPrime"/> creation using a <see cref="Shake256DRNG"/> results in correct <see cref="BigPrime"/> property values.
+		/// </summary>
+		/// <returns>A <see cref="Task"/>.</returns>
+		[TestMethod]
+		public async Task GetBitLengthPrimesFromDRNGTest()
+		{
+			IEnumerable<Models.Bip85DrngEntropyTestVector>? testVectors = await Bip85Tests.GetDrngEntropyTestVectorsAsync().ConfigureAwait(false);
+			Assert.IsNotNull(testVectors);
+			using SemaphoreSlim semaphore = new(1);
+			_ = Parallel.ForEach(testVectors, (Action<Models.Bip85DrngEntropyTestVector>)(testVector =>
+			{
+				if (Debugger.IsAttached)
+				{
+					semaphore.Wait();
+				}
+				Bip32Node rootNode = Bip85Tests.GetBip32RootNode(testVector.MasterNodePrivateKey);
+				Bip32Node? derivationNode = Bip85Tests.GetBip32NodeFromDerivationPath(rootNode, testVector.DerivationPath);
+				Assert.IsNotNull(derivationNode);
+				Assert.IsFalse(derivationNode.IsMasterNode);
+				Assert.AreEqual(testVector.DerivationPath, derivationNode.DerivationPath);
+				Assert.IsNotNull(derivationNode.PrivateKeySerialised);
+				Assert.AreEqual(testVector.PrivateKeyHex, new(ByteEncoding.ToHexString([.. derivationNode.Left])));
+				ReadOnlySpan<byte> entropyFromK = Bip85.GetEntropy(derivationNode, 64);
+				Assert.AreEqual(testVector.EntropyHex, ByteEncoding.ToHexString([.. entropyFromK]));
+
+				using Shake256DRNG shake256DRNG = new(derivationNode);
+				int[] bitLengths = [512, 1024, 1536, 2048];
+				BigPrime potentialPrime;
+				foreach (int bitLength in bitLengths)
+				{
+					potentialPrime = BigPrime.Create(bitLength, StandardRSA.Compatibility.Default, shake256DRNG, null);
+					Assert.AreEqual(bitLength, potentialPrime.BitLength);
+					Assert.AreEqual(bitLength, potentialPrime.UnsignedByteCount * 8);
+					Assert.IsFalse(potentialPrime.IsEven);
+					Assert.IsTrue(potentialPrime.IsOdd);
+					Assert.IsFalse(potentialPrime.IsSmallPrime);
+					Assert.IsFalse(potentialPrime.IsOne);
+					Assert.IsFalse(potentialPrime.IsZero);
+					Assert.IsFalse(potentialPrime.IsPerfectSquare);
+					Assert.IsNull(potentialPrime.HasFactor);
+					Assert.IsFalse(potentialPrime.IsFermatNumber);
+					Assert.IsFalse(potentialPrime.IsMersenneNumber);
+					Assert.IsFalse(potentialPrime.IsPossiblyWeakPrime);
+					Assert.IsTrue((bool?)potentialPrime.IsProbablePrime);
+				}
+
+				if (Debugger.IsAttached)
+				{
+					semaphore.Release();
+				}
+			}));
+		}
 	}
 }

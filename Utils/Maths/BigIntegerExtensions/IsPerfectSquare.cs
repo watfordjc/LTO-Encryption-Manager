@@ -28,7 +28,9 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Maths
 			BigInteger root = SquareRoot(number);
 			// Square the calculated 'root'
 			BigInteger rootSquared = root * root;
-			// Compare the calculated 'rootSquared' result with 'number'
+			// Compare the calculated 'rootSquared' result with 'number'.
+			// NB: SquareRoot() should give the integer square root with floor function, but we also cover ceiling function results
+			//   and results off by more than 1 (i.e. less accurate square root methods will result in more while loop iterations).
 			int sign = BigInteger.Compare(rootSquared, number);
 			// If the first result for 'rootSquared' is equal to 'number', assume the calculated square root is the square root
 			if (sign == 0)
