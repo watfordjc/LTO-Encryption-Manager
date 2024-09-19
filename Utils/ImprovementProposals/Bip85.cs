@@ -155,6 +155,44 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		}
 
 		/// <summary>
+		/// Generates a <see cref="string"/> using BIP85 deterministic hexadecimal generation.
+		/// </summary>
+		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>
+		/// <returns>A deterministic string of hexadecimal characters.</returns>
+		/// <exception cref="ArgumentNullException">Thrown if a non-nullable parameter is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="node"/> does not have a BIP-0085 HEX derivation path.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="node"/>'s <see cref="Bip32Node.DerivationPath"/> is not fully hardened, or the <c>num_bytes</c>
+		///   node has a <see cref="Bip32Node.ChildNumberString"/> outside the range of 16H to 64H.</exception>
+		public static string GetHex(Bip32Node node)
+		{
+			// Check required parameters are not null
+			ArgumentNullException.ThrowIfNull(node);
+			// Extract the parts of the derivation path from the node
+			string[] derivationPath = node.DerivationPath.Split('/');
+			// Check the derivation path is for a BIP85 HEX node
+			if (!node.DerivationPath.StartsWith("m/83696968H/128169H/", StringComparison.Ordinal) || derivationPath.Length != 5)
+			{
+				throw new ArgumentException("Node must be a BIP-0085 HEX node.", nameof(node));
+			}
+			// Check all nodes below the root node used hardened derivation
+			for (int i = 1; i < derivationPath.Length; i++)
+			{
+				if (!derivationPath[i].EndsWith('H'))
+				{
+					throw new ArgumentOutOfRangeException(nameof(node), $"{nameof(node.DerivationPath)} must use hardened derivation for all nodes.");
+				}
+			}
+			// Get the number of bytes from the derivation path
+			int numBytes = Int32.Parse(derivationPath[3][..^1], NumberStyles.None, CultureInfo.InvariantCulture);
+			if (numBytes < 16 || numBytes > 64)
+			{
+				throw new ArgumentOutOfRangeException(nameof(node), $"{nameof(node.DerivationPath)} has a num_bytes value of {numBytes}H which is outside the range of 16-64.");
+			}
+			// Get the entropy bytes and convert to hex
+			return ByteEncoding.ToHexString(GetEntropy(node, numBytes));
+		}
+
+		/// <summary>
 		/// Generates an <see cref="RSAParameters"/> instance, if possible, using BIP85 deterministic RSA key generation.
 		/// </summary>
 		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>

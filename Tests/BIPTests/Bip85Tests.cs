@@ -172,6 +172,17 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.BIPTests
 		}
 
 		[TestMethod]
+		public void GetHextest()
+		{
+			Bip32Node rootNode = GetBip32RootNode("xprv9s21ZrQH143K2LBWUUQRFXhucrQqBpKdRRxNVq2zBqsx8HVqFk2uYo8kmbaLLHRdqtQpUm98uKfu3vca1LqdGhUtyoFnCNkfmXRyPXLjbKb");
+			Bip32Node? derivationNode = GetBip32NodeFromDerivationPath(rootNode, "m/83696968H/128169H/64H/0H");
+			Assert.IsNotNull(derivationNode);
+			string result = Bip85.GetHex(derivationNode);
+			Assert.AreEqual("492db4698cf3b73a5a24998aa3e9d7fa96275d85724a91e71aa2d645442f878555d078fd1f1f67e368976f04137b1f7a0d19232136ca50c44614af72b5582a5c".ToUpperInvariant(),
+				result);
+		}
+
+		[TestMethod]
 		public async Task GetRSATest()
 		{
 			IEnumerable<Models.Bip85DrngEntropyTestVector>? testVectors = await GetDrngEntropyTestVectorsAsync().ConfigureAwait(false);
