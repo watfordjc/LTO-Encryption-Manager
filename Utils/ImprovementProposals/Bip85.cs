@@ -155,6 +155,33 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.ImprovementProposals
 		}
 
 		/// <summary>
+		/// Get a deterministic <see cref="Bip32Node"/> from a <see cref="Bip32Node"/> that has a BIP-0085 XPRV derivation path.
+		/// </summary>
+		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 XPRV derivation path.</param>
+		/// <returns>The derived XPRV as a <see cref="Bip32Node"/> if possible; otherwise, <see langword="null"/>.</returns>
+		/// <exception cref="ArgumentException">Thrown if <paramref name="node"/> does not have a BIP-0085 XPRV derivation path.</exception>
+		public static Bip32Node? GetXprv(Bip32Node node)
+		{
+			ArgumentNullException.ThrowIfNull(node);
+			if (!node.DerivationPath.StartsWith("m/83696968H/32H/", StringComparison.Ordinal))
+			{
+				throw new ArgumentException("Node must have a BIP-0085 XPRV derivation path", nameof(node));
+			}
+			ReadOnlySpan<byte> entropyBytes = GetEntropy(node, 64);
+			ECDomainParameters? domainParams = Bip32.GetDomainParameters((uint)Bip32.PrivateKeyVersionPrefix.BitcoinMainnetPrivate);
+			if (domainParams is null)
+			{
+				return null;
+			}
+			// BIP85 XPRV swaps Left and Right
+			byte[] binarySeed = new byte[64];
+			Array.Copy(entropyBytes[..32].ToArray(), 0, binarySeed, 32, 32);
+			Array.Copy(entropyBytes[32..].ToArray(), 0, binarySeed, 0, 32);
+			return new Bip32Node(binarySeed, domainParams, (uint)Bip32.PublicKeyVersionPrefix.BitcoinMainnetPublic, (uint)Bip32.PrivateKeyVersionPrefix.BitcoinMainnetPrivate,
+				null, null, null, null);
+		}
+
+		/// <summary>
 		/// Generates a <see cref="string"/> using BIP85 deterministic hexadecimal generation.
 		/// </summary>
 		/// <param name="node">A <see cref="Bip32Node"/> with a BIP-0085 derivation path.</param>

@@ -172,6 +172,18 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.BIPTests
 		}
 
 		[TestMethod]
+		public void GetXprvTest()
+		{
+			Bip32Node rootNode = GetBip32RootNode("xprv9s21ZrQH143K2LBWUUQRFXhucrQqBpKdRRxNVq2zBqsx8HVqFk2uYo8kmbaLLHRdqtQpUm98uKfu3vca1LqdGhUtyoFnCNkfmXRyPXLjbKb");
+			Bip32Node? derivationNode = GetBip32NodeFromDerivationPath(rootNode, "m/83696968H/32H/0H");
+			Assert.IsNotNull(derivationNode);
+			Bip32Node? derivedXprvNode = Bip85.GetXprv(derivationNode);
+			Assert.IsNotNull(derivedXprvNode);
+			Assert.AreEqual("xprv9s21ZrQH143K2srSbCSg4m4kLvPMzcWydgmKEnMmoZUurYuBuYG46c6P71UGXMzmriLzCCBvKQWBUv3vPB3m1SATMhp3uEjXHJ42jFg7myX",
+				derivedXprvNode.PrivateKeySerialised);
+		}
+
+		[TestMethod]
 		public void GetHextest()
 		{
 			Bip32Node rootNode = GetBip32RootNode("xprv9s21ZrQH143K2LBWUUQRFXhucrQqBpKdRRxNVq2zBqsx8HVqFk2uYo8kmbaLLHRdqtQpUm98uKfu3vca1LqdGhUtyoFnCNkfmXRyPXLjbKb");
