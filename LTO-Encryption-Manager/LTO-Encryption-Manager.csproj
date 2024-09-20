@@ -1,87 +1,88 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-    <Platforms>x86;x64</Platforms>
-    <RuntimeIdentifiers>win-x86;win-x64</RuntimeIdentifiers>
-    <RootNamespace>uk.JohnCook.dotnet.LTOEncryptionManager</RootNamespace>
-    <UseWPF>true</UseWPF>
-    <PackageId>uk.JohnCook.dotnet.LTOEncryptionManager</PackageId>
-    <Authors>John Cook</Authors>
-    <Copyright>© John Cook 2020-2024.</Copyright>
-    <Version>0.0.1</Version>
-    <NeutralLanguage>en-GB</NeutralLanguage>
-    <StartupObject></StartupObject>
-    <Nullable>enable</Nullable>
-    <Platforms>AnyCPU;x64</Platforms>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/watfordjc/LTO-Encryption-Manager</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/watfordjc/LTO-Encryption-Manager</PackageProjectUrl>
-    <ApplicationIcon />
-    <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+        <Platforms>x86;x64</Platforms>
+        <RuntimeIdentifiers>win-x86;win-x64</RuntimeIdentifiers>
+        <RootNamespace>uk.JohnCook.dotnet.LTOEncryptionManager</RootNamespace>
+        <UseWPF>true</UseWPF>
+        <PackageId>uk.JohnCook.dotnet.LTOEncryptionManager</PackageId>
+        <Authors>John Cook</Authors>
+        <Copyright>© John Cook 2020-2024.</Copyright>
+        <Version>0.0.1</Version>
+        <NeutralLanguage>en-GB</NeutralLanguage>
+        <StartupObject></StartupObject>
+        <Nullable>enable</Nullable>
+        <Platforms>AnyCPU;x64</Platforms>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/watfordjc/LTO-Encryption-Manager</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/watfordjc/LTO-Encryption-Manager</PackageProjectUrl>
+        <ApplicationIcon />
+        <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
-    <PackageReference Include="CryptHash.Net" Version="3.6.1" />
-    <PackageReference Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
-    <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.106">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240802000" />
-    <PackageReference Include="System.Management" Version="8.0.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
+        <PackageReference Include="CryptHash.Net" Version="3.6.1" />
+        <PackageReference Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
+        <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
+        <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.106">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.240829007" />
+        <PackageReference Include="System.Management" Version="8.0.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
+    <ItemGroup>
+        <None Include="..\LICENSE">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+        </None>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SecureDesktopWindows\SecureDesktopWindows.csproj" />
-    <ProjectReference Include="..\Utils\Utils.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\SecureDesktopWindows\SecureDesktopWindows.csproj" />
+        <ProjectReference Include="..\Utils\Utils.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Update="Properties\Settings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Properties\Resources.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Resources.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Properties\Settings.Designer.cs">
+            <DesignTimeSharedInput>True</DesignTimeSharedInput>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Settings.settings</DependentUpon>
+        </Compile>
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Update="Properties\Resources.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <None Include="..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
+    <ItemGroup>
+        <None Update="Properties\Settings.settings">
+            <Generator>SettingsSingleFileGenerator</Generator>
+            <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+        </None>
+        <None Include="..\LICENSE">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+        </None>
+    </ItemGroup>
 
 </Project>
