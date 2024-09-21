@@ -3,6 +3,10 @@
 ###############################################################################
 * text=auto
 
+## Files that specifically use \n line endings
+
+Tests/data/32bit-prime-number-group-hashes.csv	eol=lf
+
 ###############################################################################
 # Set default behavior for command prompt diff.
 #

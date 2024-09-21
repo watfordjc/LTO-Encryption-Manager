@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,7 +40,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 		}
 
 		/// <summary>
-		/// A simple test of <see cref="Lucas"/> using a small number of primes.
+		/// A simple test of <see cref="LucasLehmer"/> using a small number of primes and Mersenne primes.
 		/// </summary>
 		/// <returns>A <see cref="Task"/>.</returns>
 		[TestMethod]
@@ -49,7 +51,17 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Tests.MathsTests
 			foreach (uint primeNumber in primes)
 			{
 				BigPrime bigPrime = new(primeNumber, StandardRSA.Compatibility.None);
-				Assert.IsTrue(Lucas.IsProbablePrime(bigPrime));
+				Assert.IsTrue(LucasLehmer.IsProbablePrime(bigPrime));
+			}
+			BigInteger[] mersennePrimes = [3, 7, 31, 127, 8191, 131071, 524287, 2147483647, 2305843009213693951,
+				BigInteger.Parse("618970019642690137449562111", NumberStyles.None, CultureInfo.InvariantCulture),
+				BigInteger.Parse("162259276829213363391578010288127", NumberStyles.None, CultureInfo.InvariantCulture),
+				BigInteger.Parse("170141183460469231731687303715884105727", NumberStyles.None, CultureInfo.InvariantCulture)
+				];
+			foreach (BigInteger mersenneNumber in mersennePrimes)
+			{
+				BigPrime bigPrime = new(mersenneNumber, StandardRSA.Compatibility.None);
+				Assert.IsTrue(LucasLehmer.IsProbablePrime(bigPrime));
 			}
 		}
 

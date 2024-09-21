@@ -60,7 +60,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Maths
 			}
 			if (tempResult && performLucasTesting)
 			{
-				bool lucasIsProbablyPrime = Lucas.IsProbablePrime(this);
+				bool lucasIsProbablyPrime = LucasLehmer.IsProbablePrime(this);
 				CompatibilityFlags |= StandardRSA.Compatibility.PerformLucasTesting;
 				if (lucasIsProbablyPrime == false)
 				{

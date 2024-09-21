@@ -6,7 +6,7 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Maths.PrimalityTests
 	/// <summary>
 	/// <para>Provides static methods for determining primality using the Lucas-Lehmer primality test.</para>
 	/// </summary>
-	public static class Lucas
+	public static class LucasLehmer
 	{
 		/// <summary>
 		/// Tests primality of <paramref name="number"/> using the Lucas-Lehmer primality test.
@@ -40,6 +40,11 @@ namespace uk.JohnCook.dotnet.LTOEncryptionManager.Utils.Maths.PrimalityTests
 			else if (number.IsEven)
 			{
 				return false;
+			}
+			// Check if the number is a Mersenne number (Lucas-Lehmer is a primality test for Mersenne numbers)
+			else if (!number.IsMersenneNumber)
+			{
+				return true;
 			}
 			// Step 1: Check if a perfect square
 			if (number.IsPerfectSquare)
