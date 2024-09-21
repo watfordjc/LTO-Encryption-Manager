@@ -19,6 +19,7 @@
         <PackageId>uk.JohnCook.dotnet.LTOEncryptionManager.SecureDesktopWindows</PackageId>
         <NeutralLanguage>en-GB</NeutralLanguage>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <AnalysisLevel>latest-all</AnalysisLevel>
     </PropertyGroup>
 
     <ItemGroup>

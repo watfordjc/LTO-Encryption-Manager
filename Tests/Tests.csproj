@@ -17,6 +17,7 @@
     <RepositoryUrl>https://github.com/watfordjc/LTO-Encryption-Manager</RepositoryUrl>
     <PackageProjectUrl>https://github.com/watfordjc/LTO-Encryption-Manager</PackageProjectUrl>
     <OutputType>Library</OutputType>
+    <AnalysisLevel>latest-all</AnalysisLevel>
   </PropertyGroup>
 
   <ItemGroup>

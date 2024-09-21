@@ -18,6 +18,7 @@
         <RepositoryType>git</RepositoryType>
         <NeutralLanguage>en-GB</NeutralLanguage>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <AnalysisLevel>latest-all</AnalysisLevel>
     </PropertyGroup>
 
     <ItemGroup>

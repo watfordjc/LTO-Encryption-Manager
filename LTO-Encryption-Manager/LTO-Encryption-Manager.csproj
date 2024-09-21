@@ -21,6 +21,7 @@
         <ApplicationIcon />
         <IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
         <ApplicationManifest>app.manifest</ApplicationManifest>
+        <AnalysisLevel>latest-all</AnalysisLevel>
         <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
     </PropertyGroup>
 
