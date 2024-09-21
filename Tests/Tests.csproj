@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows7.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <RootNamespace>uk.JohnCook.dotnet.LTOEncryptionManager.Tests</RootNamespace>
     <PackageId>uk.JohnCook.dotnet.LTOEncryptionManager.Tests</PackageId>
@@ -9,7 +9,7 @@
     <Version>0.1.0</Version>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <Copyright>© John Cook 2021-2024.</Copyright>
-    <Platforms>AnyCPU;x64</Platforms>
+    <Platforms>x64</Platforms>
     <Nullable>enable</Nullable>
     <Authors>John Cook</Authors>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
